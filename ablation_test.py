@@ -4,6 +4,7 @@ import os
 import select
 from artiq.experiment import *
 from artiq.coredevice.ad9910 import AD9910
+from artiq.coredevice.ad53xx import AD53xx
 
 if os.name == 'nt':
     import msvcrt
@@ -37,6 +38,10 @@ def is_enter_pressed() -> TBool:
 
 class DAQ(EnvExperiment):
     def build(self):
+        if self.get_device("scheduler").__class__.__name__ != "DummyScheduler":
+            raise NotImplementedError(
+                "must be run with artiq_run to support keyboard interaction")
+
         self.setattr_device('core')
         #self.setattr_device('ttl10') # experiment start
         #self.setattr_device('ttl4') # flash-lamp
@@ -48,23 +53,26 @@ class DAQ(EnvExperiment):
 
     @kernel
     def get_sampler_voltages(self,sampler,cb):
+        print('start sample')
         self.core.break_realtime()
         sampler.init()
         delay(5*ms)
-        for i in range(8):
-            sampler.set_gain_mu(i,0)
-            delay(100*us)
+        sampler.set_gain_mu(0,0)
+        delay(100*us)
+        # for i in range(8):
+        #     sampler.set_gain_mu(i,0)
+        #     delay(100*us)
         smp = [0.0]*8
         sampler.sample(smp)
         cb(smp)
 
     def test_sampler(self):
         voltages = []
-        print("asd")
+        #print("asd")
         def setv(x):                        
             nonlocal voltages
             voltages = x                        
-        print("asd2")        
+        #print("asd2")        
         self.get_sampler_voltages(self.sampler0,setv) # stuck here
 
         print("asd3")
@@ -72,12 +80,12 @@ class DAQ(EnvExperiment):
             print(voltage)
         #print("asd")
 
-    @kernel
+    #@kernel
     def run(self):
         self.core.reset()
         
-        self.ttl4.off()
-        self.ttl6.off()
+        #self.ttl4.off()
+        #self.ttl6.off()
         delay(35*us)
         self.test_sampler()
 

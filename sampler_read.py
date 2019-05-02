@@ -20,47 +20,53 @@ class DAQ(EnvExperiment):
     @kernel
     def get_sampler_voltages(self,sampler,cb):
         self.core.break_realtime()
-        print('loc1')
+        #print('loc1')
         sampler.init()
-        print('loc2')
+        #print('loc2')
         delay(5*ms)
-        for i in range(8):
-            sampler.set_gain_mu(i,0)
-            delay(100*us)
-        print('loc3')
+        sampler.set_gain_mu(0,0)
+        delay(5*ms)
+        #for i in range(8):
+        #    sampler.set_gain_mu(i,0)
+        #    delay(100*us)
+        #print('loc3')
+        smps = [[0.0]]*8
         smp = [0.0]*8
-        sampler.sample(smp)
-        print('loc4')
-        cb(smp)
-        print('loc5')
+        for i in range(10):
+            sampler.sample(smp)
+            smps[i] = smp
+            delay(100*us)
+            
+        #print('loc4')
+        cb(smps)
 
-    def write_daq(self,voltage):
-        self.core.break_realtime()
-        print('starting to write')
-        self.sampler0.init()
-        
-
+        #print('loc5')
 
     def test_sampler(self):
         voltages = []
-        print("asd")
+        #print("asd")
         def setv(x):                        
             nonlocal voltages
             voltages = x                        
-        print("asd2")
+        #print("asd2")
         self.get_sampler_voltages(self.sampler0,setv)
-        print("asd3")
-        for voltage in voltages:
-            print(voltage)
-        #print("asd")
+        #print("asd3")
+        #or voltage in voltages:
+        #    print(voltage)
+        #print(voltages)
+        return(voltages)
 
     #@kernel
     def run(self):
         self.core.reset()
-
-        #self.test_sampler()
+        data = []
+        n = 100
+        for i in range(n):
+            newdata = self.test_sampler()
+            print('Sample: {}/{}'.format(i,n),end='\r')
+            data.append(newdata[0])
         
-        self.write_daq()
-
+        #self.write_daq()
+        print(data)
         #except RTIOUnderflow:
         #    print_underflow()
