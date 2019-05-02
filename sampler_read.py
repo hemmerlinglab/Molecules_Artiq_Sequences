@@ -4,6 +4,7 @@ import os
 import select
 from artiq.experiment import *
 from artiq.coredevice.ad9910 import AD9910
+from artiq.coredevice.ad53xx import AD53xx
 
 def print_underflow():
     print('RTIO underflow occured')
@@ -33,6 +34,13 @@ class DAQ(EnvExperiment):
         cb(smp)
         print('loc5')
 
+    def write_daq(self,voltage):
+        self.core.break_realtime()
+        print('starting to write')
+        self.sampler0.init()
+        
+
+
     def test_sampler(self):
         voltages = []
         print("asd")
@@ -50,7 +58,9 @@ class DAQ(EnvExperiment):
     def run(self):
         self.core.reset()
 
-        self.test_sampler()
+        #self.test_sampler()
         
+        self.write_daq()
+
         #except RTIOUnderflow:
         #    print_underflow()
