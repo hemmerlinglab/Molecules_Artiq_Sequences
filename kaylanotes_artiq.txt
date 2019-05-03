@@ -1,0 +1,4 @@
+- user- written experiments should usually derive from the artiq.language.environment.EnvExperiment sub class pg 48
+- multiple pipelines ensure that experiments scheduled in one pipeline will never conflict with those of another pipeline over resources
+- CCBs are requests made by experiments to perform some action --> possibly needed in our code?
+

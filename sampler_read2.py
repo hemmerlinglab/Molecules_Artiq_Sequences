@@ -6,13 +6,16 @@ from artiq.experiment import *
 from artiq.coredevice.ad9910 import AD9910
 from artiq.coredevice.ad53xx import AD53xx
 
+""" Kayla's version with notes!
+    Notes on possible problems: 
+    1. there is no init function in the class, no initialization which is     probably one of its problems 
+    2. On page 48 of the manual, it says that user- written experiments should derive from the artiq.language.environment.EnvExperiment sub class, should this be imported or does the EnvExperiment class here work?
+    Questions:
+    1. When is a kernel needed, this is not clear
+    """
+
 def print_underflow():
     print('RTIO underflow occured')
-
-
-""" Notes on possible problems: 
-    1. there is no init function in the class, no initialization which is probably one of its problems """
-
 
 class DAQ(EnvExperiment):
     def build(self):
