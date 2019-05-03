@@ -20,7 +20,9 @@ class DAQ(EnvExperiment):
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
         self.setattr_device('sampler0')
-        self.setattr_argument("count",NumberValue(default=10,ndecimals=0,step=1))
+        #self.setattr_argument("count",NumberValue(default=10,ndecimals=0,step=1))
+        #self.name = 
+        #self.setattr_dataset()
 
     @kernel
     def get_sampler_voltages(self,sampler,cb):
@@ -28,9 +30,9 @@ class DAQ(EnvExperiment):
         #print('loc1')
         sampler.init()
         #print('loc2')
-        #delay(10*ms)
+        delay(10*ms)
         sampler.set_gain_mu(0,0)
-        #delay(10*ms)
+        delay(10*ms)
         #for i in range(8):
         #    sampler.set_gain_mu(i,0)
         #    delay(100*us)
@@ -40,7 +42,7 @@ class DAQ(EnvExperiment):
         #for i in range(10):
         sampler.sample(smp)
             #smps[i] = smp
-        #delay(100*us)
+        delay(100*us)
             
         #print('loc4')
         cb(smp)
@@ -64,9 +66,11 @@ class DAQ(EnvExperiment):
     #@kernel
     def run(self):
         self.core.reset()
-        self.set_dataset('voltages',np.full(self.count,np.nan),broadcast=True)
-        for i in range(self.count):
-            self.mutate_dataset('voltages',i,self.test_sampler()[0])
+        volt = self.test_sampler()
+        print(volt)
+        #self.set_dataset('voltages',np.full(self.count,np.nan),broadcast=True)
+        #for i in range(self.count):
+        #  self.mutate_dataset('voltages',i,self.test_sampler()[0])
         
         #self.write_daq()
         #print(data)
