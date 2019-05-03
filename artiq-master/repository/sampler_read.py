@@ -1,4 +1,6 @@
 # use 'artiq-run' command
+# works with the GUI
+
 import sys
 import os
 import select
@@ -18,6 +20,7 @@ class DAQ(EnvExperiment):
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
         self.setattr_device('sampler0')
+        self.setattr_argument("count",NumberValue(default=10,ndecimals=0,step=1))
 
     @kernel
     def get_sampler_voltages(self,sampler,cb):
@@ -63,7 +66,7 @@ class DAQ(EnvExperiment):
         self.core.reset()
         self.set_dataset('voltages',np.full(self.count,np.nan),broadcast=True)
         for i in range(self.count):
-            self.mutate_dataset('voltages',i,self.test_sampler())
+            self.mutate_dataset('voltages',i,self.test_sampler()[0])
         
         #self.write_daq()
         #print(data)
