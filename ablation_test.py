@@ -4,6 +4,7 @@ import os
 import select
 from artiq.experiment import *
 import datetime
+import time
 import numpy as np
 
 class DAQ(EnvExperiment):
@@ -30,18 +31,19 @@ class DAQ(EnvExperiment):
     @kernel
     def read_diode(self,read_n):
         self.core.break_realtime()
-        self.sampler0.init()
-        self.sampler0.set_gain_mu(0,0)
+        
         data = [0.0]*self.scope_count
+        smp = [0.0]*8
         for dt in range(self.scope_count):
-            smp = [0.0]*8
-            self.sampler0.sample(smp)
-            #self.mutate_dataset('scope_read',(read_n,dt),smp[7])
+            self.sampler0.sample_mu(smp)
+        #self.mutate_dataset('scope_read',(read_n,dt),smp[0])
 
 
     def run(self):
         self.core.reset()
-        #self.set_dataset('scope_read',np.full((self.scan_count,self.scope_count),np.nan))
+        self.sampler0.init()
+        self.sampler0.set_gain_mu(0,0)
+        self.set_dataset('scope_read',np.full((self.scan_count,self.scope_count),np.nan))
         for i in range(self.scan_count):
             input('Press ENTER for Run {}/{}'.format(i+1,self.scan_count))
             self.fire_yag()

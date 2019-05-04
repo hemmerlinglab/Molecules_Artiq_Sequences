@@ -14,7 +14,7 @@ def print_underflow():
 
 
 """ Notes on possible problems: 
-    1. there is no init function in the class, no initialization which is probably one of its problems """
+    1. does the test_sampler need a decorator as well?  """
 
 
 class DAQ(EnvExperiment):
@@ -52,7 +52,7 @@ class DAQ(EnvExperiment):
         cb(smp)
 
         #print('loc5')
-
+    @kernel
     def test_sampler(self,dataname):
         self.set_dataset(dataname,np.full(self.scope_count,np.nan))
         voltages = []
