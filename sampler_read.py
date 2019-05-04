@@ -14,7 +14,12 @@ def print_underflow():
 
 
 """ Notes on possible problems: 
-    1. does the test_sampler need a decorator as well?  """
+    1. does the test_sampler need a decorator as well? 
+
+    Questions: To be answered later..
+    1. cb command
+    2. can we just do a normal return statement in the get sampler voltages and then use that function in run? or does cb do this
+    3. self.core reset, what does it do --> to look up later """
 
 
 class DAQ(EnvExperiment):
@@ -52,7 +57,7 @@ class DAQ(EnvExperiment):
         cb(smp)
 
         #print('loc5')
-    @kernel
+    #@kernel
     def test_sampler(self,dataname):
         self.set_dataset(dataname,np.full(self.scope_count,np.nan))
         voltages = []
