@@ -57,6 +57,8 @@ class DAQ(EnvExperiment):
         cb(smp)
 
         #print('loc5')
+
+        
     #@kernel
     def test_sampler(self,dataname):
         self.set_dataset(dataname,np.full(self.scope_count,np.nan))
