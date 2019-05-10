@@ -9,6 +9,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+# every Experiment needs a build and a run function
 class DAQ(EnvExperiment):
     def build(self):
         self.setattr_device('core')
@@ -29,21 +30,34 @@ class DAQ(EnvExperiment):
         delay(150*us)
         self.ttl6.pulse(15*us)
 
+    """ Tells it to run at the core device, @ kernel is necessary to run the process entirely in artiq's core
+    Notes: 
+    - any command that needs to talk to the computer severely slows down (or makes it not work) the process because its not in artiq's processer
+    - normal python commands such as print and plotting figures slows the kernel, or will make it not work"""
     @kernel
     def read_diode(self):
         self.core.break_realtime()
         self.sampler0.init()
-
+        
+        """ 
+         This function sets the gain for each sampler channel according manual
+         * i iterates over 8 channels
+         * gain setting of 0 is 1
+         * gain is 10^(input setting is), which is the second number in the .set_gain_mu
+         --> currently has a gain of 1 """    
         for i in range(8):
             self.sampler0.set_gain_mu(i,0)
-
-        data = [0]*self.scope_count
-        smp = [0]*8
         
+        # initilization, sets up the array of zeros of values to be replaced
+        data = [0]*self.scope_count
+        smp = [0]*8 # array of numbers coming from each sampler port
+        
+        # Takes the data from the scope
+        # actually doing the sampling
         for j in range(self.scope_count):
-            self.sampler0.sample_mu(smp)
-            data[j] = smp[0]
-            delay(5*us)
+            self.sampler0.sample_mu(smp) # reads out into smp which takes data from all 8 ports
+            data[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
+            delay(5*us) # needed to prevent underflow errors
 
         index = range(self.scope_count)
         self.mutate_dataset('scope_read',index,data)
