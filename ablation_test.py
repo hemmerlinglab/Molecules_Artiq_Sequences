@@ -8,7 +8,6 @@ import datetime
 class DAQ(EnvExperiment):
     def build(self):
         self.setattr_device('core')
-        self.setattr_device('core_dma')
         self.setattr_device('ttl11') # experiment start
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
