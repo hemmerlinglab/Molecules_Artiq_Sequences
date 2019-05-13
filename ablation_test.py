@@ -51,16 +51,19 @@ class DAQ(EnvExperiment):
         # initilization, sets up the array of zeros of values to be replaced
         data = [0]*self.scope_count
         smp = [0]*8 # array of numbers coming from each sampler port
-        
         # Takes the data from the scope
         # actually doing the sampling
+        #elap = self.core.get_rtio_counter_mu()
         for j in range(self.scope_count):
+            delay(5.0*us)
             self.sampler0.sample_mu(smp) # reads out into smp which takes data from all 8 ports
             data[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
-            delay(5*us) # needed to prevent underflow errors
-
+            
+             # needed to prevent underflow errors
+        #elap_t = self.core.mu_to_seconds(self.core.get_rtio_counter_mu() - elap)
         index = range(self.scope_count)
         self.mutate_dataset('scope_read',index,data)
+        #print('Elapsed time:',elap_t)
 
     def run(self):
         self.core.reset()
@@ -76,7 +79,13 @@ class DAQ(EnvExperiment):
         volts = []
         for v in vals:
             volts.append(splr.adc_mu_to_volt(v))
-        print(volts)
+        #print(volts)
+        f_name = 'test2.txt'
+        f_out = open(f_name,'w')
+        for v in volts:
+            f_out.write(str(v)+' ')
+        f_out.close()
+
 
 
         
