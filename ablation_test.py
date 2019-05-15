@@ -37,7 +37,6 @@ class DAQ(EnvExperiment):
         smp = [0]*8 # array of numbers coming from each sampler port
         
         ### Fire and sample
-
         self.ttl4.pulse(15*us) # trigger flash lamp
         delay(150*us) # wait optimal time
         self.ttl6.pulse(15*us) # trigger q-switch
