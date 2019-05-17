@@ -33,9 +33,9 @@ class DAQ(EnvExperiment):
             self.sampler0.set_gain_mu(i,0)
         
         # initilization, sets up the array of zeros of values to be replaced
-        data = [0]*self.scope_count
+        data0 = [0]*self.scope_count
         smp = [0]*8 # array of numbers coming from each sampler port
-        
+        data1 = [0]*self.scope_count
         ### Fire and sample
         self.ttl4.pulse(15*us) # trigger flash lamp
         delay(150*us) # wait optimal time
@@ -43,31 +43,46 @@ class DAQ(EnvExperiment):
         for j in range(self.scope_count):
             delay(3.3*us) # needed to prevent underflow errors
             self.sampler0.sample_mu(smp) # reads out into smp which takes data from all 8 ports
-            data[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
-            
+            data0[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
+            data1[j] = smp[1]
             
         index = range(self.scope_count)
-        self.mutate_dataset('scope_read',index,data)
+        self.mutate_dataset('absorption',index,data0)
+        self.mutate_dataset('fire_check',index,data1)
 
     def run(self):
         self.core.reset()
-        x = np.arange(self.scope_count)
-        self.set_dataset('scope_read',np.full(self.scope_count,np.nan))
+        volts = []
+        frchks = []
+        self.set_dataset('absorption',np.full(self.scope_count,np.nan))
         for i in range(self.scan_count):
             input('Press ENTER for Run {}/{}'.format(i+1,self.scan_count))
             self.fire_and_read()
-            print('Run {}/{} Completed'.format(i+1,self.scan_count))
+            vals = self.get_dataset('absorption')
+            chks = self.get_dataset('fire_check')
+            for v in vals:
+                volts.append(splr.adc_mu_to_volt(v))
+            for f in frchks:
+                frchks.append(splr.adc_mu_to_volt(f))
 
-        vals = self.get_dataset('scope_read')
-        volts = []
-        for v in vals:
-            volts.append(splr.adc_mu_to_volt(v))
-        f_name = 'test3.txt'
-        f_out = open(f_name,'w')
+            
+            print('Run {}/{} Completed'.format(i+1,self.scan_count))
+       
+
+        v_name = 'signal_1.txt'
+        v_out = open(v_name,'w')
         for v in volts:
-            f_out.write(str(v)+' ')
+            v_out.write(str(v)+' ')
+        v_out.close()
+        print('Absorption signal data written to {}'.format(v_name))
+
+
+        f_name = 'fire_check_1.txt'
+        f_out = open(f_name,'w')
+        for f in frchks:
+            f_out.write(str(f)+' ')
         f_out.close()
-        print('Voltage data written to {}'.format(f_name))
+        print('Fire check data written to {}'.format(f_name))
 
 
 
