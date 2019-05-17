@@ -7,59 +7,63 @@ import datetime
 # every Experiment needs a build and a run function
 class DAQ(EnvExperiment):
     def build(self):
-        self.setattr_device('core')
-        self.setattr_device('ttl11') # experiment start
+        self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
-        self.setattr_device('sampler0')
+        self.setattr_device('sampler0') # adc voltage sampler
+        # EnvExperiment attribute: number of voltage samples per scan
         self.setattr_argument('scope_count',NumberValue(default=600,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=1,ndecimals=0,step=1))
-
-    """ Tells it to run at the core device, @ kernel is necessary to run the process entirely in artiq's core
-    Notes: 
-    - any command that needs to talk to the computer severely slows down (or makes it not work) the process because its not in artiq's processer
-    - normal python commands such as print and plotting figures slows the kernel, or will make it not work"""
+ 
+    ### Script to run on Artiq
+    # Basic Schedule:
+    # 1) Trigger YAG Flashlamp
+    # 2) Wait 150 us
+    # 3) Trigger Q Switch
+    # 4) In parallel, read off 2 diodes
     @kernel
     def fire_and_read(self):
-        self.core.break_realtime()
-        self.sampler0.init()
+        self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
+        self.sampler0.init() # initializes sampler device
         
-        """ 
-         This function sets the gain for each sampler channel
-         * i iterates over 8 adc channels
-         * gain is 10^(input setting), which is the second number in the set_gain_mu()
-         --> currently has a gain of 1 """    
+        ### Set Channel Gain 
         for i in range(8):
-            self.sampler0.set_gain_mu(i,0)
+            self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
         
         delay(100*us)
-        # initilization, sets up the array of zeros of values to be replaced
-        data0 = [0]*self.scope_count
-        smp = [0]*8 # array of numbers coming from each sampler port
-        data1 = [0]*self.scope_count
+        
+        ### Data Variable Initialization
+        data0 = [0]*self.scope_count # signal data
+        data1 = [0]*self.scope_count # fire check data
+        smp = [0]*8 # individual sample
+
         ### Fire and sample
         self.ttl4.pulse(15*us) # trigger flash lamp
-        delay(150*us) # wait optimal time
+        delay(135*us) # wait optimal time (see Minilite manual)
         self.ttl6.pulse(15*us) # trigger q-switch
         for j in range(self.scope_count):
-            delay(5*us) # needed to prevent underflow errors
-            self.sampler0.sample_mu(smp) # reads out into smp which takes data from all 8 ports
-            data0[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
+            self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
+            data0[j] = smp[0]
             data1[j] = smp[1]
+            delay(5*us)
             
+        ### Allocate and Transmit Data
         index = range(self.scope_count)
         self.mutate_dataset('absorption',index,data0)
         self.mutate_dataset('fire_check',index,data1)
 
     def run(self):
-        self.core.reset()
-        volts = []
-        frchks = []
-        self.set_dataset('absorption',np.full(self.scope_count,np.nan))
-        self.set_dataset('fire_check',np.full(self.scope_count,np.nan))
-        for i in range(self.scan_count):
-            input('Press ENTER for Run {}/{}'.format(i+1,self.scan_count))
-            self.fire_and_read()
+        ### Initilizations
+        self.core.reset() # Initializes Artiq (required)
+        scan_count = 1 # number of loops
+        self.set_dataset('absorption',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
+        self.set_dataset('fire_check',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
+        volts = [] # absorption signal
+        frchks = [] # yag fire check
+
+        ### Run Experiment
+        for i in range(scan_count):
+            input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
+            self.fire_and_read() # fires yag and reads voltages
             vals = self.get_dataset('absorption')
             chks = self.get_dataset('fire_check')
             for v in vals:
@@ -68,16 +72,15 @@ class DAQ(EnvExperiment):
                 frchks.append(splr.adc_mu_to_volt(f))
 
             
-            print('Run {}/{} Completed'.format(i+1,self.scan_count))
+            print('Run {}/{} Completed'.format(i+1,scan_count))
        
-
+        ### Write Data to Files
         v_name = 'signal_1.txt'
         v_out = open(v_name,'w')
         for v in volts:
             v_out.write(str(v)+' ')
         v_out.close()
         print('Absorption signal data written to {}'.format(v_name))
-
 
         f_name = 'fire_check_1.txt'
         f_out = open(f_name,'w')

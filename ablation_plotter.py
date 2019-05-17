@@ -33,13 +33,13 @@ dt = np.arange(len(signal))*13.97e-3 # ms
 plt.figure()
 plt.plot(dt,signal,'b-')
 plt.title('Absorption Signal')
-plt.xlabel('Time (ms)')
+plt.xlabel('Sample Time (ms)')
 plt.ylabel('Diode Voltage (V)')
 
 plt.figure()
 plt.plot(dt,frchks,'g-')
 plt.title('YAG Fire Check')
-plt.xlabel('Time (ms)')
+plt.xlabel('Sample Time (ms)')
 plt.ylabel('Diode Voltage (V)')
 
 plt.show()
