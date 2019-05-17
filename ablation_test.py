@@ -32,6 +32,7 @@ class DAQ(EnvExperiment):
         for i in range(8):
             self.sampler0.set_gain_mu(i,0)
         
+        delay(100*us)
         # initilization, sets up the array of zeros of values to be replaced
         data0 = [0]*self.scope_count
         smp = [0]*8 # array of numbers coming from each sampler port
@@ -41,7 +42,7 @@ class DAQ(EnvExperiment):
         delay(150*us) # wait optimal time
         self.ttl6.pulse(15*us) # trigger q-switch
         for j in range(self.scope_count):
-            delay(3.3*us) # needed to prevent underflow errors
+            delay(5*us) # needed to prevent underflow errors
             self.sampler0.sample_mu(smp) # reads out into smp which takes data from all 8 ports
             data0[j] = smp[0] # replaces the value at specified data[j] with the updated scalar from smp[0] (channel 0 of the sampler ports)  
             data1[j] = smp[1]
@@ -55,6 +56,7 @@ class DAQ(EnvExperiment):
         volts = []
         frchks = []
         self.set_dataset('absorption',np.full(self.scope_count,np.nan))
+        self.set_dataset('fire_check',np.full(self.scope_count,np.nan))
         for i in range(self.scan_count):
             input('Press ENTER for Run {}/{}'.format(i+1,self.scan_count))
             self.fire_and_read()
@@ -62,7 +64,7 @@ class DAQ(EnvExperiment):
             chks = self.get_dataset('fire_check')
             for v in vals:
                 volts.append(splr.adc_mu_to_volt(v))
-            for f in frchks:
+            for f in chks:
                 frchks.append(splr.adc_mu_to_volt(f))
 
             
@@ -79,6 +81,7 @@ class DAQ(EnvExperiment):
 
         f_name = 'fire_check_1.txt'
         f_out = open(f_name,'w')
+        print(frchks)
         for f in frchks:
             f_out.write(str(f)+' ')
         f_out.close()
