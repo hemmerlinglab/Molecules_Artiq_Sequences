@@ -47,7 +47,8 @@ class DAQ(EnvExperiment):
             self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
             data0[j] = smp[0]
             data1[j] = smp[1]
-            delay(5*us)
+            #delay(5*us)
+            delay(50*us)
             
         ### Allocate and Transmit Data
         index = range(self.scope_count)
@@ -64,14 +65,20 @@ class DAQ(EnvExperiment):
         volts = [] # absorption signal
         frchks = [] # yag fire check
 
-        
-        scan_count = 2 # number of loops/averages
-        scan_offset = 375.763266 # THz
-        no_of_points = 10
 
-        scan_interval = np.linspace(-200,200,no_of_points) * 1.0e6 # MHz
-        scan_interval = scan_offset + scan_interval/1e12
+        # Define scan parameters
         
+        scan_count = 1 # number of loops/averages
+        scan_offset = 375.763266 # THz
+        no_of_points = 12
+
+        scan_interval = np.linspace(-30,27,no_of_points) * 1.0e6 # MHz
+        scan_interval = scan_offset + scan_interval/1e12
+  
+        # End of define scan parameters
+
+
+
         my_today = datetime.datetime.today()
 
         datafolder = '/home/molecules/software/data/'
@@ -93,15 +100,14 @@ class DAQ(EnvExperiment):
             setpoint_file.write(str(nu))
             setpoint_file.close()
 
-            time.sleep(0.2)
-
+            time.sleep(2.0)
 
             # run scan_count averages
         
             ### Run Experiment
             for i in range(scan_count):
 #                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
-#                self.fire_and_read() # fires yag and reads voltages
+                self.fire_and_read() # fires yag and reads voltages
                 vals = self.get_dataset('absorption')
                 chks = self.get_dataset('fire_check')
 
@@ -119,6 +125,8 @@ class DAQ(EnvExperiment):
                 set_freqs.append(nu)
 
                 print('Run {}/{} Completed'.format(i+1,scan_count))
+                
+                time.sleep(1.0)
 
         # transform into numpy arrays                
         freqs = np.array(set_freqs)
@@ -142,6 +150,6 @@ class DAQ(EnvExperiment):
         np.savetxt(f_ch2, ch2, delimiter=",")
         f_ch2.close()
 
-
+        print('Filename: ' + basefilename)
 
 
