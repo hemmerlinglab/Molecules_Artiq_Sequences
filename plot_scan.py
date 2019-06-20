@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import glob
 import sys
+from fit_yb import *
 
 def av(arr, no_of_avg):
     # for 1D array
@@ -34,7 +35,9 @@ datafolder = '/home/molecules/software/data/'
 
 basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
 
-basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_')) # 20190618_105557
+basefolder = '20190620'
+
+basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
 
 
 if len(sys.argv)>1:
@@ -50,8 +53,8 @@ f_ch2 = basefilename + time_stamp + '_ch2'
 
 
 
-cut_time1 = 5 # ms
-cut_time2 = 10 # ms
+cut_time1 = 10 # ms
+cut_time2 = 12 # ms
 freq_cut = 20 # MHz
 
 freqs = np.genfromtxt(f_freqs, delimiter=",")
@@ -87,6 +90,19 @@ for k in range(ch1.shape[0]):
     ch1[k, :] = ch1[k, :] - np.mean(ch1[k, -offset_avg_points:-1])
     ch2[k, :] = ch2[k, :] - np.mean(ch2[k, -offset_avg_points:-1])
 
+# scaling the frequency axis to the blue
+nus = 2*nus
+avg_freq = 2*avg_freq
+
+
+
+
+spectrum = np.mean(ch1[:, ch1_start:ch1_end], axis = 1)
+
+(x_fit, y_fit) = fit_yb(nus, spectrum)
+
+
+
 
 # plotting
 
@@ -99,12 +115,15 @@ plt.pcolor(nus, times, np.transpose(ch1))#, aspect = 'auto')
 plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
 plt.ylabel('Time (ms)')
 
+plt.title('Scan #: ' + time_stamp)
+
 plt.axhline(times[ch1_start], linewidth = 1, color = 'r', linestyle = '--')
 plt.axhline(times[ch1_end], linewidth = 1, color = 'r', linestyle = '--')
 plt.axvline(nus[freq_ind], linewidth = 1, color = 'r', linestyle = '--')
 
 plt.subplot(3,2,3)
-plt.plot(nus, np.mean(ch1[:, ch1_start:ch1_end], axis = 1))
+plt.plot(nus, spectrum)
+plt.plot(x_fit, y_fit)
 plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
 
 plt.subplot(3,2,5)
@@ -118,12 +137,15 @@ plt.pcolor(nus, times, np.transpose(ch2))#, aspect = 'auto')
 plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
 plt.ylabel('Time (ms)')
 
-plt.axhline(times[ch1_start], linewidth = 1, color = 'r', linestyle = '--')
-plt.axhline(times[ch1_end], linewidth = 1, color = 'r', linestyle = '--')
+ch2_start = 0
+ch2_end = 1
+
+plt.axhline(times[ch2_start], linewidth = 1, color = 'r', linestyle = '--')
+plt.axhline(times[ch2_end], linewidth = 1, color = 'r', linestyle = '--')
 plt.axvline(nus[freq_ind], linewidth = 1, color = 'r', linestyle = '--')
 
 plt.subplot(3,2,4)
-plt.plot(nus, np.mean(ch2[:, ch1_start:ch1_end], axis = 1))
+plt.plot(nus, np.mean(ch2[:, ch2_start:ch2_end], axis = 1))
 plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
 
 plt.subplot(3,2,6)

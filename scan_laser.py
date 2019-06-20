@@ -68,11 +68,11 @@ class DAQ(EnvExperiment):
 
         # Define scan parameters
         
-        scan_count = 1 # number of loops/averages
+        scan_count = 10 # number of loops/averages
         scan_offset = 375.763266 # THz
-        no_of_points = 12
+        no_of_points = 100
 
-        scan_interval = np.linspace(-30,27,no_of_points) * 1.0e6 # MHz
+        scan_interval = 0.5 * np.linspace(-600,1500,no_of_points) * 1.0e6 # MHz
         scan_interval = scan_offset + scan_interval/1e12
   
         # End of define scan parameters
@@ -92,7 +92,8 @@ class DAQ(EnvExperiment):
         basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
         for n, nu in enumerate(scan_interval): 
-
+            print('-'*30)
+            print('Setpoint {}/{}'.format(n+1,no_of_points))
             print('Setting laser to ' + str(nu))
 
             # move laser to set point
@@ -106,27 +107,38 @@ class DAQ(EnvExperiment):
         
             ### Run Experiment
             for i in range(scan_count):
-#                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
-                self.fire_and_read() # fires yag and reads voltages
-                vals = self.get_dataset('absorption')
-                chks = self.get_dataset('fire_check')
 
-                hlp = []
-                for v in vals:
-                    hlp.append(splr.adc_mu_to_volt(v))
-                volts.append(hlp)
+                shot_fired = False
 
-                hlp = []
-                for f in chks:
-                    hlp.append(splr.adc_mu_to_volt(f))
-                frchks.append(hlp)
+                while not shot_fired:
+    #                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
+                    self.fire_and_read() # fires yag and reads voltages
+                    vals = self.get_dataset('absorption')
+                    chks = self.get_dataset('fire_check')
 
-                # save set points for each shot
-                set_freqs.append(nu)
+                    hlp = []
+                    for v in vals:
+                        hlp.append(splr.adc_mu_to_volt(v))
 
-                print('Run {}/{} Completed'.format(i+1,scan_count))
+                    hlp2 = []
+                    for f in chks:
+                        hlp2.append(splr.adc_mu_to_volt(f))
+
+                    # check if Yag fired
+                    if np.max(np.array(hlp2)) > 0.5:
+                        # save set points for each shot
+                        set_freqs.append(nu)
+                        volts.append(hlp)
+                        frchks.append(hlp2)
+    
+                        print('Run {}/{} Completed'.format(i+1,scan_count))
+                        shot_fired = True
+                    else:
+                        # repeat shot
+                        shot_fired = False
+                        print('Repeat shot. No Yag.')
                 
-                time.sleep(1.0)
+                    time.sleep(1.0)
 
         # transform into numpy arrays                
         freqs = np.array(set_freqs)
