@@ -26,7 +26,7 @@ def fcn2min(params, x, data, plot_fit = False):
         model = y_offset
 
         for k in range(len(iso_abund)):
-            model += a * ampl[k] * iso_abund[k] * np.exp( -(x - freqs[k])**2/w**2 )
+            model += a * ampl[k] * iso_abund[k] * np.exp( -(x - freqs[k])**2/(2.0*w**2) )
  
         return model - data
     else:
@@ -36,7 +36,7 @@ def fcn2min(params, x, data, plot_fit = False):
 
         model = y_offset
         for k in range(len(iso_abund)):
-            model += a * ampl[k] * iso_abund[k] * np.exp( -(x_plot - freqs[k])**2/w**2 )
+            model += a * ampl[k] * iso_abund[k] * np.exp( -(x_plot - freqs[k])**2/(2.0*w**2) )
         
         return (x_plot, model)
 
@@ -70,5 +70,5 @@ def fit_yb(x, y):
         
         (x_plot, model) = fcn2min(result.params, x, y, plot_fit = True)
 
-        return (x_plot, model)
+        return (x_plot, model, result)
 

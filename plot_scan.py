@@ -31,7 +31,7 @@ def av(arr, no_of_avg):
 
 
 my_today = datetime.datetime.today()
-datafolder = '/home/molecules/software/data/'
+datafolder = '/Users/boerge/Github/Data/'
 
 basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
 
