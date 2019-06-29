@@ -68,11 +68,11 @@ class DAQ(EnvExperiment):
 
         # Define scan parameters
         
-        scan_count = 10 # number of loops/averages
-        scan_offset = 375.763266 # THz
+        scan_count = 9 # number of loops/averages
+        scan_offset = 383.949702 # THz
         no_of_points = 100
 
-        scan_interval = 0.5 * np.linspace(-600,1500,no_of_points) * 1.0e6 # MHz
+        scan_interval = 0.5 * np.linspace(-1200,500,no_of_points) * 1.0e6 # MHz
         scan_interval = scan_offset + scan_interval/1e12
   
         # End of define scan parameters

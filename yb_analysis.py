@@ -16,9 +16,8 @@ hbar = 1.05457e-34
 
 
 
-datafolder = '/Users/boerge/Github/Data/molecule_computer/'
 
-basefilename = '/Users/boerge/Downloads/20190620_'
+basefilename = '/home/molecules/software/data/20190620/20190620_'
 
 options = {
         't1' : 10,
@@ -60,7 +59,7 @@ for k in range(len(result)):
 
     density.append(np.mean(result[k]['spectrum'][x1:x2]))
     
-    temps.append(doppler2temp(result[k]['fit_result'].params['w'] * 1e6, f0 = 375e12, mass = 171 * amu))
+    temps.append(doppler2temp(result[k]['fit_result'].params['w'] * 1e6, f0 = 2*375e12, mass = 171 * amu))
 
 flow = np.array([0, 20, 40, 60])
 density = np.array(density)

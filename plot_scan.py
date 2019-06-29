@@ -5,6 +5,7 @@ import os
 import glob
 import sys
 from fit_yb import *
+from fit_mo import *
 
 def av(arr, no_of_avg):
     # for 1D array
@@ -31,11 +32,11 @@ def av(arr, no_of_avg):
 
 
 my_today = datetime.datetime.today()
-datafolder = '/Users/boerge/Github/Data/'
-
+#datafolder = '/Users/boerge/Github/Data/'
+datafolder = '/home/molecules/software/data/'
 basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
 
-basefolder = '20190620'
+basefolder = '20190628'
 
 basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
 
@@ -53,9 +54,9 @@ f_ch2 = basefilename + time_stamp + '_ch2'
 
 
 
-cut_time1 = 10 # ms
-cut_time2 = 12 # ms
-freq_cut = 20 # MHz
+cut_time1 = 0 # ms
+cut_time2 = 2 # ms
+freq_cut = 50 # MHz
 
 freqs = np.genfromtxt(f_freqs, delimiter=",")
 ch1 = np.genfromtxt(f_ch1, delimiter=",")
@@ -99,7 +100,7 @@ avg_freq = 2*avg_freq
 
 spectrum = np.mean(ch1[:, ch1_start:ch1_end], axis = 1)
 
-(x_fit, y_fit) = fit_yb(nus, spectrum)
+(x_fit, y_fit,result) = fit_yb(nus, spectrum)
 
 
 
