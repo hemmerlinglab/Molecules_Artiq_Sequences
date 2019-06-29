@@ -53,7 +53,7 @@ def fcn2min(params, x, data, plot_fit = False):
         return (x_plot, model)
 
 
-def fit_yb(x, y):
+def fit_mo(x, y):
         params = Parameters()
  
         params.add('a', value=-5.0, min=-10.0, max=0.0, vary = True)
@@ -62,7 +62,7 @@ def fit_yb(x, y):
         params.add('y_offset', value=0.0, min=-2.0, max=2.0, vary = True)
 
          
-        iso_abund = np.array([12.887, 31.896, 16.098, 16.098, 21.754, 14.216, 14.216, 3.023, 0.126])
+        iso_abund =  np.array([9.63,24.13,16.68,9.25,14.84,9.55,15.92])
         for k in range(len(iso_abund)):
             params.add('a' + str(k), value = 1.0, min = 0.0, max = 10.0, vary = True)
 
