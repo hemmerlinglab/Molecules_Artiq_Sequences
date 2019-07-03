@@ -54,8 +54,8 @@ f_ch2 = basefilename + time_stamp + '_ch2'
 
 
 
-cut_time1 = 0 # ms
-cut_time2 = 2 # ms
+cut_time1 = 0.2 # ms
+cut_time2 = 3.0 # ms
 freq_cut = 50 # MHz
 
 freqs = np.genfromtxt(f_freqs, delimiter=",")
@@ -79,9 +79,10 @@ nus = (freqs - avg_freq)*1e12/1e6
 delay_in_for_loop = 50e-6
 no_of_time_points = ch1.shape[1]
 times = np.arange(0, no_of_time_points) * (8.97e-6 + delay_in_for_loop) / 1e-3
+dt = times[1] - times[0]
 
-ch1_start = np.where( np.abs(times - cut_time1) < 0.5 )[0][0]
-ch1_end = np.where( np.abs(times - cut_time2) < 0.5 )[0][0]
+ch1_start = np.where( np.abs(times - cut_time1) < dt )[0][0]
+ch1_end = np.where( np.abs(times - cut_time2) < dt )[0][0]
 freq_ind = np.where( np.abs(nus - freq_cut) < 30.0 )[0][0]
 
 
@@ -102,7 +103,7 @@ spectrum = np.mean(ch1[:, ch1_start:ch1_end], axis = 1)
 
 #(x_fit, y_fit,result) = fit_yb(nus, spectrum)
 
-(x_fit, y_fit,result) = fit_mo(nus,spectrum)
+(x_fit, y_fit, result) = fit_mo(nus,spectrum)
 
 
 # plotting
@@ -123,9 +124,16 @@ plt.axhline(times[ch1_end], linewidth = 1, color = 'r', linestyle = '--')
 plt.axvline(nus[freq_ind], linewidth = 1, color = 'r', linestyle = '--')
 
 plt.subplot(3,2,3)
-plt.plot(nus, spectrum)
-plt.plot(x_fit, y_fit)
+
+
+
+
+#plt.scatter(nus, spectrum, 'ro', markersize = 4, edgecolor='blue')
+plt.scatter(nus, spectrum, color = 'r', edgecolor = 'b')
+plt.plot(nus, spectrum, color = 'b', linestyle = '-') 
+plt.plot(x_fit, y_fit, 'k-')
 plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
+plt.tick_params(direction='in')
 
 plt.subplot(3,2,5)
 plt.plot(times, ch1[freq_ind, :])
@@ -156,6 +164,30 @@ plt.xlabel('Time (ms)')
 
 
 plt.tight_layout()
+
+
+plt.figure()
+
+plt.scatter(nus, -1*spectrum, color = 'r', edgecolor = 'b')
+plt.plot(nus, -1*spectrum, color = 'b', linestyle = '-') 
+plt.plot(x_fit, -1*y_fit, 'k-')
+plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz',fontsize=16)
+plt.tick_params(labelsize=14,direction='in')
+# moly isotope shifts
+freqs = np.array([-0.7945,-0.2938,-0.0180,0,+0.3028,+0.4107,0.9144]) * 1000 # in MHz
+
+moly   = np.array([100, 98, 97, 96, 95, 94, 92]) # isotopes
+vshift = np.array([-0.5,0.2,-0.5,-0.7,-0.4,-0.6,-0.6])*-1
+for k in result.params.keys():
+    print(str(k) + ' = ' + str(result.params[k].value))
+
+for k in range(len(freqs)):
+    plt.axvline(freqs[k] - result.params['x_offset'], linestyle =  '--',linewidth=1.6,label='Mo'+str(moly[k]))
+    plt.text(freqs[k] - result.params['x_offset'], vshift[k]   , 'Mo ' + str(moly[k]),fontsize=16)
+
+
+plt.tight_layout()
+#plt.legend(fontsize=14)
 plt.show()
 
 

@@ -7,7 +7,6 @@ from lmfit import Minimizer, Parameters, report_fit
 # define objective function: returns the array to be minimized
 # function to minimize
 def fcn2min(params, x, data, plot_fit = False):
-    """Model a decaying sine wave and subtract data."""
     a = params['a']
     w = params['w']
     x_offset = params['x_offset']
