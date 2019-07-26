@@ -166,24 +166,40 @@ plt.xlabel('Time (ms)')
 plt.tight_layout()
 
 
+
+
+# shifting the zero point in the plot to Mo-96
+my_shift = result.params['x_offset'].value # in MHz
+
+nus = nus + my_shift
+x_fit = x_fit + my_shift
+avg_freq = avg_freq - my_shift*1e6/1e12
+
+
+
+
 plt.figure()
 
 plt.scatter(nus, -1*spectrum, color = 'r', edgecolor = 'b')
 plt.plot(nus, -1*spectrum, color = 'b', linestyle = '-') 
 plt.plot(x_fit, -1*y_fit, 'k-')
-plt.xlabel('Frequency (MHz) + ' + str(avg_freq) + ' THz',fontsize=16)
+plt.xlabel('Measured Frequency (MHz) + ' + "{0:2.6f}".format(avg_freq) + ' THz',fontsize=16)
+plt.ylabel('Signal (a.u)',fontsize=16)
 plt.tick_params(labelsize=14,direction='in')
+#plt.xlim(-760,760)
+plt.xlim(np.min(nus), np.max(nus))
 # moly isotope shifts
-freqs = np.array([-0.7945,-0.2938,-0.0180,0,+0.3028,+0.4107,0.9144]) * 1000 # in MHz
+freqs = my_shift + np.array([-0.7945,-0.2938,-0.0180,0,+0.3028,+0.4107,0.9144]) * 1000 # in MHz
 
-moly   = np.array([100, 98, 97, 96, 95, 94, 92]) # isotopes
-vshift = np.array([-0.5,0.2,-0.5,-0.7,-0.4,-0.6,-0.6])*-1
+moly   = np.array([100, 98, 97, 96, 95, 94]) # isotopes
+vshift = np.array([-0.5,-0.8,-0.8,-0.7,-0.4,-0.6])*-1
+hshift = np.array([20,-110,-90,30,10,20])
 for k in result.params.keys():
     print(str(k) + ' = ' + str(result.params[k].value))
 
-for k in range(len(freqs)):
+for k in range(len(moly)):
     plt.axvline(freqs[k] - result.params['x_offset'], linestyle =  '--',linewidth=1.6,label='Mo'+str(moly[k]))
-    plt.text(freqs[k] - result.params['x_offset'], vshift[k]   , 'Mo ' + str(moly[k]),fontsize=16)
+    plt.text(freqs[k] - result.params['x_offset'] + hshift[k], vshift[k]   , 'Mo ' + str(moly[k]),fontsize=16)
 
 
 plt.tight_layout()

@@ -44,7 +44,7 @@ class DAQ(EnvExperiment):
             self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
             data0[j] = smp[0]
             data1[j] = smp[1]
-            delay(5*us)
+            delay(10*us)
             
         ### Allocate and Transmit Data
         index = range(self.scope_count)
@@ -54,7 +54,7 @@ class DAQ(EnvExperiment):
     def run(self):
         ### Initilizations
         self.core.reset() # Initializes Artiq (required)
-        scan_count = 1 # number of loops
+        scan_count = 5 # number of loops
         self.set_dataset('absorption',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
         self.set_dataset('fire_check',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
         volts = [] # absorption signal
@@ -62,11 +62,12 @@ class DAQ(EnvExperiment):
 
         ### Run Experiment
         for i in range(scan_count):
-            print('loop {}'.format(i))
             #input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
             self.fire_and_read() # fires yag and reads voltages
             vals = self.get_dataset('absorption')
             chks = self.get_dataset('fire_check')
+            print(vals)
+            print(chks)
             for v in vals:
                 volts.append(splr.adc_mu_to_volt(v))
             for f in chks:
@@ -76,20 +77,20 @@ class DAQ(EnvExperiment):
             print('Run {}/{} Completed'.format(i+1,scan_count))
        
         ### Write Data to Files
-        v_name = 'signal_1.txt'
-        v_out = open(v_name,'w')
-        for v in volts:
-            v_out.write(str(v)+' ')
-        v_out.close()
-        print('Absorption signal data written to {}'.format(v_name))
+        # v_name = 'signal_1.txt'
+        # v_out = open(v_name,'w')
+        # for v in volts:
+        #     v_out.write(str(v)+' ')
+        # v_out.close()
+        # print('Absorption signal data written to {}'.format(v_name))
 
-        f_name = 'fire_check_1.txt'
-        f_out = open(f_name,'w')
-        print(frchks)
-        for f in frchks:
-            f_out.write(str(f)+' ')
-        f_out.close()
-        print('Fire check data written to {}'.format(f_name))
+        # f_name = 'fire_check_1.txt'
+        # f_out = open(f_name,'w')
+        # print(frchks)
+        # for f in frchks:
+        #     f_out.write(str(f)+' ')
+        # f_out.close()
+        # print('Fire check data written to {}'.format(f_name))
 
 
 

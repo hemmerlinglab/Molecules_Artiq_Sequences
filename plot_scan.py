@@ -36,7 +36,7 @@ my_today = datetime.datetime.today()
 datafolder = '/home/molecules/software/data/'
 basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
 
-basefolder = '20190628'
+basefolder = '20190627'
 
 basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
 
@@ -100,7 +100,7 @@ avg_freq = 2*avg_freq
 
 spectrum = np.mean(ch1[:, ch1_start:ch1_end], axis = 1)
 
-(x_fit, y_fit,result) = fit_yb(nus, spectrum)
+(x_fit, y_fit, result) = fit_yb(nus, spectrum)
 
 
 
@@ -156,6 +156,46 @@ plt.xlabel('Time (ms)')
 
 
 plt.tight_layout()
+
+
+
+
+
+# shifting the zero point in the plot to Yb-174
+yb_174_freq = 751.52653349 # in THz
+
+my_shift = result.params['x_offset'].value # in MHz
+
+nus = nus + my_shift
+x_fit = x_fit + my_shift
+avg_freq = avg_freq - my_shift*1e6/1e12
+
+print('Wavemeter offset ' + str((yb_174_freq - avg_freq) * 1e6) + ' MHz')
+
+
+plt.figure()
+
+plt.scatter(nus, -1*spectrum, color = 'r', edgecolor = 'b')
+plt.plot(nus, -1*spectrum, color = 'm', linestyle = '-') 
+plt.plot(x_fit, -1*y_fit, 'k-')
+plt.xlabel('Measured Frequency (MHz) + ' + "{0:2.6f}".format(avg_freq) + ' THz',fontsize=16)
+plt.ylabel('Signal (a.u)',fontsize=16)
+plt.tick_params(labelsize=14,direction='in')
+plt.xlim(np.min(nus), np.max(nus))
+
+freqs  = my_shift + np.array([-508.89, 0 , -250.78, 589.75, 531.11, 835.19, 1153.68, 1190.36, 1888.80])
+yb     = np.array([176    ,174,     173,    173,    172,    171,     171,     170,     168]) # isotopes
+vshift = np.array([2.7    ,0.1,     2.0,    0.6,   0.35,   0.25,     2.0,     2.0,       0]) # vertical shift of the text
+hshift = np.array([ 15  , -130,    -140,     15,   -140,     20,    -140,      15,       0]) # horizontal shift of the text
+for k in result.params.keys():
+    print(str(k) + ' = ' + str(result.params[k].value))
+
+for k in range(len(yb)):
+    plt.axvline(freqs[k] - result.params['x_offset'], linestyle =  '--',linewidth=1.6,label='Yb'+str(yb[k]))
+    plt.text(freqs[k] - result.params['x_offset'] + hshift[k], vshift[k]   , 'Yb ' + str(yb[k]),fontsize=16)
+
+
+
 plt.show()
 
 
