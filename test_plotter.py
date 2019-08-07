@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 data = []
-f_name = 'test2.txt'
+f_name = 'artiq-master/results/2019-08-05/15/signal_1.txt'
 f_in = open(f_name,'r')
 string_data = f_in.read().split(' ')
 #print(string_data)
