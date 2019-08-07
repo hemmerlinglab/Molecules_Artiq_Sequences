@@ -11,6 +11,7 @@ class ABLATION_TEST(EnvExperiment):
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
         self.setattr_device('sampler0') # adc voltage sampler
+        self.setattr_device('scheduler')
         # EnvExperiment attribute: number of voltage samples per scan
         self.setattr_argument('scope_count',NumberValue(default=400,ndecimals=0,step=1))
         self.setattr_argument('scan_count',NumberValue(default=10,ndecimals=0,step=1))
@@ -70,6 +71,7 @@ class ABLATION_TEST(EnvExperiment):
 
         ### Run Experiment
         for i in range(self.scan_count):
+            self.scheduler.pause()
             #input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
             self.fire_and_read() # fires yag and reads voltages
             vals = self.get_dataset('absorption')
