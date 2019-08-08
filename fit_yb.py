@@ -51,7 +51,7 @@ def fit_yb(x, y):
  
         params.add('a', value=-5.0, min=-10.0, max=0.0, vary = True)
         params.add('w', value=50.0, min=1.0, max=2000, vary = True)
-        params.add('x_offset', value=450.0, min=np.min(x), max = np.max(x), vary = True)
+        params.add('x_offset', value=50, min=np.min(x), max = np.max(x), vary = True)
         params.add('y_offset', value=0.0, min=-2.0, max=2.0, vary = True)
 
          
