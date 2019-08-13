@@ -248,7 +248,7 @@ for z in range(1,15):
     kb = 1.38064852e-23 # m^2 kg s^-2 K^-1
     Mass = mass * amu # kg
 
-    temp = Mass * width**2 / (4*kb) # K
+    temp = Mass * c**2 * width**2 / (2*10**12*kb*yb_174_freq**2) # K
     temp_t.append(z)
     temps.append(temp)
 print('Final Measured Temperature = {} K'.format(temps[-1]))
