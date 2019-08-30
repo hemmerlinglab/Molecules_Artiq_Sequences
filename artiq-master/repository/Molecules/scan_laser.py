@@ -7,11 +7,8 @@ import os
 import time
 import csv
 
-#### NO YAG!!!  no yag triggers, no check to see if yag fired
-
-
 # every Experiment needs a build and a run function
-class EXPERIMENT_1_TEST(EnvExperiment):
+class EXPERIMENT_1(EnvExperiment):
     def build(self):
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
@@ -26,6 +23,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         self.setattr_argument('setpoint_offset',NumberValue(default=375.76354,ndecimals=6,step=.000001))
         self.setattr_argument('setpoint_min',NumberValue(default=-500,ndecimals=0,step=1))
         self.setattr_argument('setpoint_max',NumberValue(default=500,ndecimals=0,step=1))
+        self.setattr_argument('slowing_set',NumberValue(default = 375.76354,ndecimals=6,step=.000001))
         
     ### Script to run on Artiq
     # Basic Schedule:
@@ -59,9 +57,9 @@ class EXPERIMENT_1_TEST(EnvExperiment):
             
             with sequential:
                 delay(150*us)
-                #self.ttl4.pulse(15*us) # trigger flash lamp
+                self.ttl4.pulse(15*us) # trigger flash lamp
                 delay(135*us) # wait optimal time (see Minilite manual)
-                #self.ttl6.pulse(15*us) # trigger q-switch
+                self.ttl6.pulse(15*us) # trigger q-switch
                 delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
             with sequential:
@@ -96,6 +94,11 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         avgs = [0]*self.setpoint_count
         self.set_dataset('spectrum',(avgs),broadcast=True)
 
+        slow_filename = '/home/molecules/skynet/Logs/setpoint2.txt'
+        slow_file = open(slow_filename,'w')
+        slow_file.write(str(self.slowing_set))
+        slow_file.close()
+
         # Define scan parameters
         
         #scan_count = 9 # number of loops/averages
@@ -112,7 +115,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
 
         my_today = datetime.datetime.today()
 
-        datafolder = '/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/results/Tests/'
+        datafolder = '/home/molecules/software/data/'
         setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
 
         basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
@@ -121,6 +124,20 @@ class EXPERIMENT_1_TEST(EnvExperiment):
             os.makedirs(datafolder + basefolder)
 
         basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+        #save run configuration
+        conf_file = open(basefilename+'_conf','w')
+        conf_str = basefilename+'\n'
+        conf_str += 'Number of Samples per Shot: '+str(self.scope_count)+'\n'
+        conf_str += 'Number of Averages: '+str(self.scan_count)+'\n'
+        conf_str += 'Number of Setpoints: '+str(self.setpoint_count)+'\n'
+        conf_str += 'Setpoint Offset: '+str(self.setpoint_offset)+' THz\n'
+        conf_str += 'Setpoint Min: '+str(self.setpoint_min)+' MHz\n'
+        conf_str += 'Setpoint Max: '+str(self.setpoint_max)+' MHz\n'
+        conf_str += 'Slowing Frequency: '+str(self.slowing_set)+' THz\n'
+        conf_file.write(conf_str)
+        conf_file.close()
+        print('Config File Written')
 
         for n, nu in enumerate(scan_interval): 
             print('-'*30)
@@ -165,7 +182,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                         hlp3.append(splr.adc_mu_to_volt(p))
 
                     # check if Yag fired
-                    if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
+                    if np.max(np.array(hlp2)) > 0.5:
                         # save set points for each shot
                         set_freqs.append(nu)
                         volts.append(hlp)
@@ -178,7 +195,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     else:
                         #break
                         # repeat shot
-                        shot_fired = True ### Normally false in actual run
+                        shot_fired = False
                         print('Repeat shot. No Yag.')
                 
                     time.sleep(.5)
@@ -216,4 +233,6 @@ class EXPERIMENT_1_TEST(EnvExperiment):
 
         print('Filename: ' + basefilename)
 
-
+        conf_file = open(basefilename+'_conf','a')
+        conf_file.write('RUN FINISHED')
+        conf_file.close()
