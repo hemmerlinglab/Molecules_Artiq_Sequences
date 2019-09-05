@@ -43,12 +43,17 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
         
-        delay(100*us)
+        delay(150*us)
         
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
         data1 = [0]*self.scope_count # fire check data
         data2 = [0]*self.scope_count # uhv data
+        data3 = [0]*self.scope_count # post select, checks blue
+        #data4 = [0]*self.scope_count # unused for now
+        #data5 = [0]*self.scope_count # unused for now
+        #data6 = [0]*self.scope_count # unused for now
+        #data7 = [0]*self.scope_count # unused for now
         smp = [0]*8 # individual sample
 
         ### Fire and sample
@@ -71,6 +76,11 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     data0[j] = smp[0]
                     data1[j] = smp[1]
                     data2[j] = smp[2]
+                    data3[j] = smp[3]
+         #           data4[j] = smp[4]
+          #          data5[j] = smp[5]
+           #         data6[j] = smp[6]
+            #        data7[j] = smp[7]
                     #delay(5*us)
                     delay(50*us) # plus 9us from sample_mu
 
@@ -82,6 +92,12 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         self.set_dataset('absorption',(data0),broadcast=True) # class dataset for Artiq communication
         self.set_dataset('fire_check',(data1),broadcast=True) # class dataset for Artiq communication
         self.set_dataset('pmt',(data2),broadcast=True)
+        self.set_dataset('spec_check',(data3),broadcast=True)
+        #rename before using...
+        #self.set_dataset('TBD1',(data4),broadcast=True)
+        #self.set_dataset('TBD2',(data5),broadcast=True)
+        #self.set_dataset('TBD3',(data6),broadcast=True)
+        #self.set_dataset('TBD4',(data7),broadcast=True)
 
 
     def run(self):
@@ -94,6 +110,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         volts = [] # absorption signal
         frchks = [] # yag fire check
         fluor = [] # fluorescence pmt signal
+        postsel = [] # spec post select
         avgs = [0]*self.setpoint_count
         self.set_dataset('spectrum',(avgs),broadcast=True)
         
@@ -161,14 +178,16 @@ class EXPERIMENT_1_TEST(EnvExperiment):
             for i in range(self.scan_count):
                 self.scheduler.pause()
                 shot_fired = False
+                blue_on = False
 
-                while not shot_fired:
+                while not shot_fired and not blue_on:
                     #break  #break will break out of the infinite while loop
     #                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
                     self.fire_and_read() # fires yag and reads voltages
                     vals = self.get_dataset('absorption')
                     chks = self.get_dataset('fire_check')
                     pmts = self.get_dataset('pmt')
+                    psel = self.get_dataset('spec_check')
 
                     hlp = []
                     for v in vals:
@@ -182,24 +201,34 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     for p in pmts:
                         hlp3.append(splr.adc_mu_to_volt(p))
 
+                    hlp4 = []
+                    for ps in psel:
+                        hlp4.append(splr.adc_mu_to_volt(ps))
+
                     # check if Yag fired
                     if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
                         # save set points for each shot
-                        set_freqs.append(nu)
-                        volts.append(hlp)
-                        frchks.append(hlp2)
-                        fluor.append(hlp3)
-                        new_avg = new_avg + sum(hlp[20:40])
-    
-                        print('Run {}/{} Completed'.format(i+1,self.scan_count))
-                        shot_fired = True
+                        if np.min(np.array(hlp4)) < 0: ## NORMALLY > 0.5 in actual run
+                            set_freqs.append(nu)
+                            volts.append(hlp)
+                            frchks.append(hlp2)
+                            fluor.append(hlp3)
+                            postsel.append(hlp4)
+                            new_avg = new_avg + sum(hlp[20:40])
+        
+                            print('Run {}/{} Completed'.format(i+1,self.scan_count))
+                            shot_fired = True
+                            blue_on = True
+                        else:
+                            blue_on = False
+                            print('Repeat shot. No Blue.')
                     else:
                         #break
                         # repeat shot
                         shot_fired = True ### Normally false in actual run
                         print('Repeat shot. No Yag.')
                 
-                    time.sleep(.5)
+                    time.sleep(1)
 
             new_avg = new_avg/self.scan_count
             self.mutate_dataset('spectrum',n,new_avg)
@@ -210,6 +239,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         ch1 = np.array(volts)
         ch2 = np.array(frchks)
         ch3 = np.array(fluor)
+        ch4 = np.array(postsel)
 
         #print(freqs)
 
@@ -219,6 +249,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         f_ch1 = open(basefilename + '_ch1','w')
         f_ch2 = open(basefilename + '_ch2','w')
         f_ch3 = open(basefilename + '_ch3','w')
+        f_ch4 = open(basefilename + '_ch4','w')
 
         np.savetxt(f_freqs, freqs, delimiter=",")
         f_freqs.close()
@@ -231,6 +262,9 @@ class EXPERIMENT_1_TEST(EnvExperiment):
 
         np.savetxt(f_ch3, ch3, delimiter=",")
         f_ch3.close()
+
+        np.savetxt(f_ch4, ch4, delimiter=",")
+        f_ch4.close()
 
         print('Filename: ' + basefilename)
 
