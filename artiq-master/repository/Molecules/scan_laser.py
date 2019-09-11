@@ -58,11 +58,11 @@ class EXPERIMENT_1(EnvExperiment):
         with parallel:
             
             with sequential:
-                delay(200*us)
+                delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
-                delay(160*us) # wait optimal time (see Minilite manual)
+                delay(135*us) # wait optimal time (see Minilite manual)
                 self.ttl6.pulse(15*us) # trigger q-switch
-                delay(150*us) # wait until some time after green flash
+                delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
             with sequential:
                 for j in range(self.scope_count):
@@ -159,7 +159,7 @@ class EXPERIMENT_1(EnvExperiment):
 
             new_avg = 0
 
-            time.sleep(1.5)
+            time.sleep(7)
             
 
             # run scan_count averages

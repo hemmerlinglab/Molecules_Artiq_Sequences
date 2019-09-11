@@ -51,14 +51,15 @@ basefolder = '20190910'
 #basefolder = '20190627'
 
 #basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
-basefilename = datafolder + basefolder + '\\' + basefolder+'_'
+basefilename = datafolder + basefolder + '/' + basefolder+'_'
 
 if len(sys.argv)>1:
     time_stamp = sys.argv[1]
 else:
     # get latest time stamp
     all_files = np.sort(glob.glob(basefilename + "*"))
-    time_stamp = all_files[-3].split('_')[1]
+    #print(all_files)
+    time_stamp = all_files[-1].split('_')[1]
 
 f_freqs = basefilename + time_stamp + '_freqs'
 f_ch1 = basefilename + time_stamp + '_ch1'
@@ -119,10 +120,13 @@ for z in range(1,15):
 
 
     spectrum = np.mean(ch1[:, ch1_start:ch1_end], axis = 1)
+    #spectrum = spectrum + 1
 
 
     x_fit = 0
     y_fit = 0
+    #print(nus)
+    #print(spectrum)
     (x_fit, y_fit, result) = fit_yb(nus, spectrum)
 
 
