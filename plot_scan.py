@@ -43,10 +43,11 @@ def av(arr, no_of_avg):
 my_today = datetime.datetime.today()
 #datafolder = '/Users/boerge/Github/Data/'
 #datafolder = '/home/lab-user/data/'
-datafolder = '\\Users\\John\\Desktop\\'
+#datafolder = '\\Users\\John\\Desktop\\'
+datafolder = '/home/molecules/software/data/'
 
 #basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
-basefolder = '20190806'
+basefolder = '20190910'
 #basefolder = '20190627'
 
 #basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
@@ -57,7 +58,7 @@ if len(sys.argv)>1:
 else:
     # get latest time stamp
     all_files = np.sort(glob.glob(basefilename + "*"))
-    time_stamp = all_files[-1].split('_')[1]
+    time_stamp = all_files[-3].split('_')[1]
 
 f_freqs = basefilename + time_stamp + '_freqs'
 f_ch1 = basefilename + time_stamp + '_ch1'
