@@ -73,7 +73,7 @@ class EXPERIMENT_1(EnvExperiment):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(200*us) # plus 9us from sample_mu
+                    delay(50*us) # plus 9us from sample_mu
 
         
         ### Allocate and Transmit Data
