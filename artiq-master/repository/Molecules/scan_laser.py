@@ -40,7 +40,7 @@ class EXPERIMENT_1(EnvExperiment):
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
         
-        delay(210*us)
+        delay(260*us)
         
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
@@ -58,11 +58,11 @@ class EXPERIMENT_1(EnvExperiment):
         with parallel:
             
             with sequential:
-                delay(150*us)
+                delay(200*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
-                delay(135*us) # wait optimal time (see Minilite manual)
+                delay(160*us) # wait optimal time (see Minilite manual)
                 self.ttl6.pulse(15*us) # trigger q-switch
-                delay(100*us) # wait until some time after green flash
+                delay(150*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
             with sequential:
                 for j in range(self.scope_count):
@@ -73,7 +73,7 @@ class EXPERIMENT_1(EnvExperiment):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(50*us) # plus 9us from sample_mu
+                    delay(200*us) # plus 9us from sample_mu
 
         
         ### Allocate and Transmit Data
@@ -202,10 +202,10 @@ class EXPERIMENT_1(EnvExperiment):
                         hlp5.append(splr.adc_mu_to_volt(ps2))
 
                     # check if Yag fired
-                    if np.max(np.array(hlp2)) > 0.5:
+                    if np.max(np.array(hlp2)) > 0.3:
                         # save set points for each shot
-                        if np.min(np.array(hlp4)) > 0.5:
-                            if np.min(np.array(hlp5)) > 0.5:
+                        if np.min(np.array(hlp4)) < 0.5:
+                            if np.min(np.array(hlp5)) < 0.5:
                                 set_freqs.append(nu)
                                 volts.append(hlp)
                                 frchks.append(hlp2)
