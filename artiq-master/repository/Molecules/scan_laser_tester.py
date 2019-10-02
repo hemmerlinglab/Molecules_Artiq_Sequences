@@ -43,7 +43,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
         
-        delay(210*us)
+        delay(250*us)
         
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
@@ -169,7 +169,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
 
             new_avg = 0
 
-            time.sleep(1.5)
+            time.sleep(3)
             
 
             # run scan_count averages
@@ -211,9 +211,10 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     for ps2 in psel2:
                         hlp5.append(splr.adc_mu_to_volt(ps2))
                     # check if Yag fired
+                    blue_min = splr.adc_mu_to_volt(40)
                     if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
                         # save set points for each shot
-                        if np.min(np.array(hlp4)) < 0.5: ## NORMALLY > 0.5 in actual run
+                        if np.min(np.array(hlp4)) > blue_min: ## NORMALLY > 0.5 in actual run
                             if np.min(np.array(hlp5)) < 0.5: ## NORMALLY > 0.5 in actual run
                                 set_freqs.append(nu)
                                 volts.append(hlp)
@@ -231,7 +232,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                                 slow_on = True ## Normally False in actual run
                                 print('Repeat shot. No Slow Blue.')
                         else:
-                            blue_on = True ## Normally False in actual run
+                            blue_on = False ## Normally False in actual run
                             print('Repeat shot. No Spec Blue.')
                     else:
                         #break
