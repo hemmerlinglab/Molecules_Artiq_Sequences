@@ -214,7 +214,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     blue_min = splr.adc_mu_to_volt(40)
                     if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
                         # save set points for each shot
-                        if np.min(np.array(hlp4)) > blue_min: ## NORMALLY > 0.5 in actual run
+                        if np.min(np.array(hlp4)) > blue_min:
                             if np.min(np.array(hlp5)) < 0.5: ## NORMALLY > 0.5 in actual run
                                 set_freqs.append(nu)
                                 volts.append(hlp)

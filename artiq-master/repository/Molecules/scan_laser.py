@@ -159,7 +159,7 @@ class EXPERIMENT_1(EnvExperiment):
 
             new_avg = 0
 
-            time.sleep(7)
+            time.sleep(5)
             
 
             # run scan_count averages
@@ -200,11 +200,11 @@ class EXPERIMENT_1(EnvExperiment):
                     hlp5 = []
                     for ps2 in psel:
                         hlp5.append(splr.adc_mu_to_volt(ps2))
-
+                    blue_min = splr.adc_mu_to_volt(40)
                     # check if Yag fired
                     if np.max(np.array(hlp2)) > 0.3:
                         # save set points for each shot
-                        if np.min(np.array(hlp4)) < 0.5:
+                        if np.min(np.array(hlp4)) > blue_min:
                             if np.min(np.array(hlp5)) < 0.5:
                                 set_freqs.append(nu)
                                 volts.append(hlp)
