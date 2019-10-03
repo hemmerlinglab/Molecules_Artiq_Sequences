@@ -17,14 +17,16 @@ class EXPERIMENT_1(EnvExperiment):
         self.setattr_device('sampler0') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
         # EnvExperiment attribute: number of voltage samples per scan
-        self.setattr_argument('scope_count',NumberValue(default=400,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=2,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_count',NumberValue(default=100,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_offset',NumberValue(default=375.763266,ndecimals=6,step=.000001))
-        self.setattr_argument('setpoint_min',NumberValue(default=-750,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_max',NumberValue(default=1500,ndecimals=0,step=1))
-        self.setattr_argument('slowing_set',NumberValue(default = 375.763,ndecimals=6,step=.000001))
-        self.setattr_argument('step_size',NumberValue(default=50,ndecimals=0,step=1))
+        self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_count',NumberValue(default=100,unit='setpoints',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_offset',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.setattr_argument('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('slowing_set',NumberValue(default = 375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
     ### Script to run on Artiq
     # Basic Schedule:
     # 1) Trigger YAG Flashlamp
@@ -213,7 +215,7 @@ class EXPERIMENT_1(EnvExperiment):
                                 fluor.append(hlp3)
                                 postsel.append(hlp4)
                                 postsel2.append(hlp5)
-                                new_avg = new_avg + sum(hlp[70:85])
+                                new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
             
                                 print('Run {}/{} Completed'.format(i+1,self.scan_count))
                                 shot_fired = True
