@@ -27,6 +27,9 @@ class EXPERIMENT_1(EnvExperiment):
         self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+
     ### Script to run on Artiq
     # Basic Schedule:
     # 1) Trigger YAG Flashlamp
@@ -102,8 +105,10 @@ class EXPERIMENT_1(EnvExperiment):
         postsel = [] # spec blue post select
         postsel2 = [] # slow blue post select
         avgs = [0]*self.setpoint_count
+        pmt_avgs = [0]*self.setpoint_count
         self.set_dataset('spectrum',(avgs),broadcast=True)
-
+        self.set_dataset('pmt_spectrum',(pmt_avgs),broadcast=True)
+        
         slow_filename = '/home/molecules/skynet/Logs/setpoint2.txt'
         slow_file = open(slow_filename,'w')
         slow_file.write(str(self.slowing_set))
@@ -161,6 +166,7 @@ class EXPERIMENT_1(EnvExperiment):
             setpoint_file.close()
 
             new_avg = 0
+            new_avg_pmt = 0
 
             time.sleep(5)
             
@@ -216,7 +222,8 @@ class EXPERIMENT_1(EnvExperiment):
                                 postsel.append(hlp4)
                                 postsel2.append(hlp5)
                                 new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
-            
+                                new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
+
                                 print('Run {}/{} Completed'.format(i+1,self.scan_count))
                                 shot_fired = True
                                 blue_on = True
@@ -235,9 +242,9 @@ class EXPERIMENT_1(EnvExperiment):
                 
                     time.sleep(1)
 
-            new_avg = new_avg/self.scan_count
+            #new_avg = new_avg/self.scan_count
             self.mutate_dataset('spectrum',n,new_avg)
-
+            self.mutate_dataset('pmt_spectrum',n,new_avg_pmt)
 
         # transform into numpy arrays                
         freqs = np.array(set_freqs)
