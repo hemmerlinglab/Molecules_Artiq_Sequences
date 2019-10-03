@@ -221,10 +221,11 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                         hlp5.append(splr.adc_mu_to_volt(ps2))
                     # check if Yag fired
                     blue_min = splr.adc_mu_to_volt(0) # make 0 -> 40
+                    slow_min = splr.adc_mu_to_volt(100) # make some other
                     if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
                         # save set points for each shot
                         if np.min(np.array(hlp4)) > blue_min:
-                            if np.min(np.array(hlp5)) < 0.5: ## NORMALLY > 0.5 in actual run
+                            if np.min(np.array(hlp5)) > slow_min: ## NORMALLY > 0.5 in actual run
                                 set_freqs.append(nu)
                                 volts.append(hlp)
                                 frchks.append(hlp2)
@@ -239,7 +240,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                                 blue_on = True
                                 slow_on = True
                             else:
-                                slow_on = True ## Normally False in actual run
+                                slow_on = False ## Normally False in actual run
                                 print('Repeat shot. No Slow Blue.')
                         else:
                             blue_on = False ## Normally False in actual run

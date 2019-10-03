@@ -210,11 +210,12 @@ class EXPERIMENT_1(EnvExperiment):
                     for ps2 in psel:
                         hlp5.append(splr.adc_mu_to_volt(ps2))
                     blue_min = splr.adc_mu_to_volt(40)
+                    slow_min = splr.adc_mu_to_volt(100)
                     # check if Yag fired
                     if np.max(np.array(hlp2)) > 0.3:
                         # save set points for each shot
                         if np.min(np.array(hlp4)) > blue_min:
-                            if np.min(np.array(hlp5)) < 0.5:
+                            if np.min(np.array(hlp5)) < slow_min:
                                 set_freqs.append(nu)
                                 volts.append(hlp)
                                 frchks.append(hlp2)
