@@ -19,12 +19,12 @@ class EXPERIMENT_1(EnvExperiment):
         # EnvExperiment attribute: number of voltage samples per scan
         self.setattr_argument('scope_count',NumberValue(default=400,ndecimals=0,step=1))
         self.setattr_argument('scan_count',NumberValue(default=2,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_count',NumberValue(default=10,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_offset',NumberValue(default=375.76354,ndecimals=6,step=.000001))
-        self.setattr_argument('setpoint_min',NumberValue(default=-500,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_max',NumberValue(default=500,ndecimals=0,step=1))
-        self.setattr_argument('slowing_set',NumberValue(default = 375.76354,ndecimals=6,step=.000001))
-        
+        self.setattr_argument('setpoint_count',NumberValue(default=100,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_offset',NumberValue(default=375.763266,ndecimals=6,step=.000001))
+        self.setattr_argument('setpoint_min',NumberValue(default=-750,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_max',NumberValue(default=1500,ndecimals=0,step=1))
+        self.setattr_argument('slowing_set',NumberValue(default = 375.763,ndecimals=6,step=.000001))
+        self.setattr_argument('step_size',NumberValue(default=50,ndecimals=0,step=1))
     ### Script to run on Artiq
     # Basic Schedule:
     # 1) Trigger YAG Flashlamp
@@ -73,7 +73,7 @@ class EXPERIMENT_1(EnvExperiment):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(50*us) # plus 9us from sample_mu
+                    delay(self.step_size*us) # plus 9us from sample_mu
 
         
         ### Allocate and Transmit Data
@@ -114,9 +114,10 @@ class EXPERIMENT_1(EnvExperiment):
         #no_of_points = 100
     
 
-        scan_interval = 0.5 * np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count) * 1.0e6 # MHz
-        scan_interval = self.setpoint_offset + scan_interval/1e12
-  
+        scan_interval = np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count)
+        self.set_dataset('freqs',(scan_interval),broadcast=True)
+        scan_interval = self.setpoint_offset + scan_interval/2e6
+        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1e3,self.scope_count)),broadcast=True)
         # End of define scan parameters
 
 
@@ -212,7 +213,7 @@ class EXPERIMENT_1(EnvExperiment):
                                 fluor.append(hlp3)
                                 postsel.append(hlp4)
                                 postsel2.append(hlp5)
-                                new_avg = new_avg + sum(hlp[20:40])
+                                new_avg = new_avg + sum(hlp[70:85])
             
                                 print('Run {}/{} Completed'.format(i+1,self.scan_count))
                                 shot_fired = True

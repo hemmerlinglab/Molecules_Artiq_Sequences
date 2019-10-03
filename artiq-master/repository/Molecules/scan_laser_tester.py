@@ -23,10 +23,11 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         self.setattr_argument('scope_count',NumberValue(default=400,ndecimals=0,step=1))
         self.setattr_argument('scan_count',NumberValue(default=2,ndecimals=0,step=1))
         self.setattr_argument('setpoint_count',NumberValue(default=10,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_offset',NumberValue(default=375.76354,ndecimals=6,step=.000001))
-        self.setattr_argument('setpoint_min',NumberValue(default=-500,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_max',NumberValue(default=500,ndecimals=0,step=1))
-        self.setattr_argument('slowing_set',NumberValue(default = 375.76354,ndecimals=6,step=.000001))
+        self.setattr_argument('setpoint_offset',NumberValue(default=375.763266,ndecimals=6,step=.000001))
+        self.setattr_argument('setpoint_min',NumberValue(default=-750,ndecimals=0,step=1))
+        self.setattr_argument('setpoint_max',NumberValue(default=1500,ndecimals=0,step=1))
+        self.setattr_argument('slowing_set',NumberValue(default = 375.763,ndecimals=6,step=.000001))
+        self.setattr_argument('step_size',NumberValue(default=50,ndecimals=0,step=1))
         
     ### Script to run on Artiq
     # Basic Schedule:
@@ -82,7 +83,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
            #         data6[j] = smp[6]
             #        data7[j] = smp[7]
                     #delay(5*us)
-                    delay(50*us) # plus 9us from sample_mu
+                    delay(self.step_size*us) # plus 9us from sample_mu
 
         
         ### Allocate and Transmit Data
@@ -123,9 +124,12 @@ class EXPERIMENT_1_TEST(EnvExperiment):
         slow_file.close()
 
         # Define scan parameters
-        scan_interval = 0.5 * np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count) * 1.0e6 # MHz
-        scan_interval = self.setpoint_offset + scan_interval/1e12
+        scan_interval = np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count)
+        self.set_dataset('freqs',(scan_interval),broadcast=True)
+        scan_interval = self.setpoint_offset + scan_interval/2e6
   
+        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1e3,self.scope_count)),broadcast=True)
+
         # End of define scan parameters
 
 
@@ -211,7 +215,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
                     for ps2 in psel2:
                         hlp5.append(splr.adc_mu_to_volt(ps2))
                     # check if Yag fired
-                    blue_min = splr.adc_mu_to_volt(40)
+                    blue_min = splr.adc_mu_to_volt(0) # make 0 -> 40
                     if np.max(np.array(hlp2)) > 0: ## NORMALLY 0.5 in actual run
                         # save set points for each shot
                         if np.min(np.array(hlp4)) > blue_min:
