@@ -147,7 +147,7 @@ class EXPERIMENT_1_TEST(EnvExperiment):
             os.makedirs(datafolder + basefolder)
 
         basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
-
+        print('Filename: ' + basefilename)
         #save run configuration
         conf_file = open(basefilename+'_conf','w')
         conf_str = basefilename+'\n'
