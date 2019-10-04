@@ -168,12 +168,14 @@ class EXPERIMENT_1(EnvExperiment):
             new_avg = 0
             new_avg_pmt = 0
 
+            time.sleep(5)
+            
             if n == 0:
                 for cntdwn in range(10):
-                    print('Firing in {}...'.format(10-cntdown))
+                    print('Firing in {}...'.format(10-cntdwn))
+                    time.sleep(1)
                 print('FIRE IN THE HOLE!!!')
 
-            time.sleep(5)
             
 
             # run scan_count averages
