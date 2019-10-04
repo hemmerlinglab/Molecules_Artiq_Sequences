@@ -169,7 +169,9 @@ class EXPERIMENT_1(EnvExperiment):
             new_avg_pmt = 0
 
             if n == 0:
-                time.sleep(5)
+                for cntdwn in range(10):
+                    print('Firing in {}...'.format(10-cntdown))
+                print('FIRE IN THE HOLE!!!')
 
             time.sleep(5)
             
@@ -228,7 +230,7 @@ class EXPERIMENT_1(EnvExperiment):
                                 new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
                                 new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
 
-                                print('Run {}/{} Completed'.format(i+1,self.scan_count))
+                                print('Scan {}/{} Completed'.format(i+1,self.scan_count))
                                 shot_fired = True
                                 blue_on = True
                                 slow_on = True
