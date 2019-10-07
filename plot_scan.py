@@ -44,15 +44,15 @@ my_today = datetime.datetime.today()
 #datafolder = '/Users/boerge/Github/Data/'
 #datafolder = '/home/lab-user/data/'
 #datafolder = '\\Users\\John\\Desktop\\'
-datafolder = '/home/molecules/software/data/'
+datafolder = '/home/lab-user/data/molecule_computer/'
 
-basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
-#basefolder = '20191003'
+#basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
+basefolder = '20191004'
 #basefolder = '20190910'
 #basefolder = '20190627'
 
 #basefilename = datafolder + basefolder + '/' + basefolder + '_' # 20190618_105557
-basefilename = datafolder + basefolder + '/' + basefolder+'_'
+basefilename = datafolder + basefolder + '/' + basefolder + '_'
 
 if len(sys.argv)>1:
     time_stamp = sys.argv[1]
@@ -61,6 +61,7 @@ else:
     all_files = np.sort(glob.glob(basefilename + "*"))
     #print(all_files)
     time_stamp = all_files[-1].split('_')[1]
+
 
 f_freqs = basefilename + time_stamp + '_freqs'
 f_ch1 = basefilename + time_stamp + '_ch1'
@@ -91,9 +92,59 @@ avg_freq = 2*avg_freq
 nus = (freqs - yb_174_freq/2.0 )*1e12/1e6
 nus = 2*nus
 
-delay_in_for_loop = 50e-6
+delay_in_for_loop = 60e-6
 no_of_time_points = ch1.shape[1]
-times = np.arange(0, no_of_time_points) * (8.97e-6 + delay_in_for_loop) / 1e-3
+times = np.arange(0, no_of_time_points) * (delay_in_for_loop) / 1e-3
+
+
+# subtracting the DC offset
+offset_avg_points = 5
+for k in range(ch1.shape[0]):
+        ch1[k, :] = ch1[k, :] - np.mean(ch1[k, -offset_avg_points:-1])
+        ch2[k, :] = ch2[k, :] - np.mean(ch2[k, -offset_avg_points:-1])
+        ch3[k, :] = ch3[k, :] - np.mean(ch3[k, -offset_avg_points:-1])
+
+    
+   
+
+
+freq1_ind = np.where( np.abs(nus - -500.0) < 30.0 )[0][0]
+freq2_ind = np.where( np.abs(nus - 0.0) < 30.0 )[0][0]
+
+
+plt.figure()
+plt.plot(times, np.mean(ch3[freq1_ind:freq2_ind, :], axis = 0))
+plt.xlabel('Time (ms)')
+plt.ylabel('Signal (a.u.)')
+
+plt.figure()
+plt.subplot(2,1,1)
+plt.pcolor(times, nus, ch3)
+plt.xlabel('Time (ms)')
+plt.ylabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
+
+plt.axhline(nus[freq1_ind], color = 'r')
+plt.axhline(nus[freq2_ind], color = 'r')
+
+plt.subplot(2,1,2)
+plt.pcolor(times, nus, ch1)
+plt.xlabel('Time (ms)')
+plt.ylabel('Frequency (MHz) + ' + str(avg_freq) + ' THz')
+
+plt.axhline(nus[freq1_ind], color = 'r')
+plt.axhline(nus[freq2_ind], color = 'r')
+
+
+
+plt.show()
+
+
+
+asd
+
+
+
+
 
 temps = []
 temp_t = []
@@ -192,7 +243,6 @@ for z in range(1,15):
         plt.colorbar()
 
 
-
         vel = -np.sqrt(2)*c*((nus*1e6+yb_174_freq*1e12)/(yb_174_freq*1e12)-1)
         # pmt analysis for Yb-174
         plt.figure()
@@ -263,6 +313,7 @@ plt.figure()
 plt.scatter(temp_t,temps)
 plt.xlabel('Time (ms)')
 plt.ylabel('Temperature (K)')
+
 
 
 plt.show()
