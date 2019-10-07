@@ -151,6 +151,7 @@ class EXPERIMENT_1(EnvExperiment):
         conf_str += 'Setpoint Min: '+str(self.setpoint_min)+' MHz\n'
         conf_str += 'Setpoint Max: '+str(self.setpoint_max)+' MHz\n'
         conf_str += 'Slowing Frequency: '+str(self.slowing_set)+' THz\n'
+        conf_str += 'Step Size: '+str(self.step_size)+' us\n'
         conf_file.write(conf_str)
         conf_file.close()
         print('Config File Written')
@@ -169,7 +170,7 @@ class EXPERIMENT_1(EnvExperiment):
             new_avg_pmt = 0
 
             time.sleep(5)
-            
+
             if n == 0:
                 for cntdwn in range(10):
                     print('Firing in {}...'.format(10-cntdwn))
