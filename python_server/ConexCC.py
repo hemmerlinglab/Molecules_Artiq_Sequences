@@ -381,6 +381,7 @@ class ComTestGui(QWidget):
 
 	def send_com(self):
 		com = self.com_ent.text()
+		print('Command: ' + str(com))
 		aa = com[:2]
 		vl = com[2:]
 		#print(aa,vl)
@@ -391,7 +392,27 @@ class ComTestGui(QWidget):
 		self.com_ent.setText('')
 
 
-
+def init_for_target_mapping(vel = 0.3):
+	c1 = ConexCC('COM12')
+	c2 = ConexCC('COM7')
+	
+	# set the velocities to 0.3 since we are only moving to specific points
+	c1.query(1,'VA', str(vel))
+	c2.query(1,'VA', str(vel))	
+	
+	# execute home search
+	c1.OR()
+	c2.OR()
+	
+	# get and print current position
+	print('x @ ' + str(c1.TP()))
+	print('y @ ' + str(c2.TP()))
+	
+	print('vx @ ' + str(c1.VA('?')))
+	print('vy @ ' + str(c2.VA('?')))
+	
+	return (c1, c2)
+	
 
 
 if __name__ == '__main__':
