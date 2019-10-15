@@ -6,6 +6,7 @@ import datetime
 import os
 import time
 import csv
+import socket
 
 # every Experiment needs a build and a run function
 class Raster_Target(EnvExperiment):
@@ -18,18 +19,18 @@ class Raster_Target(EnvExperiment):
         self.setattr_device('scheduler') # scheduler used
         # EnvExperiment attribute: number of voltage samples per scan
         self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('scan_count',NumberValue(default=1,unit='averages',scale=1,ndecimals=0,step=1))
         self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
 
         # x
-        self.setattr_argument('min_x',NumberValue(default=0.0,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('max_x',NumberValue(default=6.0,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('steps_x',NumberValue(default=10,unit='',scale=1,ndecimals=1,step=1))
+        self.setattr_argument('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
+        self.setattr_argument('max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
+        self.setattr_argument('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
         
         # y
-        self.setattr_argument('min_y',NumberValue(default=0.0,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('max_y',NumberValue(default=6.0,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('steps_y',NumberValue(default=10,unit='',scale=1,ndecimals=1,step=1))
+        self.setattr_argument('min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
+        self.setattr_argument('max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
+        self.setattr_argument('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
 
         ## set circle
         #self.setattr_argument('radius',NumberValue(default=0.0,unit='',scale=1,ndecimals=3,step=0.001))
@@ -122,20 +123,22 @@ class Raster_Target(EnvExperiment):
         postsel2 = [] # slow blue post select
         avgs = [0]*self.setpoint_count
         pmt_avgs = [0]*self.setpoint_count
+        
+        target_img_incell = [[0] * len(scan_x_interval)] * len(scan_y_interval) 
+        target_img_fluo = [[0] * len(scan_x_interval)] * len(scan_y_interval) 
+
+        target_img_incell = np.array(target_img_incell, dtype = np.float)
+        target_img_fluo = np.array(target_img_fluo, dtype = np.float)
+
+        self.set_dataset('target_img_incell',(target_img_incell),broadcast=True)
+        self.set_dataset('target_img_fluo',(target_img_fluo),broadcast=True)
         self.set_dataset('spectrum',(avgs),broadcast=True)
         self.set_dataset('pmt_spectrum',(pmt_avgs),broadcast=True)
         
         # Define scan parameters
-        
-        #scan_count = 9 # number of loops/averages
-        #scan_offset = 383.949702 # THz
-        #no_of_points = 100
-
-
         (mesh_X, mesh_Y) = np.meshgrid(scan_x_interval, scan_y_interval)
         mesh_X = mesh_X.flatten()
         mesh_Y = mesh_Y.flatten()
-
 
         self.set_dataset('position_x',(mesh_X),broadcast=True)
         self.set_dataset('position_y',(mesh_Y),broadcast=True)
@@ -156,6 +159,15 @@ class Raster_Target(EnvExperiment):
             os.makedirs(datafolder + basefolder)
 
         basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+        for k in range(5):
+            print("")
+        print("*"*100)
+        print("* Starting new scan")
+        print("*"*100)
+        print("")
+        print("")
+
         print('Filename: ' + basefilename)
         #save run configuration
         conf_file = open(basefilename+'_conf','w')
@@ -167,141 +179,162 @@ class Raster_Target(EnvExperiment):
         conf_file.close()
         print('Config File Written')
 
-        for n, nu in enumerate(mesh_X): 
-            print('-'*30)
-            print('Setpoint {}/{}'.format(n+1,self.setpoint_count))
+        for nx, xpos in enumerate(scan_x_interval): 
+            for ny, ypos in enumerate(scan_y_interval): 
 
-            print(mesh_X)
-            print(n)
-            print('Setting x/y position to ' + str(mesh_X[n]) + '/' + str(mesh_Y[n]))
+                print('Setting x/y position to ' + str(scan_x_interval[nx]) + '/' + str(scan_y_interval[ny]))
 
-            # move mirrors
-            print('moving mirror')
+                # move mirrors
+                # init connection to python server to send commands to move mirrors
+                # Create a TCP/IP socket
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                server_address = ('192.168.42.20', 62000)
+                print('connecting to %s port %s' % server_address)
+                sock.connect(server_address)
 
-
-            new_avg = 0
-            new_avg_pmt = 0
-
-            time.sleep(1)
-
-            #if n == 0:
-            #    for cntdwn in range(10):
-            #        print('Firing in {}...'.format(10-cntdwn))
-            #        time.sleep(1)
-            #    print('FIRE IN THE HOLE!!!')            
-
-            # run scan_count averages
-        
-            ### Run Experiment
-            for i in range(self.scan_count):
-                self.scheduler.pause()
-                shot_fired = False
-                blue_on = False # spec
-                slow_on = False # slowing
-
-                while not shot_fired and not blue_on:
-                    #break  #break will break out of the infinite while loop
-    #                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
-                    self.fire_and_read() # fires yag and reads voltages
-                    vals = self.get_dataset('absorption')
-                    chks = self.get_dataset('fire_check')
-                    pmts = self.get_dataset('pmt')
-                    psel = self.get_dataset('spec_check')
-                    psel2 = self.get_dataset('slow_check')
-
-                    hlp = []
-                    for v in vals:
-                        hlp.append(splr.adc_mu_to_volt(v))
-
-                    hlp2 = []
-                    for f in chks:
-                        hlp2.append(splr.adc_mu_to_volt(f))
-
-                    hlp3 = []
-                    for p in pmts:
-                        hlp3.append(splr.adc_mu_to_volt(p))
-
-                    hlp4 = []
-                    for ps in psel:
-                        hlp4.append(splr.adc_mu_to_volt(ps))
-
-                    hlp5 = []
-                    for ps2 in psel:
-                        hlp5.append(splr.adc_mu_to_volt(ps2))
-                    blue_min = splr.adc_mu_to_volt(40)
-                    slow_min = splr.adc_mu_to_volt(40)
-
-                    # check if Yag fired
-                    if np.max(np.array(hlp2)) > 0.3:
-                        # save set points for each shot
-                        if np.min(np.array(hlp4)) > blue_min:
-                                set_freqs.append(nu)
-                                volts.append(hlp)
-                                frchks.append(hlp2)
-                                fluor.append(hlp3)
-                                postsel.append(hlp4)
-                                postsel2.append(hlp5)
-                                new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
-                                new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
-
-                                print('Scan {}/{} Completed'.format(i+1,self.scan_count))
-                                shot_fired = True
-                                blue_on = True
-                                slow_on = True
-                        else:
-                            blue_on = True#False
-                            print('Repeat shot. No Spec Blue.')
-                    else:
-                        #break
-                        # repeat shot
-                        shot_fired = True#False
-                        print('Repeat shot. No Yag.')
-                
+                message = "{0:5.3f}/{1:5.3f}".format(scan_x_interval[nx],scan_y_interval[ny])
+                print('Moving mirrors ... ' + message)
+                sock.sendall(message.encode())                
+               
+                # allow for some time at the edges
+                if (nx == 0) or (ny == 0):
+                    time.sleep(4)
+                else:
                     time.sleep(1)
 
-            #new_avg = new_avg/self.scan_count
-            self.mutate_dataset('spectrum',n,new_avg)
-            self.mutate_dataset('pmt_spectrum',n,new_avg_pmt)
+                sock.close()
+
+                new_avg = 0
+                new_avg_pmt = 0
+
+
+                # run scan_count averages
+        
+                ### Run Experiment
+                for i in range(self.scan_count):
+                    self.scheduler.pause()
+                    shot_fired = False
+                    blue_on = False # spec
+                    slow_on = False # slowing
+
+                    while not shot_fired and not blue_on:
+                        #break  #break will break out of the infinite while loop
+    #                    input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
+                        self.fire_and_read() # fires yag and reads voltages
+                        vals = self.get_dataset('absorption')
+                        chks = self.get_dataset('fire_check')
+                        pmts = self.get_dataset('pmt')
+                        psel = self.get_dataset('spec_check')
+                        psel2 = self.get_dataset('slow_check')
+
+                        hlp = []
+                        for v in vals:
+                            hlp.append(splr.adc_mu_to_volt(v))
+
+                        hlp2 = []
+                        for f in chks:
+                            hlp2.append(splr.adc_mu_to_volt(f))
+
+                        hlp3 = []
+                        for p in pmts:
+                            hlp3.append(splr.adc_mu_to_volt(p))
+
+                        hlp4 = []
+                        for ps in psel:
+                            hlp4.append(splr.adc_mu_to_volt(ps))
+
+                        hlp5 = []
+                        for ps2 in psel:
+                            hlp5.append(splr.adc_mu_to_volt(ps2))
+                        blue_min = splr.adc_mu_to_volt(40)
+                        slow_min = splr.adc_mu_to_volt(40)
+
+
+                        yag_min = 0.0 # 0.3
+
+                        # check if Yag fired
+                        if np.max(np.array(hlp2)) > yag_min: # 0.3:
+                            # save set points for each shot
+                            if np.min(np.array(hlp4)) > blue_min:
+                                    #set_freqs.append(nu)
+                                    #volts.append(hlp)
+                                    #frchks.append(hlp2)
+                                    #fluor.append(hlp3)
+                                    #postsel.append(hlp4)
+                                    #postsel2.append(hlp5)
+                                    
+                                    new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
+                                    new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
+
+                                    print('Scan {}/{} Completed'.format(i+1,self.scan_count))
+                                    shot_fired = True
+                                    blue_on = True
+                                    slow_on = True
+                            else:
+                                blue_on = True#False
+                                print('Repeat shot. No Spec Blue.')
+                        else:
+                            #break
+                            # repeat shot
+                            shot_fired = True#False
+                            print('Repeat shot. No Yag.')
+                    
+                        time.sleep(1)
+
+                lin_ind = nx*len(scan_y_interval) + ny
+                slice_ind = ((nx,nx+1), (ny,ny+1))
+                self.mutate_dataset('spectrum', lin_ind, new_avg)
+                self.mutate_dataset('pmt_spectrum', lin_ind, new_avg_pmt)
+
+                self.mutate_dataset('target_img_incell', slice_ind, new_avg)
+                self.mutate_dataset('target_img_fluo', slice_ind, new_avg_pmt)
+                
+                print()
+                print()
+
+                #self.mutate_dataset('target_img_incell', (nx, ny), new_avg)
+                #self.mutate_dataset('target_img_fluo', (nx, ny), new_avg_pmt)
 
         # transform into numpy arrays                
-        freqs = np.array(set_freqs)
-        ch1 = np.array(volts)
-        ch2 = np.array(frchks)
-        ch3 = np.array(fluor)
-        ch4 = np.array(postsel)
-        ch5 = np.array(postsel2)
+        #freqs = np.array(set_freqs)
+        #ch1 = np.array(volts)
+        #ch2 = np.array(frchks)
+        #ch3 = np.array(fluor)
+        #ch4 = np.array(postsel)
+        #ch5 = np.array(postsel2)
 
         #print(freqs)
 
-        print('Saving data ...')
+        #print('Saving data ...')
         ### Write Data to Files
-        f_freqs = open(basefilename + '_freqs','w')
-        f_ch1 = open(basefilename + '_ch1','w')
-        f_ch2 = open(basefilename + '_ch2','w')
-        f_ch3 = open(basefilename + '_ch3','w')
-        f_ch4 = open(basefilename + '_ch4','w')
-        f_ch5 = open(basefilename + '_ch5','w')
+        #f_freqs = open(basefilename + '_freqs','w')
+        #f_ch1 = open(basefilename + '_ch1','w')
+        #f_ch2 = open(basefilename + '_ch2','w')
+        #f_ch3 = open(basefilename + '_ch3','w')
+        #f_ch4 = open(basefilename + '_ch4','w')
+        #f_ch5 = open(basefilename + '_ch5','w')
 
-        np.savetxt(f_freqs, freqs, delimiter=",")
-        f_freqs.close()
+        #np.savetxt(f_freqs, freqs, delimiter=",")
+        #f_freqs.close()
 
-        np.savetxt(f_ch1, ch1, delimiter=",")
-        f_ch1.close()
+        #np.savetxt(f_ch1, ch1, delimiter=",")
+        #f_ch1.close()
 
-        np.savetxt(f_ch2, ch2, delimiter=",")
-        f_ch2.close()
+        #np.savetxt(f_ch2, ch2, delimiter=",")
+        #f_ch2.close()
 
-        np.savetxt(f_ch3, ch3, delimiter=",")
-        f_ch3.close()
+        #np.savetxt(f_ch3, ch3, delimiter=",")
+        #f_ch3.close()
 
-        np.savetxt(f_ch4, ch4, delimiter=",")
-        f_ch4.close()
+        #np.savetxt(f_ch4, ch4, delimiter=",")
+        #f_ch4.close()
 
-        np.savetxt(f_ch5, ch5, delimiter=",")
-        f_ch5.close()
+        #np.savetxt(f_ch5, ch5, delimiter=",")
+        #f_ch5.close()
 
         print('Filename: ' + basefilename)
 
         conf_file = open(basefilename+'_conf','a')
         conf_file.write('RUN FINISHED')
         conf_file.close()
+
