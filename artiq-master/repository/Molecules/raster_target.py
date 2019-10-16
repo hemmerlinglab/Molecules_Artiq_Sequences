@@ -8,6 +8,11 @@ import time
 import csv
 import socket
 
+from helper_functions import *
+
+
+
+
 # every Experiment needs a build and a run function
 class Raster_Target(EnvExperiment):
     def build(self):
@@ -115,7 +120,9 @@ class Raster_Target(EnvExperiment):
 
         self.setpoint_count = len(scan_x_interval) * len(scan_y_interval)
 
-        set_freqs = [] # absorption signal
+        set_pos_x  = [] # x pos
+        set_pos_y  = [] # y pos
+
         volts = [] # absorption signal
         frchks = [] # yag fire check
         fluor = [] # fluorescence pmt signal
@@ -169,15 +176,17 @@ class Raster_Target(EnvExperiment):
         print("")
 
         print('Filename: ' + basefilename)
+
         #save run configuration
-        conf_file = open(basefilename+'_conf','w')
-        conf_str = basefilename+'\n'
-        conf_str += 'Number of Samples per Shot: '+str(self.scope_count)+'\n'
-        conf_str += 'Number of Averages: '+str(self.scan_count)+'\n'
-        conf_str += 'Step Size: '+str(self.step_size)+' us\n'
-        conf_file.write(conf_str)
-        conf_file.close()
-        print('Config File Written')
+        config_dict = [
+                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
+                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
+                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
+                {'par' : 'scan_x_interval', 'val' : scan_x_interval, 'cmt' : 'X position interval'},
+                {'par' : 'scan_y_interval', 'val' : scan_y_interval, 'cmt' : 'Y position interval'},
+                ]
+
+        save_config(basefilename, config_dict)
 
         for nx, xpos in enumerate(scan_x_interval): 
             for ny, ypos in enumerate(scan_y_interval): 
@@ -198,14 +207,16 @@ class Raster_Target(EnvExperiment):
                
                 # allow for some time at the edges
                 if (nx == 0) or (ny == 0):
-                    time.sleep(4)
+                    time.sleep(5)
                 else:
-                    time.sleep(1)
+                    time.sleep(2)
 
                 sock.close()
 
                 new_avg = 0
                 new_avg_pmt = 0
+                
+                new_avg_pic = 0
 
 
                 # run scan_count averages
@@ -246,25 +257,33 @@ class Raster_Target(EnvExperiment):
                         hlp5 = []
                         for ps2 in psel:
                             hlp5.append(splr.adc_mu_to_volt(ps2))
+                        
                         blue_min = splr.adc_mu_to_volt(40)
                         slow_min = splr.adc_mu_to_volt(40)
 
 
-                        yag_min = 0.0 # 0.3
+                        yag_min = 0.3 # 0.3
 
                         # check if Yag fired
                         if np.max(np.array(hlp2)) > yag_min: # 0.3:
                             # save set points for each shot
                             if np.min(np.array(hlp4)) > blue_min:
-                                    #set_freqs.append(nu)
-                                    #volts.append(hlp)
+                                    set_pos_x.append(scan_x_interval[nx])
+                                    set_pos_y.append(scan_y_interval[ny])
+
+                                    volts.append(hlp)
                                     #frchks.append(hlp2)
-                                    #fluor.append(hlp3)
+                                    fluor.append(hlp3)
+
                                     #postsel.append(hlp4)
                                     #postsel2.append(hlp5)
                                     
-                                    new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
+                                    new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])                                    
                                     new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
+
+                                    # integrate over in-cell signal after normalizing with the last <offset_pnts> number of points
+                                    offset_pnts = 10
+                                    new_avg_pic = new_avg_pic + np.sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)] - np.mean(hlp[-offset_pnts:]))
 
                                     print('Scan {}/{} Completed'.format(i+1,self.scan_count))
                                     shot_fired = True
@@ -286,8 +305,8 @@ class Raster_Target(EnvExperiment):
                 self.mutate_dataset('spectrum', lin_ind, new_avg)
                 self.mutate_dataset('pmt_spectrum', lin_ind, new_avg_pmt)
 
-                self.mutate_dataset('target_img_incell', slice_ind, new_avg)
-                self.mutate_dataset('target_img_fluo', slice_ind, new_avg_pmt)
+                self.mutate_dataset('target_img_incell', slice_ind, np.abs(new_avg_pic))
+                self.mutate_dataset('target_img_fluo', slice_ind, np.abs(new_avg_pmt))
                 
                 print()
                 print()
@@ -295,46 +314,20 @@ class Raster_Target(EnvExperiment):
                 #self.mutate_dataset('target_img_incell', (nx, ny), new_avg)
                 #self.mutate_dataset('target_img_fluo', (nx, ny), new_avg_pmt)
 
-        # transform into numpy arrays                
-        #freqs = np.array(set_freqs)
-        #ch1 = np.array(volts)
-        #ch2 = np.array(frchks)
-        #ch3 = np.array(fluor)
-        #ch4 = np.array(postsel)
-        #ch5 = np.array(postsel2)
 
-        #print(freqs)
-
-        #print('Saving data ...')
-        ### Write Data to Files
-        #f_freqs = open(basefilename + '_freqs','w')
-        #f_ch1 = open(basefilename + '_ch1','w')
-        #f_ch2 = open(basefilename + '_ch2','w')
-        #f_ch3 = open(basefilename + '_ch3','w')
-        #f_ch4 = open(basefilename + '_ch4','w')
-        #f_ch5 = open(basefilename + '_ch5','w')
-
-        #np.savetxt(f_freqs, freqs, delimiter=",")
-        #f_freqs.close()
-
-        #np.savetxt(f_ch1, ch1, delimiter=",")
-        #f_ch1.close()
-
-        #np.savetxt(f_ch2, ch2, delimiter=",")
-        #f_ch2.close()
-
-        #np.savetxt(f_ch3, ch3, delimiter=",")
-        #f_ch3.close()
-
-        #np.savetxt(f_ch4, ch4, delimiter=",")
-        #f_ch4.close()
-
-        #np.savetxt(f_ch5, ch5, delimiter=",")
-        #f_ch5.close()
+        # save data
+        print('Saving data ...')
+        save_all_data(basefilename,
+                [{'var' : set_pos_x, 'name' :'setx'},
+                 {'var' : set_pos_y, 'name' :'sety'},
+                 {'var' : volts, 'name' :'ch1'},
+                 {'var' : fluor, 'name' :'ch3'}
+                 ])
 
         print('Filename: ' + basefilename)
 
-        conf_file = open(basefilename+'_conf','a')
-        conf_file.write('RUN FINISHED')
-        conf_file.close()
+        # overwrite config file with complete configuration
+        config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
+        save_config(basefilename, config_dict)
+
 
