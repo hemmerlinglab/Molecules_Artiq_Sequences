@@ -46,6 +46,9 @@ class Raster_Target(EnvExperiment):
         self.setattr_argument('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        
+        self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -184,6 +187,8 @@ class Raster_Target(EnvExperiment):
                 {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
                 {'par' : 'scan_x_interval', 'val' : scan_x_interval, 'cmt' : 'X position interval'},
                 {'par' : 'scan_y_interval', 'val' : scan_y_interval, 'cmt' : 'Y position interval'},
+                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
                 ]
 
         save_config(basefilename, config_dict)
@@ -290,12 +295,12 @@ class Raster_Target(EnvExperiment):
                                     blue_on = True
                                     slow_on = True
                             else:
-                                blue_on = True#False
+                                blue_on = False
                                 print('Repeat shot. No Spec Blue.')
                         else:
                             #break
                             # repeat shot
-                            shot_fired = True#False
+                            shot_fired = False
                             print('Repeat shot. No Yag.')
                     
                         time.sleep(1)
