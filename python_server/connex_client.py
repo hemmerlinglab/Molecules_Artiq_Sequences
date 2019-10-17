@@ -17,7 +17,7 @@ try:
 
     # Send data
     message = '4.20/4.25' # 3.5 - 4.5/4.25 and 4.0/3.0 - 5.0
-    message = sys.argv[1] + '/' +sys.argv[2] # 3.5 - 4.5/4.25 and 4.0/3.0 - 5.0
+    message = sys.argv[1] + '/' + sys.argv[2] # 3.5 - 4.5/4.25 and 4.0/3.0 - 5.0
     print('sending "%s"' % message)
     sock.sendall(message.encode())
 

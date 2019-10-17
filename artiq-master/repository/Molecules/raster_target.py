@@ -134,8 +134,8 @@ class Raster_Target(EnvExperiment):
         avgs = [0]*self.setpoint_count
         pmt_avgs = [0]*self.setpoint_count
         
-        target_img_incell = [[0] * len(scan_x_interval)] * len(scan_y_interval) 
-        target_img_fluo = [[0] * len(scan_x_interval)] * len(scan_y_interval) 
+        target_img_incell = [[0] * len(scan_y_interval)] * len(scan_x_interval) 
+        target_img_fluo = [[0] * len(scan_y_interval)] * len(scan_x_interval) 
 
         target_img_incell = np.array(target_img_incell, dtype = np.float)
         target_img_fluo = np.array(target_img_fluo, dtype = np.float)
@@ -212,7 +212,7 @@ class Raster_Target(EnvExperiment):
                
                 # allow for some time at the edges
                 if (nx == 0) or (ny == 0):
-                    time.sleep(5)
+                    time.sleep(7)
                 else:
                     time.sleep(2)
 
@@ -306,6 +306,7 @@ class Raster_Target(EnvExperiment):
                         time.sleep(1)
 
                 lin_ind = nx*len(scan_y_interval) + ny
+                #slice_ind = ((nx,nx+1), (ny,ny+1))
                 slice_ind = ((nx,nx+1), (ny,ny+1))
                 self.mutate_dataset('spectrum', lin_ind, new_avg)
                 self.mutate_dataset('pmt_spectrum', lin_ind, new_avg_pmt)
