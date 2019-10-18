@@ -49,6 +49,9 @@ class Raster_Target(EnvExperiment):
         
         self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        
+        self.setattr_argument('yag_check',BooleanValue())
+        self.setattr_argument('blue_check',BooleanValue())
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -112,52 +115,11 @@ class Raster_Target(EnvExperiment):
         self.set_dataset('slow_check',(data4),broadcast=True)
 
 
-    def run(self):
-        ### Initilizations
-        self.core.reset() # Initializes Artiq (required)
-        # self.set_dataset('absorption',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
-        # self.set_dataset('fire_check',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
 
-        scan_x_interval = np.linspace(self.min_x, self.max_x, self.steps_x)
-        scan_y_interval = np.linspace(self.min_y, self.max_y, self.steps_y)
-
-        self.setpoint_count = len(scan_x_interval) * len(scan_y_interval)
-
-        set_pos_x  = [] # x pos
-        set_pos_y  = [] # y pos
-
-        volts = [] # absorption signal
-        frchks = [] # yag fire check
-        fluor = [] # fluorescence pmt signal
-        postsel = [] # spec blue post select
-        postsel2 = [] # slow blue post select
-        avgs = [0]*self.setpoint_count
-        pmt_avgs = [0]*self.setpoint_count
+    def prepare(self):
+        # function is run before the experiment, i.e. before run() is called
+        # https://m-labs.hk/artiq/manual/core_language_reference.html#module-artiq.language.environment
         
-        target_img_incell = [[0] * len(scan_y_interval)] * len(scan_x_interval) 
-        target_img_fluo = [[0] * len(scan_y_interval)] * len(scan_x_interval) 
-
-        target_img_incell = np.array(target_img_incell, dtype = np.float)
-        target_img_fluo = np.array(target_img_fluo, dtype = np.float)
-
-        self.set_dataset('target_img_incell',(target_img_incell),broadcast=True)
-        self.set_dataset('target_img_fluo',(target_img_fluo),broadcast=True)
-        self.set_dataset('spectrum',(avgs),broadcast=True)
-        self.set_dataset('pmt_spectrum',(pmt_avgs),broadcast=True)
-        
-        # Define scan parameters
-        (mesh_X, mesh_Y) = np.meshgrid(scan_x_interval, scan_y_interval)
-        mesh_X = mesh_X.flatten()
-        mesh_Y = mesh_Y.flatten()
-
-        self.set_dataset('position_x',(mesh_X),broadcast=True)
-        self.set_dataset('position_y',(mesh_Y),broadcast=True)
-
-        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1e3,self.scope_count)),broadcast=True)
-        # End of define scan parameters
-
-
-
         my_today = datetime.datetime.today()
 
         datafolder = '/home/molecules/software/data/'
@@ -168,7 +130,28 @@ class Raster_Target(EnvExperiment):
         if not os.path.exists(datafolder + basefolder):
             os.makedirs(datafolder + basefolder)
 
-        basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+        self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+        # how can we get all arguments?
+        #save run configuration
+        self.config_dict = [
+                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
+                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
+                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
+                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'min_x', 'val' : self.min_x, 'cmt' : 'min x'},
+                {'par' : 'min_y', 'val' : self.min_y, 'cmt' : 'min y'},
+                {'par' : 'max_x', 'val' : self.max_x, 'cmt' : 'max x'},
+                {'par' : 'max_y', 'val' : self.max_y, 'cmt' : 'max y'},
+                {'par' : 'steps_x', 'val' : self.steps_x, 'cmt' : 'steps x'},
+                {'par' : 'steps_y', 'val' : self.steps_y, 'cmt' : 'steps y'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'yag_check', 'val' : self.yag_check, 'cmt' : 'Yag check'},
+                {'par' : 'blue_check', 'val' : self.blue_check, 'cmt' : 'Blue check'},
+                ]
+
+        save_config(self.basefilename, self.config_dict)
 
         for k in range(5):
             print("")
@@ -178,25 +161,77 @@ class Raster_Target(EnvExperiment):
         print("")
         print("")
 
-        print('Filename: ' + basefilename)
+        print('Filename: ' + self.basefilename)
 
-        #save run configuration
-        config_dict = [
-                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
-                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
-                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
-                {'par' : 'scan_x_interval', 'val' : scan_x_interval, 'cmt' : 'X position interval'},
-                {'par' : 'scan_y_interval', 'val' : scan_y_interval, 'cmt' : 'Y position interval'},
-                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
-                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
-                ]
 
-        save_config(basefilename, config_dict)
+    def analyze(self):
+        # function is run after the experiment, i.e. after run() is called
+        # save data
+        print('Saving data ...')
+        save_all_data(self.basefilename,
+                [{'var' : self.set_pos_x, 'name' :'setx'},
+                 {'var' : self.set_pos_y, 'name' :'sety'},
+                 {'var' : self.volts, 'name' :'ch1'},
+                 {'var' : self.fluor, 'name' :'ch3'}
+                 ])
 
-        for nx, xpos in enumerate(scan_x_interval): 
-            for ny, ypos in enumerate(scan_y_interval): 
+        # overwrite config file with complete configuration
+        self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
+        save_config(self.basefilename, self.config_dict)
 
-                print('Setting x/y position to ' + str(scan_x_interval[nx]) + '/' + str(scan_y_interval[ny]))
+        print('Scan ' + self.basefilename + ' finished.')
+
+
+    def run(self):
+        ### Initilizations
+        self.core.reset() # Initializes Artiq (required)
+        # self.set_dataset('absorption',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
+        # self.set_dataset('fire_check',np.full(self.scope_count,np.nan)) # class dataset for Artiq communication
+
+        self.scan_x_interval = np.linspace(self.min_x, self.max_x, self.steps_x)
+        self.scan_y_interval = np.linspace(self.min_y, self.max_y, self.steps_y)
+
+        self.setpoint_count = len(self.scan_x_interval) * len(self.scan_y_interval)
+
+        self.set_pos_x  = [] # x pos
+        self.set_pos_y  = [] # y pos
+
+        self.volts = [] # absorption signal
+        #frchks = [] # yag fire check
+        self.fluor = [] # fluorescence pmt signal
+        #postsel = [] # spec blue post select
+        #postsel2 = [] # slow blue post select
+        avgs = [0]*self.setpoint_count
+        pmt_avgs = [0]*self.setpoint_count
+        
+        target_img_incell = [[0] * len(self.scan_y_interval)] * len(self.scan_x_interval) 
+        target_img_fluo = [[0] * len(self.scan_y_interval)] * len(self.scan_x_interval) 
+
+        target_img_incell = np.array(target_img_incell, dtype = np.float)
+        target_img_fluo = np.array(target_img_fluo, dtype = np.float)
+
+        self.set_dataset('target_img_incell',(target_img_incell),broadcast=True)
+        self.set_dataset('target_img_fluo',(target_img_fluo),broadcast=True)
+        self.set_dataset('spectrum',(avgs),broadcast=True)
+        self.set_dataset('pmt_spectrum',(pmt_avgs),broadcast=True)
+        
+        # Define scan parameters
+        (mesh_X, mesh_Y) = np.meshgrid(self.scan_x_interval, self.scan_y_interval)
+        mesh_X = mesh_X.flatten()
+        mesh_Y = mesh_Y.flatten()
+
+        self.set_dataset('position_x',(mesh_X),broadcast=True)
+        self.set_dataset('position_y',(mesh_Y),broadcast=True)
+
+        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1e3,self.scope_count)),broadcast=True)
+        # End of define scan parameters
+
+
+       
+        for nx, xpos in enumerate(self.scan_x_interval): 
+            for ny, ypos in enumerate(self.scan_y_interval): 
+
+                print('Setting x/y position to ' + str(xpos) + '/' + str(ypos))
 
                 # move mirrors
                 # init connection to python server to send commands to move mirrors
@@ -206,7 +241,7 @@ class Raster_Target(EnvExperiment):
                 print('connecting to %s port %s' % server_address)
                 sock.connect(server_address)
 
-                message = "{0:5.3f}/{1:5.3f}".format(scan_x_interval[nx],scan_y_interval[ny])
+                message = "{0:5.3f}/{1:5.3f}".format(xpos, ypos)
                 print('Moving mirrors ... ' + message)
                 
                 print('Sending message ...')
@@ -273,34 +308,39 @@ class Raster_Target(EnvExperiment):
                         slow_min = splr.adc_mu_to_volt(40)
 
 
-                        yag_min = 0.3 # 0.3
+                        if self.yag_check:
+                            yag_min = 0.3
+                        else:
+                            yag_min = 0.0
 
                         # check if Yag fired
                         if np.max(np.array(hlp2)) > yag_min: # 0.3:
                             # save set points for each shot
-                            #if np.min(np.array(hlp4)) > blue_min:
-                            if True:
-                                    set_pos_x.append(scan_x_interval[nx])
-                                    set_pos_y.append(scan_y_interval[ny])
+                            if not self.blue_check:
+                                blue_min = 0.0
 
-                                    volts.append(hlp)
-                                    #frchks.append(hlp2)
-                                    fluor.append(hlp3)
+                            if np.min(np.array(hlp4)) > blue_min:
+                                self.set_pos_x.append(xpos)
+                                self.set_pos_y.append(ypos)
 
-                                    #postsel.append(hlp4)
-                                    #postsel2.append(hlp5)
-                                    
-                                    new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])                                    
-                                    new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
+                                self.volts.append(hlp)
+                                #frchks.append(hlp2)
+                                self.fluor.append(hlp3)
 
-                                    # integrate over in-cell signal after normalizing with the last <offset_pnts> number of points
-                                    offset_pnts = 10
-                                    new_avg_pic = new_avg_pic + np.sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)] - np.mean(hlp[-offset_pnts:]))
+                                #postsel.append(hlp4)
+                                #postsel2.append(hlp5)
+                                
+                                new_avg = new_avg + sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])                                    
+                                new_avg_pmt = new_avg_pmt + sum(hlp3[int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
 
-                                    print('Scan {}/{} Completed'.format(i+1,self.scan_count))
-                                    shot_fired = True
-                                    blue_on = True
-                                    slow_on = True
+                                # integrate over in-cell signal after normalizing with the last <offset_pnts> number of points
+                                offset_pnts = 10
+                                new_avg_pic = new_avg_pic + np.sum(hlp[int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)] - np.mean(hlp[-offset_pnts:]))
+
+                                print('Scan {}/{} Completed'.format(i+1,self.scan_count))
+                                shot_fired = True
+                                blue_on = True
+                                slow_on = True
                             else:
                                 blue_on = False
                                 print('Repeat shot. No Spec Blue.')
@@ -312,7 +352,7 @@ class Raster_Target(EnvExperiment):
                     
                         #time.sleep(1)
 
-                lin_ind = nx*len(scan_y_interval) + ny
+                lin_ind = nx*len(self.scan_y_interval) + ny
                 #slice_ind = ((nx,nx+1), (ny,ny+1))
                 slice_ind = ((nx,nx+1), (ny,ny+1))
                 self.mutate_dataset('spectrum', lin_ind, new_avg)
@@ -326,21 +366,5 @@ class Raster_Target(EnvExperiment):
 
                 #self.mutate_dataset('target_img_incell', (nx, ny), new_avg)
                 #self.mutate_dataset('target_img_fluo', (nx, ny), new_avg_pmt)
-
-
-        # save data
-        print('Saving data ...')
-        save_all_data(basefilename,
-                [{'var' : set_pos_x, 'name' :'setx'},
-                 {'var' : set_pos_y, 'name' :'sety'},
-                 {'var' : volts, 'name' :'ch1'},
-                 {'var' : fluor, 'name' :'ch3'}
-                 ])
-
-        print('Filename: ' + basefilename)
-
-        # overwrite config file with complete configuration
-        config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
-        save_config(basefilename, config_dict)
 
 
