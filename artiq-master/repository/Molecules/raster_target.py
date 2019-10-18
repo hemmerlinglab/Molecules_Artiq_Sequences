@@ -208,15 +208,21 @@ class Raster_Target(EnvExperiment):
 
                 message = "{0:5.3f}/{1:5.3f}".format(scan_x_interval[nx],scan_y_interval[ny])
                 print('Moving mirrors ... ' + message)
+                
+                print('Sending message ...')
                 sock.sendall(message.encode())                
+                print('Done sending ...')
                
                 # allow for some time at the edges
-                if (nx == 0) or (ny == 0):
+                if (ny == 0):
+                    print('Sleeping for 7 ...')
                     time.sleep(7)
                 else:
-                    time.sleep(2)
+                    print('Sleeping for 1 ...')
+                    time.sleep(1)
 
                 sock.close()
+                print('Socket closed ...')
 
                 new_avg = 0
                 new_avg_pmt = 0
@@ -272,7 +278,8 @@ class Raster_Target(EnvExperiment):
                         # check if Yag fired
                         if np.max(np.array(hlp2)) > yag_min: # 0.3:
                             # save set points for each shot
-                            if np.min(np.array(hlp4)) > blue_min:
+                            #if np.min(np.array(hlp4)) > blue_min:
+                            if True:
                                     set_pos_x.append(scan_x_interval[nx])
                                     set_pos_y.append(scan_y_interval[ny])
 
@@ -303,7 +310,7 @@ class Raster_Target(EnvExperiment):
                             shot_fired = False
                             print('Repeat shot. No Yag.')
                     
-                        time.sleep(1)
+                        #time.sleep(1)
 
                 lin_ind = nx*len(scan_y_interval) + ny
                 #slice_ind = ((nx,nx+1), (ny,ny+1))
