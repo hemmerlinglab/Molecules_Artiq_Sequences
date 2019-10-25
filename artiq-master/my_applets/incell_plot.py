@@ -30,6 +30,7 @@ class myXYPlot(pyqtgraph.PlotWidget):
         #self.plot(x, y, pen='r', symbol="o")#pen=None, symbol="x")
         self.plot(x, y, pen='r')#pen=None, symbol="x")
         self.setTitle(title)
+        self.setLabel('bottom', 'Time (ms)') 
 
 
 def main():

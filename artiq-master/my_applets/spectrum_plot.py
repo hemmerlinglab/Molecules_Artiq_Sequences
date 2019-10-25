@@ -25,7 +25,9 @@ class myspecXYPlot(pyqtgraph.PlotWidget):
         self.clear()
         #self.plot(x, y, pen=None, symbol="x")
         #self.plot(x, y, pen='r', symbol="o")#pen=None, symbol="x")
+        self.plot(x, y, pen='r')
         self.setTitle(title)
+        self.setLabel('bottom', 'Frequency (MHz)')
 
 
 def main():

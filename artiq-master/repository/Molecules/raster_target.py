@@ -133,7 +133,7 @@ class Raster_Target(EnvExperiment):
         self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
         # how can we get all arguments?
-        #save run configuration
+        # save run configuration
         self.config_dict = [
                 {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
                 {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
@@ -244,20 +244,20 @@ class Raster_Target(EnvExperiment):
                 message = "{0:5.3f}/{1:5.3f}".format(xpos, ypos)
                 print('Moving mirrors ... ' + message)
                 
-                print('Sending message ...')
+                #print('Sending message ...')
                 sock.sendall(message.encode())                
-                print('Done sending ...')
+                #print('Done sending ...')
                
                 # allow for some time at the edges
                 if (ny == 0):
                     print('Sleeping for 7 ...')
                     time.sleep(7)
                 else:
-                    print('Sleeping for 1 ...')
+                    #print('Sleeping for 1 ...')
                     time.sleep(1)
 
                 sock.close()
-                print('Socket closed ...')
+                #print('Socket closed ...')
 
                 new_avg = 0
                 new_avg_pmt = 0

@@ -24,8 +24,8 @@ class NewImage(pyqtgraph.ImageView):
         #color = np.array([[0, 0, 255, 255], [255, 0, 0, 255], [0, 255, 0, 255], (0, 255, 255, 255), (255, 255, 0, 255)], dtype=np.ubyte)
         #cmap = pg.ColorMap(pos, color)
         
-        lut = cmap.getLookupTable(0.0, 1.0, 256)
-        self.setLookupTable(lut)
+        #lut = cmap.getLookupTable(0.0, 1.0, 256)
+        #self.setLookupTable(lut)
 
         #hist.gradient.setColorMap(cmap)
         #pl.autoRange()

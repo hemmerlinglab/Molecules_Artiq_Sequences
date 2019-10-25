@@ -7,13 +7,18 @@ import os
 import time
 import csv
 
+from helper_functions import *
+
+
 # every Experiment needs a build and a run function
-class Scan_Cooling_Laser(EnvExperiment):
+class Slowing_Test(EnvExperiment):
     def build(self):
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
         self.setattr_device('ttl5') # uv ccd trigger
+        self.setattr_device('ttl7') # slowing shutter
+
         self.setattr_device('sampler0') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
         # EnvExperiment attribute: number of voltage samples per scan
@@ -24,13 +29,21 @@ class Scan_Cooling_Laser(EnvExperiment):
         self.setattr_argument('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slowing_set',NumberValue(default = 375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.setattr_argument('slow_start',NumberValue(default=0,unit='ms',scale=1,ndecimals=2,step=0.01))
+        self.setattr_argument('slow_stop',NumberValue(default=2,unit='ms',scale=1,ndecimals=2,step=0.01))
+
         self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+          
+        self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        self.setattr_argument('yag_check',BooleanValue())
+        self.setattr_argument('blue_check',BooleanValue())
 
-    ### Script to run on Artiq
+           ### Script to run on Artiq
     # Basic Schedule:
     # 1) Trigger YAG Flashlamp
     # 2) Wait 150 us
@@ -69,6 +82,10 @@ class Scan_Cooling_Laser(EnvExperiment):
                 self.ttl6.pulse(15*us) # trigger q-switch
                 delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
+
+                # add slowing pulse
+
+
             with sequential:
                 for j in range(self.scope_count):
                     self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
@@ -91,6 +108,73 @@ class Scan_Cooling_Laser(EnvExperiment):
         self.set_dataset('spec_check',(data3),broadcast=True)
         self.set_dataset('slow_check',(data4),broadcast=True)
 
+
+    def prepare(self):
+        # function is run before the experiment, i.e. before run() is called
+        # https://m-labs.hk/artiq/manual/core_language_reference.html#module-artiq.language.environment
+        
+        my_today = datetime.datetime.today()
+
+        datafolder = '/home/molecules/software/data/'
+        setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
+
+        basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
+        # create new folder if doesn't exist yet
+        if not os.path.exists(datafolder + basefolder):
+            os.makedirs(datafolder + basefolder)
+
+        self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+        # how can we get all arguments?
+        # save run configuration
+        # http://www.blog.pythonlibrary.org/2013/01/11/how-to-get-a-list-of-class-attributes/
+        self.config_dict = [
+                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
+                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
+                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
+                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'min_x', 'val' : self.min_x, 'cmt' : 'min x'},
+                {'par' : 'min_y', 'val' : self.min_y, 'cmt' : 'min y'},
+                {'par' : 'max_x', 'val' : self.max_x, 'cmt' : 'max x'},
+                {'par' : 'max_y', 'val' : self.max_y, 'cmt' : 'max y'},
+                {'par' : 'steps_x', 'val' : self.steps_x, 'cmt' : 'steps x'},
+                {'par' : 'steps_y', 'val' : self.steps_y, 'cmt' : 'steps y'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'yag_check', 'val' : self.yag_check, 'cmt' : 'Yag check'},
+                {'par' : 'blue_check', 'val' : self.blue_check, 'cmt' : 'Blue check'},
+                {'par' : 'slow_start', 'val' : self.slow_start, 'cmt' : 'Slowing laser start'},
+                {'par' : 'slow_stop', 'val' : self.slow_stop, 'cmt' : 'Slowing laser stop'},
+                ]
+
+        save_config(self.basefilename, self.config_dict)
+
+        for k in range(5):
+            print("")
+        print("*"*100)
+        print("* Starting new scan")
+        print("*"*100)
+        print("")
+        print("")
+
+        print('Filename: ' + self.basefilename)
+
+    def analyze(self):
+        # function is run after the experiment, i.e. after run() is called
+        # save data
+        print('Saving data ...')
+        save_all_data(self.basefilename,
+                [{'var' : self.set_pos_x, 'name' :'setx'},
+                 {'var' : self.set_pos_y, 'name' :'sety'},
+                 {'var' : self.volts, 'name' :'ch1'},
+                 {'var' : self.fluor, 'name' :'ch3'}
+                 ])
+
+        # overwrite config file with complete configuration
+        self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
+        save_config(self.basefilename, self.config_dict)
+
+        print('Scan ' + self.basefilename + ' finished.')
 
     def run(self):
         ### Initilizations
@@ -115,11 +199,6 @@ class Scan_Cooling_Laser(EnvExperiment):
         slow_file.close()
 
         # Define scan parameters
-        
-        #scan_count = 9 # number of loops/averages
-        #scan_offset = 383.949702 # THz
-        #no_of_points = 100
-    
 
         scan_interval = np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count)
         self.set_dataset('freqs',(scan_interval),broadcast=True)
@@ -129,32 +208,6 @@ class Scan_Cooling_Laser(EnvExperiment):
 
 
 
-        my_today = datetime.datetime.today()
-
-        datafolder = '/home/molecules/software/data/'
-        setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
-
-        basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
-        # create new folder if doesn't exist yet
-        if not os.path.exists(datafolder + basefolder):
-            os.makedirs(datafolder + basefolder)
-
-        basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
-        print('Filename: ' + basefilename)
-        #save run configuration
-        conf_file = open(basefilename+'_conf','w')
-        conf_str = basefilename+'\n'
-        conf_str += 'Number of Samples per Shot: '+str(self.scope_count)+'\n'
-        conf_str += 'Number of Averages: '+str(self.scan_count)+'\n'
-        conf_str += 'Number of Setpoints: '+str(self.setpoint_count)+'\n'
-        conf_str += 'Setpoint Offset: '+str(self.setpoint_offset)+' THz\n'
-        conf_str += 'Setpoint Min: '+str(self.setpoint_min)+' MHz\n'
-        conf_str += 'Setpoint Max: '+str(self.setpoint_max)+' MHz\n'
-        conf_str += 'Slowing Frequency: '+str(self.slowing_set)+' THz\n'
-        conf_str += 'Step Size: '+str(self.step_size)+' us\n'
-        conf_file.write(conf_str)
-        conf_file.close()
-        print('Config File Written')
 
         for n, nu in enumerate(scan_interval): 
             print('-'*30)
@@ -169,11 +222,11 @@ class Scan_Cooling_Laser(EnvExperiment):
             new_avg = 0
             new_avg_pmt = 0
 
-            time.sleep(5)
+            time.sleep(2)
 
             if n == 0:
-                for cntdwn in range(10):
-                    print('Firing in {}...'.format(10-cntdwn))
+                for cntdwn in range(3):
+                    print('Firing in {}...'.format(3-cntdwn))
                     time.sleep(1)
                 print('FIRE IN THE HOLE!!!')
 
@@ -255,45 +308,6 @@ class Scan_Cooling_Laser(EnvExperiment):
             self.mutate_dataset('spectrum',n,new_avg)
             self.mutate_dataset('pmt_spectrum',n,new_avg_pmt)
 
-        # transform into numpy arrays                
-        freqs = np.array(set_freqs)
-        ch1 = np.array(volts)
-        ch2 = np.array(frchks)
-        ch3 = np.array(fluor)
-        ch4 = np.array(postsel)
-        ch5 = np.array(postsel2)
+            print()
+            print()
 
-        #print(freqs)
-
-        print('Saving data ...')
-        ### Write Data to Files
-        f_freqs = open(basefilename + '_freqs','w')
-        f_ch1 = open(basefilename + '_ch1','w')
-        f_ch2 = open(basefilename + '_ch2','w')
-        f_ch3 = open(basefilename + '_ch3','w')
-        f_ch4 = open(basefilename + '_ch4','w')
-        f_ch5 = open(basefilename + '_ch5','w')
-
-        np.savetxt(f_freqs, freqs, delimiter=",")
-        f_freqs.close()
-
-        np.savetxt(f_ch1, ch1, delimiter=",")
-        f_ch1.close()
-
-        np.savetxt(f_ch2, ch2, delimiter=",")
-        f_ch2.close()
-
-        np.savetxt(f_ch3, ch3, delimiter=",")
-        f_ch3.close()
-
-        np.savetxt(f_ch4, ch4, delimiter=",")
-        f_ch4.close()
-
-        np.savetxt(f_ch5, ch5, delimiter=",")
-        f_ch5.close()
-
-        print('Filename: ' + basefilename)
-
-        conf_file = open(basefilename+'_conf','a')
-        conf_file.write('RUN FINISHED')
-        conf_file.close()
