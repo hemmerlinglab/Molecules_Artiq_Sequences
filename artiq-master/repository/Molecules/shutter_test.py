@@ -44,7 +44,7 @@ class Shutter_Test(EnvExperiment):
         self.setattr_argument('yag_check',BooleanValue())
         self.setattr_argument('blue_check',BooleanValue())
 
-           ### Script to run on Artiq
+    ### Script to run on Artiq
     # Basic Schedule:
     # 1) Trigger YAG Flashlamp
     # 2) Wait 150 us
@@ -90,7 +90,7 @@ class Shutter_Test(EnvExperiment):
                 delay(4400*us)
                 self.ttl8.on()
 
-                # should move to end of sequence
+                # should move this end of sequence
                 delay(20000*us)
                 self.ttl8.off()
 
@@ -106,21 +106,66 @@ class Shutter_Test(EnvExperiment):
                     delay(self.step_size*us) # plus 9us from sample_mu
 
         
-        ### Allocate and Transmit Data
-        self.set_dataset('absorption', (data0), broadcast = True)
-        self.set_dataset('fire_check', (data1), broadcast = True)
-        self.set_dataset('pmt',        (data2), broadcast = True)
-        self.set_dataset('spec_check', (data3), broadcast = True)
-        self.set_dataset('slow_check', (data4), broadcast = True)
+        ### Allocate and Transmit Data All Channels
+        self.set_dataset('ch0', (data0), broadcast = True)
+        self.set_dataset('ch1', (data1), broadcast = True)
+        self.set_dataset('ch2', (data2), broadcast = True)
+        self.set_dataset('ch3', (data3), broadcast = True)
+        self.set_dataset('ch4', (data4), broadcast = True)
 
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
         # https://m-labs.hk/artiq/manual/core_language_reference.html#module-artiq.language.environment
+        my_today = datetime.datetime.today()
 
-        self.smp_data_sets = ['absorption', 'fire_check', 'pmt', 'spec_check', 'slow_check']
+        datafolder = '/home/molecules/software/data/'
+        setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
 
-        self.smp_data = {}
+        basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
+        # create new folder if doesn't exist yet
+        if not os.path.exists(datafolder + basefolder):
+            os.makedirs(datafolder + basefolder)
 
+        self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+        # how can we get all arguments?
+        # save run configuration
+        self.config_dict = [
+                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
+                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
+                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
+                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'min_x', 'val' : self.min_x, 'cmt' : 'min x'},
+                {'par' : 'min_y', 'val' : self.min_y, 'cmt' : 'min y'},
+                {'par' : 'max_x', 'val' : self.max_x, 'cmt' : 'max x'},
+                {'par' : 'max_y', 'val' : self.max_y, 'cmt' : 'max y'},
+                {'par' : 'steps_x', 'val' : self.steps_x, 'cmt' : 'steps x'},
+                {'par' : 'steps_y', 'val' : self.steps_y, 'cmt' : 'steps y'},
+                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
+                {'par' : 'yag_check', 'val' : self.yag_check, 'cmt' : 'Yag check'},
+                {'par' : 'blue_check', 'val' : self.blue_check, 'cmt' : 'Blue check'},
+                ]
+
+        self.smp_data_sets = {
+                'ch0' : 'absorption',
+                'ch1' : 'fire_check',
+                'ch2' : 'pmt',
+                'ch3' : 'spec_check',
+                'ch4' : 'slow_check'
+                }
+
+        self.in_cell_avgs = [0]*self.setpoint_count
+        self.pmt_avgs     = [0]*self.setpoint_count
+        
+        self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+
+        self.set_dataset('freqs',(self.scan_interval),broadcast=True)
+        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)),broadcast=True)
+
+        self.set_dataset('in_cell_spectrum',(self.in_cell_avgs),broadcast=True)
+        self.set_dataset('pmt_spectrum',(self.pmt_avgs),broadcast=True)
+        
         for k in range(5):
             print("")
         print("*"*100)
@@ -129,60 +174,66 @@ class Shutter_Test(EnvExperiment):
         print("")
         print("")
 
+        # Initializes Artiq (required)
+        save_config(self.basefilename, self.config_dict)
+        self.core.reset() 
+
     def analyze(self):
         # function is run after the experiment, i.e. after run() is called
+        print('Saving data ...')
+        save_all_data(self.basefilename,
+                [{'var' : self.set_pos_x, 'name' :'setx'},
+                 {'var' : self.set_pos_y, 'name' :'sety'},
+                 {'var' : self.volts, 'name' :'ch1'},
+                 {'var' : self.fluor, 'name' :'ch3'}
+                 ])
+
+        # overwrite config file with complete configuration
+        self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
+        save_config(self.basefilename, self.config_dict)
+
+        print('Scan ' + self.basefilename + ' finished.')
 
         print('Scan finished.')
 
+    def check_shot(self):
+        return False
+
     def run(self):
-        ### Initializations
-        self.core.reset() # Initializes Artiq (required)
 
-        set_freqs = [] # absorption signal
-        volts = [] # absorption signal
-        frchks = [] # yag fire check
-        fluor = [] # fluorescence pmt signal
-        postsel = [] # spec blue post select
-        postsel2 = [] # slow blue post select
-
-        avgs = [0]*self.setpoint_count
-        pmt_avgs = [0]*self.setpoint_count
-        
-        scan_interval = np.linspace(self.setpoint_min,self.setpoint_max,self.setpoint_count)
-
-        self.set_dataset('freqs',(scan_interval),broadcast=True)
-        self.set_dataset('times',(np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1e3,self.scope_count)),broadcast=True)
-
-        self.set_dataset('spectrum',(avgs),broadcast=True)
-        self.set_dataset('pmt_spectrum',(pmt_avgs),broadcast=True)
-        
-        for n, nu in enumerate(scan_interval): 
+        # loop over setpoints
+        for n, nu in enumerate(self.scan_interval): 
 
             print(str(n) + ' / ' + str(self.setpoint_count))
 
             new_avg = 0
             new_avg_pmt = 0
 
-            # run scan_count averages
-        
-            ### Run Experiment
+            # loop over averages
             for i in range(self.scan_count):
                 self.scheduler.pause()
-               
-                #while not shot_fired and not blue_on and not slow_on:
-                if True:
-                    #break  #break will break out of the infinite while loop
-    #                input('Press ENTER for Run {}/{}'.format(i+1,scan_count))
-                    self.fire_and_read() # fires yag and reads voltages
+              
+                repeat_shot = False
+                while repeat_shot:
+                    
+                    # fires yag and reads voltages
+                    self.fire_and_read()
 
-                    for d_n, data_set in enumerate(self.smp_data_sets):
-                        self.smp_data[data_set] = list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(data_set)))
+                    # readout data from Artiq by toggling through all channels and saving the data in a list
+                    self.smp_data = {}
+                    for channel in self.smp_data_sets.keys():
+                        self.smp_data[channel] = list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel)))
+
+                    repeat_shot = self.check_shot()
+
+                    if repeat_shot == False:
+                        # upon success add data to dataset
+                        self.set_point.append(nu)
 
 
-                    set_freqs.append(nu)
 
-                    new_avg += sum(self.smp_data['absorption'][int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
-                    new_avg_pmt += sum(self.smp_data['pmt'][int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
+                    #new_avg += sum(self.smp_data['absorption'][int(self.slice_min*1e3/self.step_size):int(self.slice_max*1e3/self.step_size)])
+                    #new_avg_pmt += sum(self.smp_data['pmt'][int(self.pmt_slice_min*1e3/self.step_size):int(self.pmt_slice_max*1e3/self.step_size)])
 
                     ## check if Yag fired
                     #if np.max(np.array(hlp2)) > 0.0:
@@ -215,8 +266,7 @@ class Shutter_Test(EnvExperiment):
                 
                     time.sleep(0.2)
 
-            #new_avg = new_avg/self.scan_count
-            self.mutate_dataset('spectrum',n,new_avg)
+            self.mutate_dataset('in_cell_spectrum',n,new_avg)
             self.mutate_dataset('pmt_spectrum',n,new_avg_pmt)
 
             print()
