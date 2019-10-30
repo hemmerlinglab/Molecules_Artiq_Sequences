@@ -1,18 +1,30 @@
 import numpy as np
 import os.path
+import datetime
 from configparser import ConfigParser
 
-def save_all_data(basefilename, var_dict):
+def get_basefilename():
+    my_today = datetime.datetime.today()
+ 
+    datafolder = '/home/molecules/software/data/'
+    setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
+ 
+    basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
+    # create new folder if doesn't exist yet
+    if not os.path.exists(datafolder + basefolder):
+        os.makedirs(datafolder + basefolder)
+ 
+    return datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
-    # var_dict = 1D array of dictionaries
-    # var_dict[0] = {'var' : <1D list/array variable to save>, 'name' : <filename to save>}
 
-    for hlp in var_dict:
-        # transform into numpy arrays         
-        arr = np.array(hlp['var'])
-        
+def save_all_data(self):
+    # loops over data_to_save and saves all data sets in the array self.data_to_save
+    for hlp in self.data_to_save:
+        # transform into numpy arrays
+        arr = np.array(self.get_dataset(hlp['var']))
+       
         # Write Data to Files
-        f_hlp = open(basefilename + '_' + hlp['name'],'w')
+        f_hlp = open(self.basefilename + '_' + hlp['var'],'w')
         np.savetxt(f_hlp, arr, delimiter=",")
         f_hlp.close()
 
