@@ -60,7 +60,7 @@ def save_config(basefilename, var_dict):
         
         # create config file
         conf_file = open(conf_filename, 'w')
-        print('Config File Written')
+        print('Config file written.')
 
         # add scan name to config file
         config['Scan'] = {'filename' : basefilename}
