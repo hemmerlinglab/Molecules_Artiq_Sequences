@@ -3,18 +3,18 @@ import os.path
 import datetime
 from configparser import ConfigParser
 
-def get_basefilename():
+def get_basefilename(self):
     my_today = datetime.datetime.today()
  
     datafolder = '/home/molecules/software/data/'
-    setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
+    self.setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
  
     basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
     # create new folder if doesn't exist yet
     if not os.path.exists(datafolder + basefolder):
         os.makedirs(datafolder + basefolder)
  
-    return datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+    self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
 
 def save_all_data(self):

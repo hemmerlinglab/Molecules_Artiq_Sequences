@@ -30,7 +30,7 @@ class Shutter_Test(EnvExperiment):
         self.setattr_argument('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slowing_set',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.setattr_argument('slow_start',NumberValue(default=0,unit='ms',scale=1,ndecimals=2,step=0.01))
+        self.setattr_argument('slow_start',NumberValue(default=0.1,unit='ms',scale=1,ndecimals=2,step=0.01))
         self.setattr_argument('slow_stop',NumberValue(default=2,unit='ms',scale=1,ndecimals=2,step=0.01))
 
         self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
@@ -77,6 +77,8 @@ class Shutter_Test(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
+                delay(8*ms) # additional delay since shutter is low
+
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
                 delay(135*us) # wait optimal time (see Minilite manual)
@@ -86,14 +88,14 @@ class Shutter_Test(EnvExperiment):
 
             with sequential:
                 # slowing pulse
-                self.ttl8.on() # shutter on
-                delay(4500*us)
-                self.ttl8.off()
-                delay(4400*us)
+                #self.ttl8.on() # shutter on
+                delay(1750*us)
                 self.ttl8.on()
+                delay(500*ms)
+                self.ttl8.off()
 
                 # should move this end of sequence
-                delay(20000*us)
+                delay(30*ms)
                 self.ttl8.off()
 
             with sequential:
@@ -175,7 +177,7 @@ class Shutter_Test(EnvExperiment):
 
         # Initializes Artiq (required)
         # get the filename for the scan, e.g. 20190618_105557
-        self.basefilename = get_basefilename()
+        get_basefilename(self)
         # save the config
         save_config(self.basefilename, self.config_dict)
         self.core.reset() 
@@ -257,6 +259,17 @@ class Shutter_Test(EnvExperiment):
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
             self.current_setpoint = nu
+
+            # move laser to set point
+            setpoint_file = open(self.setpoint_filename, 'w')
+
+            #scan_interval = self.setpoint_offset + scan_interval/2e6
+            setpoint_file.write(str(self.setpoint_offset + nu/2.0e6))
+            setpoint_file.close()
+            if n == 0:
+                time.sleep(3)
+            else:
+                time.sleep(0.25)
 
             self.smp_data_avg = {}
             # loop over averages
