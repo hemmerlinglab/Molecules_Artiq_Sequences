@@ -77,7 +77,7 @@ class Shutter_Test(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
-                delay(8*ms) # additional delay since shutter is low
+                delay(8*ms) # additional delay since shutter is slow
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
@@ -94,9 +94,9 @@ class Shutter_Test(EnvExperiment):
                 delay(500*ms)
                 self.ttl8.off()
 
-                # should move this end of sequence
-                delay(30*ms)
-                self.ttl8.off()
+                ## should move this end of sequence
+                #delay(30*ms)
+                #self.ttl8.off()
 
             with sequential:
                 for j in range(self.scope_count):
