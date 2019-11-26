@@ -7,6 +7,9 @@ import os
 import time
 import csv
 
+import sys
+sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
+
 from helper_functions import *
 
 
@@ -33,7 +36,7 @@ class Slowing_Test(EnvExperiment):
         self.setattr_argument('slow_start',NumberValue(default=0.1,unit='ms',scale=1,ndecimals=2,step=0.01))
         self.setattr_argument('slow_stop',NumberValue(default=2,unit='ms',scale=1,ndecimals=2,step=0.01))
 
-        self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -45,6 +48,7 @@ class Slowing_Test(EnvExperiment):
         self.setattr_argument('yag_check',BooleanValue())
         self.setattr_argument('blue_check',BooleanValue())
         self.setattr_argument('slow_check',BooleanValue())
+        self.setattr_argument('shutter_on',BooleanValue())
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -87,11 +91,12 @@ class Slowing_Test(EnvExperiment):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
-                # slowing pulse
-                delay(3150*us)
-                self.ttl8.on()
-                delay(500*ms)
-                self.ttl8.off()
+                if self.shutter_on:
+                    # slowing pulse
+                    delay(6650*us)
+                    self.ttl8.on()
+                    delay(500*ms)
+                    self.ttl8.off()
 
                 ## slowing pulse
                 #self.ttl8.pulse(3000*us)
@@ -163,9 +168,10 @@ class Slowing_Test(EnvExperiment):
 
             with sequential:
                 # shut slowing laser off from the start
-                self.ttl8.on()
-                delay(500*ms)
-                self.ttl8.off()
+                if self.shutter_on:
+                    self.ttl8.on()
+                    delay(500*ms)
+                    self.ttl8.off()
 
 
             with sequential:
@@ -339,6 +345,11 @@ class Slowing_Test(EnvExperiment):
 
     def run(self):
 
+        # move laser to set point
+        setpoint_file_slowing = open(self.setpoint_filename_slowing, 'w')
+        setpoint_file_slowing.write(str(self.slowing_set))
+        setpoint_file_slowing.close()
+
         counter = 0
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
@@ -348,10 +359,9 @@ class Slowing_Test(EnvExperiment):
 
             # move laser to set point
             setpoint_file = open(self.setpoint_filename, 'w')
-
-            #scan_interval = self.setpoint_offset + scan_interval/2e6
             setpoint_file.write(str(self.setpoint_offset + nu/2.0e6))
             setpoint_file.close()
+
             if n == 0:
                 time.sleep(3)
             else:

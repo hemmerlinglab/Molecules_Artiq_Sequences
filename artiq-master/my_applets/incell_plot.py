@@ -12,7 +12,7 @@ class myXYPlot(pyqtgraph.PlotWidget):
         pyqtgraph.PlotWidget.__init__(self)
         self.args = args
 
-        self.setXRange(0,28)
+        self.setXRange(0,28*2)
         self.setYRange(0,3000)
 
     def data_changed(self, data, mods, title):

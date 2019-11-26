@@ -8,6 +8,10 @@ import time
 import csv
 import socket
 
+
+import sys
+sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
+
 from helper_functions import *
 
 

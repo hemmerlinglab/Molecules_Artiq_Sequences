@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Shutter_Test(EnvExperiment):
+class Slowing_Laser_Scan(EnvExperiment):
     def build(self):
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
@@ -36,7 +36,7 @@ class Shutter_Test(EnvExperiment):
         self.setattr_argument('slow_start',NumberValue(default=0.1,unit='ms',scale=1,ndecimals=2,step=0.01))
         self.setattr_argument('slow_stop',NumberValue(default=2,unit='ms',scale=1,ndecimals=2,step=0.01))
 
-        self.setattr_argument('step_size',NumberValue(default=60,unit='us',scale=1,ndecimals=0,step=1))
+        self.setattr_argument('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -48,6 +48,8 @@ class Shutter_Test(EnvExperiment):
         self.setattr_argument('yag_check',BooleanValue())
         self.setattr_argument('blue_check',BooleanValue())
         self.setattr_argument('slow_check',BooleanValue())
+        
+        self.setattr_argument('shutter_on',BooleanValue())
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -80,7 +82,7 @@ class Shutter_Test(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
-                delay(8*ms) # additional delay since shutter is slow
+                delay(10*ms) # additional delay since shutter is slow
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
@@ -90,16 +92,88 @@ class Shutter_Test(EnvExperiment):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
-                # slowing pulse
-                #self.ttl8.on() # shutter on
-                delay(1750*us)
-                self.ttl8.on()
-                delay(500*ms)
-                self.ttl8.off()
+                if self.shutter_on:
+                    # slowing pulse
+                    delay(6650*us)
+                    self.ttl8.on()
+                    delay(500*ms)
+                    self.ttl8.off()
 
-                ## should move this end of sequence
-                #delay(30*ms)
+                ## slowing pulse
+                #self.ttl8.pulse(3000*us)
+                #delay(1000*us)
+                #self.ttl8.pulse(1000*us)
+                ##delay(1000*us)
+                #self.ttl8.on()
+                #delay(500*ms)
                 #self.ttl8.off()
+
+
+            with sequential:
+                for j in range(self.scope_count):
+                    self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
+                    data0[j] = smp[0]
+                    data1[j] = smp[1]
+                    data2[j] = smp[2]
+                    data3[j] = smp[3]
+                    data4[j] = smp[4]
+                    #delay(5*us)
+                    delay(self.step_size*us) # plus 9us from sample_mu
+
+        ### Allocate and Transmit Data All Channels
+        self.set_dataset('ch0', (data0), broadcast = True)
+        self.set_dataset('ch1', (data1), broadcast = True)
+        self.set_dataset('ch2', (data2), broadcast = True)
+        self.set_dataset('ch3', (data3), broadcast = True)
+        self.set_dataset('ch4', (data4), broadcast = True)
+
+    ### Script to run on Artiq
+    # Basic Schedule:
+    # 1) Trigger YAG Flashlamp
+    # 2) Wait 150 us
+    # 3) Trigger Q Switch
+    # 4) In parallel, read off 2 diodes and PMT
+    @kernel
+    def fire_and_read_no_slow(self):
+        self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
+        self.sampler0.init() # initializes sampler device
+        
+        ### Set Channel Gain 
+        for i in range(8):
+            self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
+        
+        delay(260*us)
+        
+        ### Data Variable Initialization
+        data0 = [0]*self.scope_count # signal data
+        data1 = [0]*self.scope_count # fire check data
+        data2 = [0]*self.scope_count # uhv data
+        data3 = [0]*self.scope_count # post select, checks spec blue
+        data4 = [0]*self.scope_count # post select, checks slow blue
+        smp = [0]*8 # individual sample
+
+        ### Fire and sample
+        with parallel:
+            
+            with sequential:
+                self.ttl9.pulse(10*us) # experimental start
+
+                delay(10*ms) # additional delay since shutter is slow
+
+                delay(150*us)
+                self.ttl4.pulse(15*us) # trigger flash lamp
+                delay(135*us) # wait optimal time (see Minilite manual)
+                self.ttl6.pulse(15*us) # trigger q-switch
+                delay(100*us) # wait until some time after green flash
+                self.ttl5.pulse(15*us) # trigger uv ccd
+
+            with sequential:
+                if self.shutter_on:
+                    # shut slowing laser off from the start
+                    self.ttl8.on()
+                    delay(500*ms)
+                    self.ttl8.off()
+
 
             with sequential:
                 for j in range(self.scope_count):
@@ -146,6 +220,12 @@ class Shutter_Test(EnvExperiment):
         self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
 
+        self.set_dataset('ch0_arr_slow',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch1_arr_slow',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch2_arr_slow',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch3_arr_slow',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch4_arr_slow',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
                              {'var' : 'freqs', 'name' : 'freqs'},
                              {'var' : 'times', 'name' : 'times'},
@@ -153,7 +233,12 @@ class Shutter_Test(EnvExperiment):
                              {'var' : 'ch1_arr', 'name' : self.smp_data_sets['ch1']},
                              {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
                              {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
-                             {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']}
+                             {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
+                             {'var' : 'ch0_arr_slow', 'name' : self.smp_data_sets['ch0'] + '_slow'},
+                             {'var' : 'ch1_arr_slow', 'name' : self.smp_data_sets['ch1'] + '_slow'},
+                             {'var' : 'ch2_arr_slow', 'name' : self.smp_data_sets['ch2'] + '_slow'},
+                             {'var' : 'ch3_arr_slow', 'name' : self.smp_data_sets['ch3'] + '_slow'},
+                             {'var' : 'ch4_arr_slow', 'name' : self.smp_data_sets['ch4'] + '_slow'}
                              ]
 
         # how can we get all arguments instead of adding these manually?
@@ -242,63 +327,83 @@ class Shutter_Test(EnvExperiment):
             else:
                 self.smp_data_avg[self.smp_data_sets[channel]] += np.sum(ds[ind_1:ind_2])
                
-    def update_data(self, counter, n):
+    def update_data(self, counter, n, slowing_data = False):
         # this updates the gui for every shot
         self.mutate_dataset('set_points', counter, self.current_setpoint)
         self.mutate_dataset('in_cell_spectrum', n, self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',     n, self.smp_data_avg['pmt'])
         
         # save each successful shot in ch<number>_arr datasets
+        # needs fixing since the number of channels is hardcoded here
         for k in range(5):
             slice_ind = (counter)
             hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
-            self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+        
+            if slowing_data:
+                self.mutate_dataset('ch' + str(k) + '_arr_slow', slice_ind, hlp_data)
+            else:
+                self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
     def run(self):
+
+        # move laser to set point
+        setpoint_file = open(self.setpoint_filename, 'w')
+        setpoint_file.write(str(self.setpoint_offset))
+        setpoint_file.close()
 
         counter = 0
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
-            self.current_setpoint = nu
+            self.current_setpoint = self.slowing_set + nu/2.0e6
 
             # move laser to set point
-            setpoint_file = open(self.setpoint_filename, 'w')
+            setpoint_file_slow = open(self.setpoint_filename_slowing, 'w')
+            setpoint_file_slow.write(str(self.slowing_set + nu/2.0e6))
+            setpoint_file_slow.close()
 
-            #scan_interval = self.setpoint_offset + scan_interval/2e6
-            setpoint_file.write(str(self.setpoint_offset + nu/2.0e6))
-            setpoint_file.close()
             if n == 0:
                 time.sleep(3)
             else:
-                time.sleep(0.25)
+                time.sleep(1.0)
 
-            self.smp_data_avg = {}
-            # loop over averages
-            for i_avg in range(self.scan_count):                
-                print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
-                self.scheduler.pause()                
-              
-                repeat_shot = True
-                while repeat_shot:
-                    
-                    # fires yag and reads voltages
-                    self.fire_and_read()
+            hlp_counter = counter
+            # take self.scan_count averages with slowing laser and then the same without
+            for slowing_data in [True, False]:
+                print('Slowing: ', slowing_data)
 
-                    # readout the data
-                    self.readout_data()
+                # reset counter to accommodate for the slow on/slow off sequence
+                counter = hlp_counter
 
-                    repeat_shot = self.check_shot()
-                    if repeat_shot == False:                        
-                        # upon success add data to dataset
-                        self.average_data(first_avg = (i_avg == 0))
+                self.smp_data_avg = {}
+                # loop over averages
+                for i_avg in range(self.scan_count):                
+                    print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
+                    self.scheduler.pause()                
+                  
+                    repeat_shot = True
+                    while repeat_shot:
                         
-                        self.update_data(counter, n)
-
-                        counter += 1
-                    
-                    time.sleep(self.repetition_time)
+                        # fires yag and reads voltages
+                        if slowing_data:
+                            self.fire_and_read()
+                        else:
+                            self.fire_and_read_no_slow()
+    
+                        # readout the data
+                        self.readout_data()
+    
+                        repeat_shot = self.check_shot()
+                        if repeat_shot == False:                        
+                            # upon success add data to dataset
+                            self.average_data(first_avg = (i_avg == 0))
+                            
+                            self.update_data(counter, n, slowing_data)
+    
+                            counter += 1
+                        
+                        time.sleep(self.repetition_time)
 
             print()
             print()
