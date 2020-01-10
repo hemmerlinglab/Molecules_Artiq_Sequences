@@ -20,7 +20,6 @@ in
         ps.numpy
         ps.scipy
         ps.numba
-		  ps.usbtmc
 #        (ps.matplotlib.override { enableQt = true; })
 #        ps.bokeh
       ]))
