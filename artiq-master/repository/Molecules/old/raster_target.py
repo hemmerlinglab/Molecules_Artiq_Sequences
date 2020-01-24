@@ -172,12 +172,14 @@ class Raster_Target(EnvExperiment):
         # function is run after the experiment, i.e. after run() is called
         # save data
         print('Saving data ...')
-        save_all_data(self.basefilename,
-                [{'var' : self.set_pos_x, 'name' :'setx'},
-                 {'var' : self.set_pos_y, 'name' :'sety'},
-                 {'var' : self.volts, 'name' :'ch1'},
-                 {'var' : self.fluor, 'name' :'ch3'}
-                 ])
+
+        self.data_to_save = [{'var' : 'position_x', 'name' :'setx'},
+                 {'var' : 'position_y', 'name' :'sety'},
+                 {'var' : 'volts', 'name' :'ch1'},
+                 {'var' : 'fluor', 'name' :'ch3'}]
+
+
+        save_all_data(self)
 
         # overwrite config file with complete configuration
         self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
@@ -196,6 +198,11 @@ class Raster_Target(EnvExperiment):
         self.scan_y_interval = np.linspace(self.min_y, self.max_y, self.steps_y)
 
         self.setpoint_count = len(self.scan_x_interval) * len(self.scan_y_interval)
+
+        self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
+        
+        self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        
 
         self.set_pos_x  = [] # x pos
         self.set_pos_y  = [] # y pos
@@ -231,7 +238,7 @@ class Raster_Target(EnvExperiment):
         # End of define scan parameters
 
 
-       
+        counter = 0 
         for nx, xpos in enumerate(self.scan_x_interval): 
             for ny, ypos in enumerate(self.scan_y_interval): 
 
