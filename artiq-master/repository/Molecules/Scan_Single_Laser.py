@@ -45,11 +45,13 @@ class Scan_Single_Laser(EnvExperiment):
         self.setattr_argument('repetition_time',NumberValue(default=1,unit='s',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
         self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('yag_check',BooleanValue(default=True))
-        self.setattr_argument('blue_check',BooleanValue(default=True))
-        self.setattr_argument('slow_check',BooleanValue(default=True))
         
-        self.setattr_argument('shutter_on',BooleanValue(default=True))
+        # Booleans
+        self.setattr_argument('yag_check',BooleanValue(default=False))
+        self.setattr_argument('blue_check',BooleanValue(default=False))
+        self.setattr_argument('slow_check',BooleanValue(default=False))
+        
+        self.setattr_argument('shutter_on',BooleanValue(default=False))
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -244,6 +246,7 @@ class Scan_Single_Laser(EnvExperiment):
         # how can we get all arguments instead of adding these manually?
         # save run configuration
         self.config_dict = [
+                {'par' : 'sequence_file', 'val' : sys.arg[0], 'cmt' : 'Filename of the main sequence file'},
                 {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
                 {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
                 {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
