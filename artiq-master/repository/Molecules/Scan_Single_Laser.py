@@ -16,6 +16,9 @@ from helper_functions import *
 # every Experiment needs a build and a run function
 class Scan_Single_Laser(EnvExperiment):
     def build(self):
+
+        self.config_dict = []
+        
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
@@ -25,34 +28,46 @@ class Scan_Single_Laser(EnvExperiment):
 
         self.setattr_device('sampler0') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
+
         # EnvExperiment attribute: number of voltage samples per scan
-        self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
         
-        self.setattr_argument('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.my_setattr('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
         
-        # offsets of lasers
-        self.setattr_argument('offset_laser1',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.setattr_argument('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        # offmy_sets of
+        self.my_setattr('offset_laser1',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
 
-        self.setattr_argument('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+        self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-        self.setattr_argument('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
         
-        # Booleans
-        self.setattr_argument('yag_check',BooleanValue(default=False))
-        self.setattr_argument('blue_check',BooleanValue(default=False))
+        # Boomy_leans
+        self.my_setattr('yag_check',BooleanValue(default=False))
+        self.my_setattr('blue_check',BooleanValue(default=False))
         
-        self.setattr_argument('shutter_on',BooleanValue(default=False))
+        self.my_setattr('shutter_on',BooleanValue(default=False))
+        
+    def my_setattr(self, arg, val):
+        
+        # define the attribute
+        self.setattr_argument(arg,val)
+
+        # add each attribute to the config dictionary
+        if hasattr(val, 'unit'):
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "'})")
+        else:
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + "})")
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -157,20 +172,8 @@ class Scan_Single_Laser(EnvExperiment):
                              {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
                              ]
 
-        # how can we get all arguments instead of adding these manually?
-        # save run configuration
-        self.config_dict = [
-                {'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'},
-                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
-                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
-                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
-                {'par' : 'set_point_count', 'val' : self.setpoint_count, 'cmt' : 'Step size'},
-                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
-                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
-                {'par' : 'yag_check', 'val' : self.yag_check, 'cmt' : 'Yag check'},
-                {'par' : 'blue_check', 'val' : self.blue_check, 'cmt' : 'Blue check'},
-                {'par' : 'data_sets', 'val' : self.smp_data_sets, 'cmt' : 'Data sets'}
-                ]
+        # save sequence file name
+        self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
 
         for k in range(5):
             print("")
