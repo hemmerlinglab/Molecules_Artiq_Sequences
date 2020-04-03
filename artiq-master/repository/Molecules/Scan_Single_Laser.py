@@ -28,10 +28,12 @@ class Scan_Single_Laser(EnvExperiment):
         # EnvExperiment attribute: number of voltage samples per scan
         self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.setattr_argument('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_count',NumberValue(default=100,unit='setpoints',scale=1,ndecimals=0,step=1))
+        
+        self.setattr_argument('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_offset',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.setattr_argument('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
+        
         self.setattr_argument('slowing_set',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.setattr_argument('slow_start',NumberValue(default=0.1,unit='ms',scale=1,ndecimals=2,step=0.01))
         self.setattr_argument('slow_stop',NumberValue(default=2,unit='ms',scale=1,ndecimals=2,step=0.01))
@@ -246,7 +248,7 @@ class Scan_Single_Laser(EnvExperiment):
         # how can we get all arguments instead of adding these manually?
         # save run configuration
         self.config_dict = [
-                {'par' : 'sequence_file', 'val' : sys.arg[0], 'cmt' : 'Filename of the main sequence file'},
+                {'par' : 'sequence_file', 'val' : sys.argv[0], 'cmt' : 'Filename of the main sequence file'},
                 {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
                 {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
                 {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
