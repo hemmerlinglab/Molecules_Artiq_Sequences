@@ -25,7 +25,7 @@ class Scan_Iodine(EnvExperiment):
         self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.setattr_argument('scan_count',NumberValue(default=1,unit='averages',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_count',NumberValue(default=200,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_offset',NumberValue(default=391.0160,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.setattr_argument('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.setattr_argument('setpoint_min',NumberValue(default=-3000,unit='MHz',scale=1,ndecimals=0,step=1))
         self.setattr_argument('setpoint_max',NumberValue(default=3000,unit='MHz',scale=1,ndecimals=0,step=1))
 

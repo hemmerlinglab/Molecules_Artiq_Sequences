@@ -7,7 +7,7 @@ def get_basefilename(self):
     my_today = datetime.datetime.today()
  
     datafolder = '/home/molecules/software/data/'
-    self.setpoint_filename = '/home/molecules/skynet/Logs/setpoint2.txt'
+    self.setpoint_filename = '/home/molecules/skynet/Logs/setpoint.txt'
     self.setpoint_filename_slowing = '/home/molecules/skynet/Logs/setpoint2.txt'
  
     basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
