@@ -1,14 +1,15 @@
 import numpy as np
 import os.path
 import datetime
+import shutil
 from configparser import ConfigParser
 
 def get_basefilename(self):
     my_today = datetime.datetime.today()
  
     datafolder = '/home/molecules/software/data/'
-    self.setpoint_filename = '/home/molecules/skynet/Logs/setpoint2.txt'
-    self.setpoint_filename_slowing = '/home/molecules/skynet/Logs/setpoint2.txt'
+    self.setpoint_filename_laser1 = '/home/molecules/skynet/Logs/setpoint.txt'
+    self.setpoint_filename_laser2 = '/home/molecules/skynet/Logs/setpoint2.txt'
  
     basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
     # create new folder if doesn't exist yet
@@ -48,24 +49,12 @@ def save_config(basefilename, var_dict):
         # use ConfigParser to save config options
         config = ConfigParser()
 
-        #if os.path.isfile(conf_filename):
-        #    # append to config file
-        #    conf_file = open(conf_filename, 'a')
-        #else:
-        #    # create config file
-        #    conf_file = open(conf_filename, 'w')
-        #    print('Config File Written')
-
-        #    # add scan name to config file
-        #    config['Scan'] = {'filename' : basefilename}
-        
         # create config file
         conf_file = open(conf_filename, 'w')
         print('Config file written.')
 
         # add scan name to config file
         config['Scan'] = {'filename' : basefilename}
-
 
         # toggle through dictionary and add the config categories
         for d in var_dict:
@@ -77,8 +66,11 @@ def save_config(basefilename, var_dict):
 
         config.write(conf_file)
 
-
-               
+        # save also the sequence file 
+        #print(config['sequence_file']['val'])
+        #print(basefilename + '_sequence')
+        shutil.copyfile(config['sequence_file']['val'], basefilename + '_sequence')
+       
         conf_file.close()
         
 

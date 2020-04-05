@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Slowing_Test(EnvExperiment):
+class Scan_Single_Laser(EnvExperiment):
     def build(self):
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
@@ -48,6 +48,7 @@ class Slowing_Test(EnvExperiment):
         self.setattr_argument('yag_check',BooleanValue())
         self.setattr_argument('blue_check',BooleanValue())
         self.setattr_argument('slow_check',BooleanValue())
+        
         self.setattr_argument('shutter_on',BooleanValue())
 
     ### Script to run on Artiq
@@ -167,8 +168,8 @@ class Slowing_Test(EnvExperiment):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
-                # shut slowing laser off from the start
                 if self.shutter_on:
+                    # shut slowing laser off from the start
                     self.ttl8.on()
                     delay(500*ms)
                     self.ttl8.off()
@@ -346,26 +347,26 @@ class Slowing_Test(EnvExperiment):
     def run(self):
 
         # move laser to set point
-        setpoint_file_slowing = open(self.setpoint_filename_slowing, 'w')
-        setpoint_file_slowing.write(str(self.slowing_set))
-        setpoint_file_slowing.close()
+        setpoint_file = open(self.setpoint_filename, 'w')
+        setpoint_file.write(str(self.setpoint_offset))
+        setpoint_file.close()
 
         counter = 0
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
-            self.current_setpoint = nu
+            self.current_setpoint = self.slowing_set + nu/2.0e6
 
             # move laser to set point
-            setpoint_file = open(self.setpoint_filename, 'w')
-            setpoint_file.write(str(self.setpoint_offset + nu/2.0e6))
-            setpoint_file.close()
+            setpoint_file_slow = open(self.setpoint_filename_slowing, 'w')
+            setpoint_file_slow.write(str(self.slowing_set + nu/2.0e6))
+            setpoint_file_slow.close()
 
             if n == 0:
                 time.sleep(3)
             else:
-                time.sleep(0.25)
+                time.sleep(1.0)
 
             hlp_counter = counter
             # take self.scan_count averages with slowing laser and then the same without
