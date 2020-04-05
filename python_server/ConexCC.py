@@ -400,9 +400,9 @@ def init_for_target_mapping(vel = 0.3):
 	c1.query(1,'VA', str(vel))
 	c2.query(1,'VA', str(vel))	
 	
-	# execute home search
-	c1.OR()
-	c2.OR()
+	## execute home search
+	#c1.OR()
+	#c2.OR()
 	
 	# get and print current position
 	print('x @ ' + str(c1.TP()))
