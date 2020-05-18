@@ -14,26 +14,42 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Iodine(EnvExperiment):
+class Scan_Reference_Cell(EnvExperiment):
     def build(self):
+
+        self.config_dict = []
+        
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl9') # experimental start
 
         self.setattr_device('sampler1') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
+        
         # EnvExperiment attribute: number of voltage samples per scan
-        self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=1,unit='averages',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_count',NumberValue(default=200,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.setattr_argument('setpoint_min',NumberValue(default=-3000,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('setpoint_max',NumberValue(default=3000,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scan_count',NumberValue(default=1,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_count',NumberValue(default=200,unit='setpoints',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('setpoint_min',NumberValue(default=-3000,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_max',NumberValue(default=3000,unit='MHz',scale=1,ndecimals=0,step=1))
 
-        self.setattr_argument('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('slice_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('slice_max',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+        self.my_setattr('slice_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slice_max',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-        self.setattr_argument('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
+
+    def my_setattr(self, arg, val):
+        
+        # define the attribute
+        self.setattr_argument(arg,val)
+
+        # add each attribute to the config dictionary
+        if hasattr(val, 'unit'):
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "'})")
+        else:
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + "})")
+
 
     ### Script to run on Artiq
     # Basic Schedule:
@@ -108,16 +124,9 @@ class Scan_Iodine(EnvExperiment):
                              {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']}
                              ]
 
-        # how can we get all arguments instead of adding these manually?
-        # save run configuration
-        self.config_dict = [
-                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
-                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
-                {'par' : 'step_size', 'val' : self.step_size, 'cmt' : 'Step size'},
-                {'par' : 'set_point_count', 'val' : self.setpoint_count, 'cmt' : 'Step size'},
-                {'par' : 'setpoint_offset', 'val' : self.setpoint_offset, 'cmt' : 'Set point offset'},
-                {'par' : 'data_sets', 'val' : self.smp_data_sets, 'cmt' : 'Data sets'}
-                ]
+        # save sequence file name
+        self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
+
 
         for k in range(5):
             print("")
@@ -194,7 +203,7 @@ class Scan_Iodine(EnvExperiment):
             self.current_setpoint = nu
 
             # move laser to set point
-            setpoint_file = open(self.setpoint_filename, 'w')
+            setpoint_file = open(self.setpoint_filename_laser2, 'w')
             setpoint_file.write(str(self.setpoint_offset + nu/1.0e6))
             setpoint_file.close()
 

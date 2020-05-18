@@ -38,7 +38,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
         self.my_setattr('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
         
-        # offmy_sets of
+        # offset of lasers
         self.my_setattr('offset_laser1',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
 
