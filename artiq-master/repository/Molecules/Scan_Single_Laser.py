@@ -268,23 +268,23 @@ class Scan_Single_Laser(EnvExperiment):
             nu = np.min(self.scan_interval)
 
             if  self.which_scanning_laser == 1:
-                self.current_setpoint = nu/1.0e6 #self.offset_laser1 + nu/1.0e6
+                self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
                 self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
                 self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2)
 
             elif  self.which_scanning_laser == 2:
-                self.current_setpoint = nu/1.0e6 #self.offset_laser2 + nu/1.0e6
+                self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
                 self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1)
                 self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
 
         else:
 
             if  self.which_scanning_laser == 1:
-                self.current_setpoint = nu/1.0e6 #self.offset_laser1 + nu/1.0e6
+                self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
                 self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
 
             elif  self.which_scanning_laser == 2:
-                self.current_setpoint = nu/1.0e6 #self.offset_laser2 + nu/1.0e6
+                self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
                 self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
 
 
@@ -293,7 +293,10 @@ class Scan_Single_Laser(EnvExperiment):
 
         # init lasers
         self.set_lasers(init = True)
-        
+       
+        # pause to wait till laser settles
+        time.sleep(3)
+
         counter = 0
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 

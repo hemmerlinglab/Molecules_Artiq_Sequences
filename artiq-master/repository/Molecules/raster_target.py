@@ -291,6 +291,8 @@ class Raster_Target(EnvExperiment):
         for nx, xpos in enumerate(self.scan_x_interval): 
            for ny, ypos in enumerate(self.scan_y_interval): 
 
+                print("{0}/{1}".format(counter,self.scan_count*len(self.scan_x_interval)*len(self.scan_y_interval)))
+
                 print('Setting x/y position to ' + str(xpos) + '/' + str(ypos))
 
                 # move mirrors
@@ -310,11 +312,8 @@ class Raster_Target(EnvExperiment):
                
                 # allow for some time at the edges
                 if (ny == 0):
-                    print('Sleeping for 7 ...')
-                    time.sleep(7)
-                else:
-                    #print('Sleeping for 1 ...')
-                    time.sleep(1)
+                    print('Sleeping for 4 ...')
+                    time.sleep(4)
 
                 sock.close()
                 print('Socket closed ...')
