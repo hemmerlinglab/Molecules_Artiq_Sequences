@@ -51,7 +51,7 @@ class Raster_Target(EnvExperiment):
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         
-        self.my_setattr('cooling_set',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('cooling_set',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('slowing_set',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
         
         self.my_setattr('repetition_time',NumberValue(default=1,unit='s',scale=1,ndecimals=1,step=0.1))
@@ -278,11 +278,11 @@ class Raster_Target(EnvExperiment):
     def run(self):
 
         # move lasers to set point
-        setpoint_file_slowing = open(self.setpoint_filename_laser1, 'w')
+        setpoint_file_slowing = open(self.setpoint_filename_laser2, 'w')
         setpoint_file_slowing.write(str(self.slowing_set))
         setpoint_file_slowing.close()
 
-        setpoint_file = open(self.setpoint_filename_laser2, 'w')
+        setpoint_file = open(self.setpoint_filename_laser1, 'w')
         setpoint_file.write(str(self.cooling_set))
         setpoint_file.close()
 
