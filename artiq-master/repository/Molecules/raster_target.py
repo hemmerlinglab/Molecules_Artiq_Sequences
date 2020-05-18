@@ -16,9 +16,12 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Raster_Target_New(EnvExperiment):
+class Raster_Target(EnvExperiment):
     def build(self):
-        self.setattr_device('core') # Core Artiq Device (required)
+        
+        self.config_dict = []
+        
+        self.setattr_device('core') # Core Artiq Device (required)        
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
         self.setattr_device('ttl5') # uv ccd trigger
@@ -27,35 +30,48 @@ class Raster_Target_New(EnvExperiment):
 
         self.setattr_device('sampler0') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
+        
         # EnvExperiment attribute: number of voltage samples per scan
-        self.setattr_argument('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
  
         # x
-        self.setattr_argument('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
+        self.my_setattr('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
+        self.my_setattr('max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
+        self.my_setattr('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
         
         # y
-        self.setattr_argument('min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
-        self.setattr_argument('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
+        self.my_setattr('min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
+        self.my_setattr('max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
+        self.my_setattr('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
 
-        self.setattr_argument('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-        self.setattr_argument('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+        self.my_setattr('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
         
-        self.setattr_argument('cooling_set',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.setattr_argument('slowing_set',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('cooling_set',NumberValue(default=375.763266,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('slowing_set',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
         
-        self.setattr_argument('repetition_time',NumberValue(default=1,unit='s',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
-        self.setattr_argument('yag_check',BooleanValue())
-        self.setattr_argument('blue_check',BooleanValue())
-        self.setattr_argument('slow_check',BooleanValue())
+        self.my_setattr('repetition_time',NumberValue(default=1,unit='s',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('yag_check',BooleanValue(default=True))
+        self.my_setattr('blue_check',BooleanValue(default=False))
+        self.my_setattr('slow_check',BooleanValue(default=False))
+
+    def my_setattr(self, arg, val):
+        
+        # define the attribute
+        self.setattr_argument(arg,val)
+
+        # add each attribute to the config dictionary
+        if hasattr(val, 'unit'):
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "'})")
+        else:
+            exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + "})")
+
 
 
     ### Script to run on Artiq
@@ -169,19 +185,9 @@ class Raster_Target_New(EnvExperiment):
                              {'var' : 'target_img_incell', 'name' : 'img'},
                              ]
 
-        # how can we get all arguments instead of adding these manually?
-        # save run configuration
-        self.config_dict = [
-                {'par' : 'scope_count', 'val' : self.scope_count, 'cmt' : 'Number of samples per shot'},
-                {'par' : 'scan_count', 'val' : self.scan_count, 'cmt' : 'Number of averages'},
-                {'par' : 'set_point_count', 'val' : self.setpoint_count, 'cmt' : 'Step size'},
-                {'par' : 'he_flow', 'val' : self.he_flow, 'unit' : 'sccm', 'cmt' : 'He flow'},
-                {'par' : 'yag_power', 'val' : self.yag_power, 'cmt' : 'He flow'},
-                {'par' : 'yag_check', 'val' : self.yag_check, 'cmt' : 'Yag check'},
-                {'par' : 'blue_check', 'val' : self.blue_check, 'cmt' : 'Blue check'},
-                {'par' : 'data_sets', 'val' : self.smp_data_sets, 'cmt' : 'Data sets'}
-                ]
-
+        # save sequence file name
+        self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
+        
         for k in range(5):
             print("")
         print("*"*100)
@@ -272,11 +278,11 @@ class Raster_Target_New(EnvExperiment):
     def run(self):
 
         # move lasers to set point
-        setpoint_file_slowing = open(self.setpoint_filename_slowing, 'w')
+        setpoint_file_slowing = open(self.setpoint_filename_laser1, 'w')
         setpoint_file_slowing.write(str(self.slowing_set))
         setpoint_file_slowing.close()
 
-        setpoint_file = open(self.setpoint_filename, 'w')
+        setpoint_file = open(self.setpoint_filename_laser2, 'w')
         setpoint_file.write(str(self.cooling_set))
         setpoint_file.close()
 
