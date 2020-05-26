@@ -32,7 +32,7 @@ while True:
             print('received request "%s"' % data)
 
             if data:
-                data = a.GetFrequency()
+                data = wlm.GetFrequency()
                 print('Sending frequencies')
                 connection.sendall(data)
             else:
