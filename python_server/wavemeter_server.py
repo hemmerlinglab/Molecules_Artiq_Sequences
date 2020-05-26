@@ -33,6 +33,7 @@ while True:
 
             if data:
                 data = wlm.GetFrequency()
+                print(data)
                 print('Sending frequencies')
                 connection.sendall(data)
             else:
