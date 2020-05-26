@@ -35,7 +35,7 @@ while True:
                 data = wlm.GetFrequency()
                 print(data)
                 print('Sending frequencies')
-                connection.sendall(data.encode())
+                connection.sendall(str(data).encode())
             else:
                 print('no more data from', client_address)
                 break
