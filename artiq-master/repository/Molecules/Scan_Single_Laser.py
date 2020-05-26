@@ -18,6 +18,7 @@ class Scan_Single_Laser(EnvExperiment):
     def build(self):
 
         self.config_dict = []
+        self.wavemeter_frequencies = []
         
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
@@ -150,6 +151,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
         self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
+        self.set_dataset('act_freqs', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
         self.set_dataset('freqs',      (self.scan_interval),broadcast=True)
         self.set_dataset('times',      (self.time_interval),broadcast=True)
 
@@ -163,6 +165,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
 
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
+                             {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
                              {'var' : 'freqs', 'name' : 'freqs'},
                              {'var' : 'times', 'name' : 'times'},
                              {'var' : 'ch0_arr', 'name' : self.smp_data_sets['ch0']},
@@ -224,7 +227,10 @@ class Scan_Single_Laser(EnvExperiment):
         for channel in self.smp_data_sets.keys():
             # self.smp_data['absorption'] = ...
             self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
-            
+
+        # read laser frequencies
+        self.wavemeter_frequencies = get_laser_frequencies()
+
     def average_data(self, first_avg = True):
         # toggle through all channels and average the data
         for channel in self.smp_data_sets.keys():
@@ -244,6 +250,7 @@ class Scan_Single_Laser(EnvExperiment):
     def update_data(self, counter, n, slowing_data = False):
         # this updates the gui for every shot
         self.mutate_dataset('set_points', counter, self.current_setpoint)
+        self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
         self.mutate_dataset('in_cell_spectrum', n, self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',     n, self.smp_data_avg['pmt'])
         
@@ -254,7 +261,6 @@ class Scan_Single_Laser(EnvExperiment):
             hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
         
             self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
-
 
     def set_single_laser(self, my_file, freq):
         setpoint_file = open(my_file, 'w')
@@ -295,7 +301,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.set_lasers(init = True)
        
         # pause to wait till laser settles
-        time.sleep(3)
+        time.sleep(1)
 
         counter = 0
         # loop over setpoints

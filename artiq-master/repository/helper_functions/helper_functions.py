@@ -3,6 +3,44 @@ import os.path
 import datetime
 import shutil
 from configparser import ConfigParser
+import socket
+
+def get_laser_frequencies():
+
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Connect the socket to the port where the server is listening
+    #server_address = ('localhost', 10000)
+    server_address = ('192.168.42.20', 62500)
+    #print('connecting to %s port %s' % server_address)
+    sock.connect(server_address)
+
+    try:
+    
+        # Send data
+        message = 'request'
+        #print('sending "%s"' % message)
+        sock.sendall(message.encode())
+
+        # Look for the response
+        amount_received = 0
+        amount_expected = len(message)
+    
+        while amount_received < amount_expected:
+            data = sock.recv(16)
+            amount_received += len(data)
+            #print('received "%s"' % data)
+
+    finally:
+        #print('closing socket')
+        sock.close()
+
+    # return a list of freqs
+    # currently only one frequency is returned
+    freqs = [np.float(data.decode())]
+
+    return freqs
 
 def get_basefilename(self):
     my_today = datetime.datetime.today()

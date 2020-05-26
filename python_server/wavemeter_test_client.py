@@ -1,5 +1,6 @@
 import socket
 import sys
+import numpy as np
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,6 +26,9 @@ try:
         data = sock.recv(16)
         amount_received += len(data)
         print('received "%s"' % data)
+
+    data = np.float(data.decode())
+    print(data)
 
 finally:
     print('closing socket')
