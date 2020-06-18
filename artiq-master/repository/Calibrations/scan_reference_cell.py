@@ -18,6 +18,7 @@ class Scan_Reference_Cell(EnvExperiment):
     def build(self):
 
         self.config_dict = []
+        self.wavemeter_frequencies = []
         
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl9') # experimental start
@@ -104,6 +105,7 @@ class Scan_Reference_Cell(EnvExperiment):
         self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
         self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
+        self.set_dataset('act_freqs', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
         self.set_dataset('freqs',      (self.scan_interval),broadcast=True)
         self.set_dataset('times',      (self.time_interval),broadcast=True)
 
@@ -117,6 +119,7 @@ class Scan_Reference_Cell(EnvExperiment):
         self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
 
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
+                             {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
                              {'var' : 'freqs', 'name' : 'freqs'},
                              {'var' : 'times', 'name' : 'times'},
                              {'var' : 'ch0_arr', 'name' : self.smp_data_sets['ch0']},
@@ -161,7 +164,10 @@ class Scan_Reference_Cell(EnvExperiment):
         for channel in self.smp_data_sets.keys():
             # self.smp_data['absorption'] = ...
             self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
-            
+        
+        # read laser frequencies
+        self.wavemeter_frequencies = get_laser_frequencies()
+
     def average_data(self, first_avg = True):
         # toggle through all channels and average the data
         for channel in self.smp_data_sets.keys():
@@ -181,6 +187,7 @@ class Scan_Reference_Cell(EnvExperiment):
     def update_data(self, counter, n, slowing_data = False):
         # this updates the gui for every shot
         self.mutate_dataset('set_points', counter, self.current_setpoint)
+        self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
         self.mutate_dataset('abs_spec0', n, self.smp_data_avg['absorption0'])
         self.mutate_dataset('abs_spec1', n, self.smp_data_avg['absorption1'])
         self.mutate_dataset('diff_spec', n, self.smp_data_avg['absorption1'] - self.smp_data_avg['absorption0'])
