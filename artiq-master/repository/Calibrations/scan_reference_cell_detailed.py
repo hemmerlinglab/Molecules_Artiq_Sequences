@@ -29,12 +29,12 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
         
         # EnvExperiment attribute: number of voltage samples per scan
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.my_setattr('scan_count',NumberValue(default=4,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
         self.my_setattr('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
         #self.my_setattr('setpoint_min',NumberValue(default=-3000,unit='MHz',scale=1,ndecimals=0,step=1))
         #self.my_setattr('setpoint_max',NumberValue(default=3000,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.my_setattr('df',NumberValue(default=50.0,unit='MHz',scale=1,ndecimals=6,step=.000001))
-        self.my_setattr('no_of_points',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=1))
+        self.my_setattr('df',NumberValue(default=40.0,unit='MHz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('no_of_points',NumberValue(default=20,unit='',scale=1,ndecimals=1,step=1))
 
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -105,10 +105,11 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
                 'ch2' : 'reference'
                 }
         self.scan_interval = get_rb_scan_interval(no_of_points = self.no_of_points, df = self.df, cnt_freq = self.setpoint_offset*1e12) #np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+
         self.setpoint_count = len(self.scan_interval)
 
         self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
-
+        
         self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
         self.set_dataset('act_freqs', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
         self.set_dataset('freqs',      (self.scan_interval),broadcast=True)
