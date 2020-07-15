@@ -30,7 +30,8 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
         # EnvExperiment attribute: number of voltage samples per scan
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
+        #self.my_setattr('setpoint_offset',NumberValue(default=384.23,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('setpoint_offset',NumberValue(default=377.107,unit='THz',scale=1,ndecimals=6,step=.000001))
         #self.my_setattr('setpoint_min',NumberValue(default=-3000,unit='MHz',scale=1,ndecimals=0,step=1))
         #self.my_setattr('setpoint_max',NumberValue(default=3000,unit='MHz',scale=1,ndecimals=0,step=1))
         self.my_setattr('df',NumberValue(default=40.0,unit='MHz',scale=1,ndecimals=6,step=.000001))
