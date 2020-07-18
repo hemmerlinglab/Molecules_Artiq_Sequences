@@ -24,21 +24,21 @@ while True:
     connection, client_address = sock.accept()
 
     try:
-            print('connection from', client_address)
+        print('connection from', client_address)
 
         # Receive the data in small chunks and retransmit it
         #while True:
-            data = connection.recv(16)
-            print('received request "%s"' % data)
+        data = connection.recv(16)
+        print('received request "%s"' % data)
 
-            if data:
-                data = wlm.GetFrequency()
-                print(data)
-                print('Sending frequencies')
-                connection.sendall(str(data).encode())
-            else:
-                print('no more data from', client_address)
-                break
+        if data:
+            data = wlm.GetFrequency()
+            print(data)
+            print('Sending frequencies')
+            connection.sendall(str(data).encode())
+        else:
+            print('no more data from', client_address)
+            break
 			
 			
             
