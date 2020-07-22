@@ -6,6 +6,7 @@ import datetime
 import os
 import time
 import csv
+import socket
 
 import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
@@ -15,7 +16,7 @@ from rubidium_lines import get_rb_scan_interval
 
 
 # every Experiment needs a build and a run function
-class Scan_Reference_Cell_Detailed(EnvExperiment):
+class Scan_Reference_Cell_Socket(EnvExperiment):
     def build(self):
 
         self.config_dict = []
@@ -40,6 +41,8 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
         self.my_setattr('slice_max',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
 
         self.my_setattr('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
+        
+        self.my_setattr('extension',StringValue(default=''))
         
         #self.my_setattr('setpoint_count',NumberValue(default=len(self.scan_interval),unit='setpoints',scale=1,ndecimals=0,step=1))
 
@@ -135,7 +138,6 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
         # save sequence file name
         self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
 
-
         for k in range(5):
             print("")
         print("*"*100)
@@ -146,7 +148,7 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
 
         # Initializes Artiq (required)
         # get the filename for the scan, e.g. 20190618_105557
-        get_basefilename(self)
+        get_basefilename(self, extension = self.extension)
         # save the config
         save_config(self.basefilename, self.config_dict)
         self.core.reset() 
@@ -215,10 +217,26 @@ class Scan_Reference_Cell_Detailed(EnvExperiment):
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
             self.current_setpoint = nu
 
+
             # move laser to set point
-            setpoint_file = open(self.setpoint_filename_laser2, 'w')
-            setpoint_file.write(str(self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6))
-            setpoint_file.close()
+
+            # Create a TCP/IP socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            # Connect the socket to the port where the server is listening
+            server_address = ('192.168.42.20', 63800)
+            print('connecting to %s port %s' % server_address)
+            sock.connect(server_address)
+            message = "{0},{1},{2:10.6f}".format(0,2,self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6)
+            sock.sendall(message.encode())
+
+            sock.close()
+            
+            ## move laser to set point
+            #setpoint_file = open(self.setpoint_filename_laser2, 'w')
+            #setpoint_file.write(str(self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6))
+            #setpoint_file.close()
+
 
             if np.abs(last_nu - nu) > 20:
                 # if jump to next frequency is larger than 20 MHz, give laser time to lock

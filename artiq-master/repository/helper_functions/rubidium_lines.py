@@ -87,10 +87,6 @@ def calculate_Rb_transitions():
     my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '3', '2'))
     my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '3', '3'))
     my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '3', '2', Fe_co = '3', crossover = True))
-
-
-
-
    
     return my_lines
 
@@ -120,3 +116,5 @@ def get_rb_scan_interval(no_of_points = 5, df = 50.0, cnt_freq = 384.230e12):
     scan_interval = np.array(scan_interval)/1e6
 
     return scan_interval
+
+

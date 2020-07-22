@@ -42,7 +42,7 @@ def get_laser_frequencies():
 
     return freqs
 
-def get_basefilename(self):
+def get_basefilename(self, extension = ''):
     my_today = datetime.datetime.today()
  
     datafolder = '/home/molecules/software/data/'
@@ -55,6 +55,10 @@ def get_basefilename(self):
         os.makedirs(datafolder + basefolder)
  
     self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+    # add optional extension
+    if not extension is '':
+        self.basefilename += '_' + str(extension)
 
 
 def save_all_data(self):
