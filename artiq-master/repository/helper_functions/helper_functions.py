@@ -43,22 +43,29 @@ def get_laser_frequencies():
     return freqs
 
 def get_basefilename(self, extension = ''):
-    my_today = datetime.datetime.today()
- 
-    datafolder = '/home/molecules/software/data/'
+    my_timestamp = datetime.datetime.today()
+    
+    self.today = datetime.datetime.today()
+    self.today = self.today.strftime('%Y%m%d')
+
+    self.datafolder = '/home/molecules/software/data/'
     self.setpoint_filename_laser1 = '/home/molecules/skynet/Logs/setpoint.txt'
     self.setpoint_filename_laser2 = '/home/molecules/skynet/Logs/setpoint2.txt'
  
-    basefolder = str(my_today.strftime('%Y%m%d')) # 20190618
+    basefolder = str(self.today) # 20190618
     # create new folder if doesn't exist yet
-    if not os.path.exists(datafolder + basefolder):
-        os.makedirs(datafolder + basefolder)
- 
-    self.basefilename = datafolder + basefolder + '/' + str(my_today.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+    if not os.path.exists(self.datafolder + basefolder):
+        os.makedirs(self.datafolder + basefolder)
+
+    self.scan_timestamp = str(my_timestamp.strftime('%Y%m%d_%H%M%S'))
+
+    self.basefilename = self.datafolder + basefolder + '/' + self.scan_timestamp # 20190618_105557
 
     # add optional extension
     if not extension is '':
         self.basefilename += '_' + str(extension)
+
+        self.scan_timestamp += '_' + str(extension)
 
 
 def save_all_data(self):
@@ -71,6 +78,13 @@ def save_all_data(self):
         f_hlp = open(self.basefilename + '_' + hlp['var'],'w')
         np.savetxt(f_hlp, arr, delimiter=",")
         f_hlp.close()
+
+
+def add_scan_to_list(self):
+    # Write Data to Files
+    f_hlp = open(self.datafolder + '/' + self.today + '/' + 'scan_list_' + self.today, 'a')
+    f_hlp.write(self.scan_timestamp + '\n')
+    f_hlp.close()
 
 
 def save_config(basefilename, var_dict):

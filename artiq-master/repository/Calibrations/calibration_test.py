@@ -26,7 +26,7 @@ def calibrate(freq):
 
 hene_freq = 473.612512e12
 
-calib_freq_arr = np.linspace(hene_freq - 20e6, hene_freq + 20e6, 3)
+calib_freq_arr = np.linspace(hene_freq - 50e6, hene_freq + 50e6, 2)
 
 for n in range(len(calib_freq_arr)):
 
@@ -38,15 +38,14 @@ for n in range(len(calib_freq_arr)):
 
     ext = str(n)
     wm_str = "{0:.1f}".format(wavemeter_offset)
+    hene_calib_str = "{0:10.6f}".format(calib_freq/1e12)
 
     #print(wm_str)
      
     # scan over rubidium lines
-    os.system('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=2 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' extension=' + ext)
-    #print('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=1 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' extension=' + ext)
+    os.system('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=1 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' extension=' + ext)
 
 
-print(calib_freq_arr/1e12)
 
 
 

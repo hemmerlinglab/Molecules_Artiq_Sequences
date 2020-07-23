@@ -32,6 +32,7 @@ class Scan_Reference_Cell_Socket(EnvExperiment):
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
         self.my_setattr('setpoint_offset',NumberValue(default=377.107,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('hene_calibration',NumberValue(default=473.612512,unit='THz',scale=1,ndecimals=6,step=.0000011))
         self.my_setattr('wavemeter_offset',NumberValue(default=0.0,unit='MHz',scale=1,ndecimals=6,step=1))
         self.my_setattr('df',NumberValue(default=40.0,unit='MHz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('no_of_points',NumberValue(default=20,unit='',scale=1,ndecimals=1,step=1))
@@ -162,6 +163,8 @@ class Scan_Reference_Cell_Socket(EnvExperiment):
         self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
         save_config(self.basefilename, self.config_dict)
 
+        add_scan_to_list(self)
+
         print('Scan ' + self.basefilename + ' finished.')
         print('Scan finished.')
 
@@ -241,7 +244,7 @@ class Scan_Reference_Cell_Socket(EnvExperiment):
             if np.abs(last_nu - nu) > 20:
                 # if jump to next frequency is larger than 20 MHz, give laser time to lock
                 print('Waiting for laser to lock ...')
-                time.sleep(5)
+                time.sleep(3)
             else:
                 time.sleep(self.repetition_time)
             last_nu = nu
