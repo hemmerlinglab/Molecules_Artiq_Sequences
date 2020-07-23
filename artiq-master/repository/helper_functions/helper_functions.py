@@ -4,6 +4,27 @@ import datetime
 import shutil
 from configparser import ConfigParser
 import socket
+import socket
+
+
+def set_laser_frequency(channel, frequency):
+    # channel = 1,2,...
+    # frequency = 377.124354 
+
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Connect the socket to the port where the server is listening
+    server_address = ('192.168.42.20', 63800)
+    print('connecting to %s port %s' % server_address)
+    sock.connect(server_address)
+    message = "{0},{1},{2:10.6f}".format(0,np.int(channel),frequency)
+    sock.sendall(message.encode())
+
+    sock.close()
+
+    return
+ 
 
 def get_laser_frequencies():
 

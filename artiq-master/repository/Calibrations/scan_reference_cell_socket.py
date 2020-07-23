@@ -220,26 +220,8 @@ class Scan_Reference_Cell_Socket(EnvExperiment):
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
             self.current_setpoint = nu
 
-
             # move laser to set point
-
-            # Create a TCP/IP socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-            # Connect the socket to the port where the server is listening
-            server_address = ('192.168.42.20', 63800)
-            print('connecting to %s port %s' % server_address)
-            sock.connect(server_address)
-            message = "{0},{1},{2:10.6f}".format(0,2,self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6)
-            sock.sendall(message.encode())
-
-            sock.close()
-            
-            ## move laser to set point
-            #setpoint_file = open(self.setpoint_filename_laser2, 'w')
-            #setpoint_file.write(str(self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6))
-            #setpoint_file.close()
-
+            set_laser_frequency(2, self.setpoint_offset + self.wavemeter_offset/1.0e6 + nu/1.0e6)
 
             if np.abs(last_nu - nu) > 20:
                 # if jump to next frequency is larger than 20 MHz, give laser time to lock
@@ -272,7 +254,5 @@ class Scan_Reference_Cell_Socket(EnvExperiment):
     
                     counter += 1
                         
-
-            print()
             print()
 

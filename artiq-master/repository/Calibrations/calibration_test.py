@@ -28,11 +28,13 @@ hene_freq = 473.612512e12
 
 calib_freq_arr = np.linspace(hene_freq - 50e6, hene_freq + 50e6, 2)
 
+calib_freq_arr = [hene_freq]
+
 for n in range(len(calib_freq_arr)):
 
     calib_freq = calib_freq_arr[n]
 
-    calibrate(calib_freq/1e12)
+    #calibrate(calib_freq/1e12)
 
     wavemeter_offset = -(hene_freq - calib_freq)/1e6
 
