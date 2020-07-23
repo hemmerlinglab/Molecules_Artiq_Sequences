@@ -16,7 +16,7 @@ def set_laser_frequency(channel, frequency):
 
     # Connect the socket to the port where the server is listening
     server_address = ('192.168.42.20', 63800)
-    print('connecting to %s port %s' % server_address)
+    #print('connecting to %s port %s' % server_address)
     sock.connect(server_address)
     message = "{0},{1},{2:10.6f}".format(0,np.int(channel),frequency)
     sock.sendall(message.encode())

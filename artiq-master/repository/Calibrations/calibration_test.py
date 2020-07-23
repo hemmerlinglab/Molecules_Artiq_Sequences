@@ -18,7 +18,7 @@ def calibrate(freq):
     sock.close()
    
     # replace with feedback of wavemeter
-    time.sleep(20)
+    time.sleep(10)
 
 
 
@@ -26,17 +26,20 @@ def calibrate(freq):
 
 hene_freq = 473.612512e12
 
-calib_freq_arr = np.linspace(hene_freq - 50e6, hene_freq + 50e6, 2)
+calib_freq_arr = np.linspace(hene_freq - 300e6, hene_freq + 300e6, 30)
 
-calib_freq_arr = [hene_freq]
+#calib_freq_arr = [hene_freq]
 
 for n in range(len(calib_freq_arr)):
 
     calib_freq = calib_freq_arr[n]
 
-    #calibrate(calib_freq/1e12)
+    calibrate(calib_freq/1e12)
 
-    wavemeter_offset = -(hene_freq - calib_freq)/1e6
+    # wavemeter_offset (MHz)
+    #wavemeter_offset = (calib_freq - hene_freq)/1e6
+    
+    wavemeter_offset = 0.8 * (calib_freq - hene_freq)/1e6 - 18.0
 
     ext = str(n)
     wm_str = "{0:.1f}".format(wavemeter_offset)
@@ -48,6 +51,8 @@ for n in range(len(calib_freq_arr)):
     os.system('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=1 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' extension=' + ext)
 
 
+# going back to regular Hene value
+calibrate(hene_freq/1e12)
 
 
 
