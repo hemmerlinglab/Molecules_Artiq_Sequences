@@ -61,6 +61,8 @@ class Scan_Single_Laser_Socket(EnvExperiment):
         
         self.my_setattr('shutter_on',BooleanValue(default=False))
         
+        self.my_setattr('extension',StringValue(default=''))
+        
     def my_setattr(self, arg, val):
         
         # define the attribute
@@ -190,7 +192,7 @@ class Scan_Single_Laser_Socket(EnvExperiment):
 
         # Initializes Artiq (required)
         # get the filename for the scan, e.g. 20190618_105557
-        get_basefilename(self)
+        get_basefilename(self, extension = self.extension)
         # save the config
         save_config(self.basefilename, self.config_dict)
         self.core.reset() 
