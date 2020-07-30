@@ -6,7 +6,7 @@ import time
 
 def calibrate(freq):
     # calibrate wavemeter
-
+    
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('192.168.42.20', 63800)
@@ -19,6 +19,7 @@ def calibrate(freq):
    
     # replace with feedback of wavemeter
     time.sleep(10)
+
 
 if len(sys.argv) == 2:
     if sys.argv[1] == 'run':
@@ -46,10 +47,12 @@ if len(sys.argv) == 2:
             wm_str = "{0:.1f}".format(wavemeter_offset)
             hene_calib_str = "{0:10.6f}".format(calib_freq/1e12)
         
-            #print(wm_str)
-             
+            # scan over AlCl
+            os.system('artiq_run -q Molecules/Scan_Single_Laser_Socket.py wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str)
+        
             # scan over rubidium lines
-            os.system('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=1 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' extension=' + ext)
+            # os.system('artiq_run -q Calibrations/scan_reference_cell_socket.py scan_count=1 setpoint_offset=377.107 wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' extension=' + ext)
+        
         
         
         # going back to regular Hene value
