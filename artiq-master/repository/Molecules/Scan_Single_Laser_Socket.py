@@ -206,6 +206,8 @@ class Scan_Single_Laser_Socket(EnvExperiment):
         self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
         save_config(self.basefilename, self.config_dict)
 
+        add_scan_to_list(self)
+        
         print('Scan ' + self.basefilename + ' finished.')
         print('Scan finished.')
 
