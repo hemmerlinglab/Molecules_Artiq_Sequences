@@ -54,8 +54,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
         
         # Boomy_leans
-        self.my_setattr('yag_check',BooleanValue(default=False))
-        self.my_setattr('blue_check',BooleanValue(default=False))
+        self.my_setattr('yag_check',BooleanValue(default=True))
+        self.my_setattr('blue_check',BooleanValue(default=True))
         
         self.my_setattr('shutter_on',BooleanValue(default=False))
         
