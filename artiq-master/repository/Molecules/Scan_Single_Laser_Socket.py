@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Scan_Single_Laser_Socket(EnvExperiment):
     def build(self):
 
         self.config_dict = []
@@ -42,6 +42,8 @@ class Scan_Single_Laser(EnvExperiment):
         # offset of lasers
         self.my_setattr('offset_laser1',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('wavemeter_offset',NumberValue(default=0.0,unit='MHz',scale=1,ndecimals=6,step=1))
+        self.my_setattr('hene_calibration',NumberValue(default=473.612512,unit='THz',scale=1,ndecimals=6,step=.0000011))
 
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -58,6 +60,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('blue_check',BooleanValue(default=True))
         
         self.my_setattr('shutter_on',BooleanValue(default=False))
+        
+        self.my_setattr('extension',StringValue(default=''))
         
     def my_setattr(self, arg, val):
         
@@ -188,7 +192,7 @@ class Scan_Single_Laser(EnvExperiment):
 
         # Initializes Artiq (required)
         # get the filename for the scan, e.g. 20190618_105557
-        get_basefilename(self)
+        get_basefilename(self, extension = self.extension)
         # save the config
         save_config(self.basefilename, self.config_dict)
         self.core.reset() 
@@ -202,6 +206,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
         save_config(self.basefilename, self.config_dict)
 
+        add_scan_to_list(self)
+        
         print('Scan ' + self.basefilename + ' finished.')
         print('Scan finished.')
 
@@ -262,10 +268,13 @@ class Scan_Single_Laser(EnvExperiment):
         
             self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
-    def set_single_laser(self, my_file, freq):
-        setpoint_file = open(my_file, 'w')
-        setpoint_file.write(str(freq))
-        setpoint_file.close()
+    def set_single_laser(self, channel, freq):
+        #setpoint_file = open(my_file, 'w')
+        #setpoint_file.write(str(freq))
+        #setpoint_file.close()
+                
+        set_laser_frequency(channel, freq + self.wavemeter_offset/1.0e6)
+
 
     def set_lasers(self, nu = 0.0, init = False):
 
@@ -275,24 +284,23 @@ class Scan_Single_Laser(EnvExperiment):
 
             if  self.which_scanning_laser == 1:
                 self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2)
+                self.set_single_laser(1, self.offset_laser1 + nu/1.0e6)
+                self.set_single_laser(2, self.offset_laser2)
 
             elif  self.which_scanning_laser == 2:
                 self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1)
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
+                self.set_single_laser(1, self.offset_laser1)
+                self.set_single_laser(2, self.offset_laser2 + nu/1.0e6)
 
         else:
 
             if  self.which_scanning_laser == 1:
                 self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
+                self.set_single_laser(1, self.offset_laser1 + nu/1.0e6)
 
             elif  self.which_scanning_laser == 2:
                 self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
-
+                self.set_single_laser(2, self.offset_laser2 + nu/1.0e6)
 
 
     def run(self):
