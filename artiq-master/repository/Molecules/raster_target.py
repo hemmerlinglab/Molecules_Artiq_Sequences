@@ -313,7 +313,7 @@ class Raster_Target(EnvExperiment):
                 #print('Done sending ...')
                
                 # allow for some time at the edges
-                if (ny == 0):
+                if (nx == 0):
                     print('Sleeping for 4 ...')
                     time.sleep(4)
 

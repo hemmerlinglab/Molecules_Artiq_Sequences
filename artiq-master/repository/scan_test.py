@@ -43,21 +43,22 @@ def run_seq(ext, laser_freq, wavemeter_offset, calib_freq):
             
     freq_offset_str = "{0:10.6f}".format(laser_freq/1e12)
  
-    os.system('artiq_run -q Molecules/Scan_Single_Laser_Socket.py extension=' + ext + ' scan_count=20 setpoint_count=30 setpoint_min=-275 setpoint_max=275 which_scanning_laser=1 offset_laser1=' + freq_offset_str  + '  wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' yag_check=True blue_check=True')
+    os.system('artiq_run -q Molecules/Scan_Single_Laser_Socket.py extension=' + ext + ' scan_count=10 setpoint_count=20 setpoint_min=-250 setpoint_max=250 which_scanning_laser=1 offset_laser1=' + freq_offset_str  + '  wavemeter_offset=' + wm_str + ' hene_calibration=' + hene_calib_str + ' yag_check=True blue_check=True')
 
 
 
 if len(sys.argv) == 2:
 
-    laser_freq_Q00 = 382.110400e12
-    laser_freq_R00 = 382.115147e12
+    #laser_freq_Q00 = 382.110400e12
+    #laser_freq_R00 = 382.115147e12
+    laser_freq_R11 = 382.120037e12
     hene_freq = 473.612512e12
     
     channel = 1
 
     if sys.argv[1] == 'init':
 
-        laser_freq = laser_freq_R00
+        laser_freq = laser_freq_R11
 
         calibrate(channel, hene_freq/1e12)
         init_freq(channel, laser_freq/1e12)
@@ -79,8 +80,8 @@ if len(sys.argv) == 2:
             # wavemeter_offset (MHz)
             wavemeter_offset = 0.8 * (calib_freq - hene_freq)/1e6 - 18.0
         
-            print('Running scan over R00 - 35')
-            laser_freq = laser_freq_R00
+            print('Running scan over R11 - 35')
+            laser_freq = laser_freq_R11
 
             run_seq('100' + str(n), laser_freq, wavemeter_offset, calib_freq)
             
