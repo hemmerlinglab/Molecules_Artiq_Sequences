@@ -80,7 +80,7 @@ class Scan_Single_Laser(EnvExperiment):
     def fire_and_read(self):
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
         self.sampler0.init() # initializes sampler device
-        
+        # print('made it here')
         ### Set Channel Gain 
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
@@ -90,7 +90,7 @@ class Scan_Single_Laser(EnvExperiment):
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
         data1 = [0]*self.scope_count # fire check data
-        data2 = [0]*self.scope_count # uhv data
+        data2 = [0]*self.scope_count # uhv data (pmt)
         data3 = [0]*self.scope_count # post select, checks spec blue
         data4 = [0]*self.scope_count # post select, checks slow blue
         smp = [0]*8 # individual sample
@@ -191,7 +191,11 @@ class Scan_Single_Laser(EnvExperiment):
         get_basefilename(self)
         # save the config
         save_config(self.basefilename, self.config_dict)
-        self.core.reset() 
+
+        # self.core.reset() #### put in @kernel
+        self.reset_core()
+        # print('made it here')
+
 
     def analyze(self):
         # function is run after the experiment, i.e. after run() is called
@@ -207,6 +211,10 @@ class Scan_Single_Laser(EnvExperiment):
         print('Scan ' + self.basefilename + ' finished.')
         print('Scan finished.')
 
+    @kernel
+    def reset_core(self):
+        self.core.reset()
+
     def check_shot(self):
         repeat_shot = False
 
@@ -217,9 +225,18 @@ class Scan_Single_Laser(EnvExperiment):
 
         # check if spectroscopy light was there
         blue_min = splr.adc_mu_to_volt(40)
-        if self.blue_check and np.min(self.smp_data['spec_check']) < blue_min:
-            repeat_shot = True
-            print('No spectroscopy')
+        if self.which_scanning_laser == 1:
+            if self.blue_check and np.min(self.smp_data['spec_check']) < blue_min:
+                repeat_shot = True
+                print('No spectroscopy')
+
+        elif self.which_scanning_laser == 2:
+            if self.blue_check and np.min(self.smp_data['slow_check']) < blue_min:
+                repeat_shot = True
+                print('No spectroscopy')
+
+        else:
+            print('bad scanning laser')
 
         return repeat_shot
 
@@ -232,7 +249,7 @@ class Scan_Single_Laser(EnvExperiment):
 
         # read laser frequencies
         self.wavemeter_frequencies = get_laser_frequencies()
-
+        
     def average_data(self, first_avg = True):
         # toggle through all channels and average the data
         for channel in self.smp_data_sets.keys():
@@ -326,7 +343,6 @@ class Scan_Single_Laser(EnvExperiment):
               
                 repeat_shot = True
                 while repeat_shot:
-                    
                     # fires yag and reads voltages
                     self.fire_and_read()
 

@@ -67,7 +67,7 @@ if len(sys.argv) == 2:
         
         # loop over calibration frequencies
 
-        calib_freq_arr = np.linspace(hene_freq - 300e6, hene_freq + 300e6, 5)
+        calib_freq_arr = np.linspace(hene_freq - 500e6, hene_freq + 500e6, 10)
         
         #calib_freq_arr = [hene_freq]
         

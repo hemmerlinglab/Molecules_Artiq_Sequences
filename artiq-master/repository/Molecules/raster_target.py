@@ -313,9 +313,9 @@ class Raster_Target(EnvExperiment):
                 #print('Done sending ...')
                
                 # allow for some time at the edges
-                if (nx == 0):
-                    print('Sleeping for 4 ...')
-                    time.sleep(4)
+                if (nx == 0) or (ny == 0):
+                    print('Sleeping for 2 ...')
+                    time.sleep(2)
 
                 sock.close()
                 print('Socket closed ...')

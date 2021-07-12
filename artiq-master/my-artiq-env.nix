@@ -9,11 +9,13 @@ in
       (pkgs.python3.withPackages(ps: [
         # List desired Python packages here.
         artiq-full.artiq
+        artiq-full.artiq-comtools
         # The board packages are also "Python" packages. You only need a board
         # package if you intend to reflash that board (those packages contain
         # only board firmware).
-        artiq-full.artiq-board-kc705-nist_clock
-        artiq-full.artiq-board-kasli-wipm
+        # artiq-full.artiq-board-kc705-nist_clock
+        # artiq-full.artiq-board-kasli-wipm
+        artiq-full.artiq-board-kasli-ucr
         # from the NixOS package collection:
         ps.paramiko  # needed for flashing boards remotely (artiq_flash -H)
         ps.pandas

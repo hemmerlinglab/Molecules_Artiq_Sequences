@@ -33,6 +33,7 @@ def get_laser_frequencies():
 
     # Connect the socket to the port where the server is listening
     #server_address = ('localhost', 10000)
+    # server_address = ('192.168.42.20', 63800)
     server_address = ('192.168.42.20', 62500)
     #print('connecting to %s port %s' % server_address)
     sock.connect(server_address)
@@ -147,7 +148,7 @@ def save_config(basefilename, var_dict):
         #print(config['sequence_file']['val'])
         #print(basefilename + '_sequence')
         shutil.copyfile(config['sequence_file']['val'], basefilename + '_sequence')
-       
+        
         conf_file.close()
         
 
