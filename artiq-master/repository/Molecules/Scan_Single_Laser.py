@@ -26,6 +26,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.setattr_device('ttl5') # uv ccd trigger
         self.setattr_device('ttl8') # slowing shutter
         self.setattr_device('ttl9') # experimental start
+        self.setattr_device('ttl7') # uniblitz shutter control
 
         self.setattr_device('sampler0') # adc voltage sampler
         self.setattr_device('scheduler') # scheduler used
@@ -43,6 +44,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('offset_laser1',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
 
+        self.my_setattr('fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('open_time',NumberValue(default=10,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -58,6 +61,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('blue_check',BooleanValue(default=True))
         
         self.my_setattr('shutter_on',BooleanValue(default=False))
+        self.my_setattr('uniblitz_on',BooleanValue(default=False))
         
     def my_setattr(self, arg, val):
         
@@ -101,7 +105,7 @@ class Scan_Single_Laser(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
-                delay(10*ms) # additional delay since shutter is slow
+                delay(self.fire_time*ms) # additional delay since shutter is slow
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
@@ -117,6 +121,11 @@ class Scan_Single_Laser(EnvExperiment):
                     delay(500*ms)
                     self.ttl8.off()
 
+            with sequential:
+                if self.uniblitz_on:
+                    self.ttl7.on()
+                    delay((13+self.open_time)*ms)
+                    self.ttl7.off()
 
             with sequential:
                 for j in range(self.scope_count):
