@@ -38,12 +38,12 @@ class Raster_Target(EnvExperiment):
         # x
         self.my_setattr('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
         self.my_setattr('max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
-        self.my_setattr('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
+        self.my_setattr('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
         
         # y
         self.my_setattr('min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
         self.my_setattr('max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
-        self.my_setattr('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=1,step=1))
+        self.my_setattr('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
 
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))

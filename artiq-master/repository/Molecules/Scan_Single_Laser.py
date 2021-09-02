@@ -45,7 +45,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
 
         self.my_setattr('fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('open_time',NumberValue(default=10,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('open_time',NumberValue(default=50,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -61,7 +61,7 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('blue_check',BooleanValue(default=True))
         
         self.my_setattr('shutter_on',BooleanValue(default=False))
-        self.my_setattr('uniblitz_on',BooleanValue(default=False))
+        self.my_setattr('uniblitz_on',BooleanValue(default=True))
         
     def my_setattr(self, arg, val):
         
