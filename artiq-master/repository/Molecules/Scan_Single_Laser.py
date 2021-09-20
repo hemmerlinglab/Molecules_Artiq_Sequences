@@ -173,6 +173,14 @@ class Scan_Single_Laser(EnvExperiment):
         self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
 
+        # if int(self.which_scanning_laser) == 1:
+        self.set_dataset('offset1',self.offset_laser1,broadcast=True)
+        # elif int(self.which_scanning_laser) == 2:
+        self.set_dataset('offset2',self.offset_laser2,broadcast=True)
+        # else:
+            # pass
+        self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
+
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
                              {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
                              {'var' : 'freqs', 'name' : 'freqs'},
@@ -233,7 +241,7 @@ class Scan_Single_Laser(EnvExperiment):
             print('No Yag')
 
         # check if spectroscopy light was there
-        blue_min = splr.adc_mu_to_volt(40)
+        blue_min = splr.adc_mu_to_volt(20)
         if self.which_scanning_laser == 1:
             if self.blue_check and np.min(self.smp_data['spec_check']) < blue_min:
                 repeat_shot = True
