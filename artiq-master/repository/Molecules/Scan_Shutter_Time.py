@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Scan_Shutter_Time(EnvExperiment):
     def build(self):
 
         self.config_dict = []
@@ -36,16 +36,22 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
         
         self.my_setattr('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
         self.my_setattr('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
         
         # offset of lasers
         self.my_setattr('offset_laser1',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
 
-        self.my_setattr('fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('open_time',NumberValue(default=50,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
+        
+        # shutter parameters
+        self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('shutter_open_time',NumberValue(default=50,unit='ms',scale=1,ndecimals=0,step=1))
+        
+        self.my_setattr('which_shutter_scan',NumberValue(default=0,unit='',scale=1,ndecimals=0,step=1))
+        self.my_setattr('time_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('time_max',NumberValue(default=50,unit='ms',scale=1,ndecimals=0,step=1))
+        
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -105,7 +111,7 @@ class Scan_Single_Laser(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
-                delay((self.fire_time-0.31)*ms) # additional delay since shutter is slow, subtracting delays until yag fires
+                delay((self.yag_fire_time)*ms) # additional delay since shutter is slow, subtracting delays until yag fires
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
@@ -123,8 +129,9 @@ class Scan_Single_Laser(EnvExperiment):
 
             with sequential:
                 if self.uniblitz_on:
+                    delay((self.shutter_start_time)*ms)
                     self.ttl7.on()
-                    delay((13+self.open_time)*ms)
+                    delay((self.shutter_open_time)*ms)
                     self.ttl7.off()
 
             with sequential:
@@ -156,7 +163,8 @@ class Scan_Single_Laser(EnvExperiment):
                 'ch4' : 'slow_check'
                 }
 
-        self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+        self.scan_interval = np.linspace(self.time_min, self.time_max, self.setpoint_count)
+        
         self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
         self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
@@ -303,6 +311,8 @@ class Scan_Single_Laser(EnvExperiment):
         setpoint_file.write(str(freq))
         setpoint_file.close()
 
+
+
     def set_lasers(self, nu = 0.0, init = False):
 
         if init:
@@ -334,23 +344,28 @@ class Scan_Single_Laser(EnvExperiment):
     def run(self):
 
         # init lasers
-        self.set_lasers(init = True)
+        self.set_lasers(init = False)
        
         # pause to wait till laser settles
         time.sleep(1)
 
         counter = 0
+            
+        self.set_lasers()
+
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
 
-            self.set_lasers(nu)
-
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
+            
+            print(str(nu) + ' ms')
 
-            if n == 0:
-                time.sleep(0.1)
+            if self.which_shutter_scan == 0:
+                self.shutter_start_time = nu
             else:
-                time.sleep(0.1)
+                self.shutter_open_time = nu
+
+            time.sleep(0.1)
 
             self.smp_data_avg = {}
             # loop over averages
