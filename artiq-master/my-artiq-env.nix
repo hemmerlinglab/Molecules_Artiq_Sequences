@@ -17,18 +17,18 @@ in
         # artiq-full.artiq-board-kasli-wipm
         artiq-full.artiq-board-kasli-ucr
         # from the NixOS package collection:
-        ps.paramiko  # needed for flashing boards remotely (artiq_flash -H)
-        ps.pandas
+        # ps.paramiko  # needed for flashing boards remotely (artiq_flash -H)
+        # ps.pandas
         ps.numpy
         ps.scipy
-        ps.numba
-		  ps.usbtmc
-#        (ps.matplotlib.override { enableQt = true; })
+        # ps.numba
+		  # ps.usbtmc
+        (ps.matplotlib.override { enableQt = true; })
 #        ps.bokeh
       ]))
       # List desired non-Python packages here
       artiq-full.openocd  # needed for flashing boards, also provides proxy bitstreams
-      pkgs.spyder
+      # pkgs.spyder
     ];
   }
 

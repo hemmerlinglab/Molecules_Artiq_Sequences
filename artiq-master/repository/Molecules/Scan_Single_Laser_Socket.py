@@ -45,6 +45,10 @@ class Scan_Single_Laser_Socket(EnvExperiment):
         self.my_setattr('wavemeter_offset',NumberValue(default=0.0,unit='MHz',scale=1,ndecimals=6,step=1))
         self.my_setattr('hene_calibration',NumberValue(default=473.612512,unit='THz',scale=1,ndecimals=6,step=.0000011))
 
+        self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
+
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -105,7 +109,7 @@ class Scan_Single_Laser_Socket(EnvExperiment):
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
-                delay(10*ms) # additional delay since shutter is slow
+                delay((self.yag_fire_time)*ms) # additional delay since shutter is slow
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
@@ -121,6 +125,12 @@ class Scan_Single_Laser_Socket(EnvExperiment):
                     delay(500*ms)
                     self.ttl8.off()
 
+            with sequential:
+                if self.uniblitz_on:
+                    delay((self.shutter_start_time)*ms)
+                    self.ttl7.on()
+                    delay((self.shutter_open_time)*ms)
+                    self.ttl7.off()
 
             with sequential:
                 for j in range(self.scope_count):

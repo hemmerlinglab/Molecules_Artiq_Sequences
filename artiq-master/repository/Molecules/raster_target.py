@@ -34,6 +34,7 @@ class Raster_Target(EnvExperiment):
         # EnvExperiment attribute: number of voltage samples per scan
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
  
         # x
         self.my_setattr('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
@@ -104,8 +105,10 @@ class Raster_Target(EnvExperiment):
             
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
+                delay((self.yag_fire_time)*ms)
 
-                delay(10*ms) # additional delay since shutter is slow
+
+                #delay(10*ms) # additional delay since shutter is slow
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp

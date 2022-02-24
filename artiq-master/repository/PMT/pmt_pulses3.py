@@ -17,7 +17,7 @@ def print_underflow():
 
 
 # Class which defines the pmt counting experiment
-class DAQ(EnvExperiment):
+class DAQ7(EnvExperiment):
     def build(self):
          self.setattr_device('core') # need the core for everything
          self.setattr_device('ttl3') # where pulses are being sent in by ttl

@@ -10,7 +10,7 @@ import numpy as np
 def print_underflow():
     print('RTIO underflow occured')
 
-class DAQ(EnvExperiment):
+class DAQ5(EnvExperiment):
     def build(self):
         self.setattr_device('core')
         # define ttl port being used for pmt test

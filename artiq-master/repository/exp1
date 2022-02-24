@@ -12,7 +12,7 @@ def print_underflow():
 
 
  # define ttl pVort being used for pmt test
-class DAQ(EnvExperiment):
+class DAQ3(EnvExperiment):
     def build(self):
          self.setattr_device('core') # need the core for everything
          self.setattr_device('ttl3') # where pulses are being sent in by ttli

@@ -46,7 +46,7 @@ class Scan_Shutter_Time(EnvExperiment):
         
         # shutter parameters
         self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('shutter_open_time',NumberValue(default=50,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
         
         self.my_setattr('which_shutter_scan',NumberValue(default=0,unit='',scale=1,ndecimals=0,step=1))
         self.my_setattr('time_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))

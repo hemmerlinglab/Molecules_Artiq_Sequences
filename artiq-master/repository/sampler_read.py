@@ -13,7 +13,7 @@ import numpy as np
 def print_underflow():
     print('RTIO underflow occured')
 
-class DAQ(EnvExperiment):
+class DAQ2(EnvExperiment):
     def build(self):
         self.setattr_device('core')
         self.setattr_device('ttl11') # experiment start
