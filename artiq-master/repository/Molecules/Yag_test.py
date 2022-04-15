@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Yag_Test(EnvExperiment):
     def build(self):
 
         self.config_dict = []
@@ -36,8 +36,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
         
         self.my_setattr('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
+        #self.my_setattr('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
+        #self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
         self.my_setattr('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
         
         # offset of lasers
@@ -159,7 +159,7 @@ class Scan_Single_Laser(EnvExperiment):
                 'ch4' : 'spec_check'
                 }
 
-        self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+        self.scan_interval = np.linspace(0,1,self.setpoint_count)
         self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
         self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
@@ -297,9 +297,10 @@ class Scan_Single_Laser(EnvExperiment):
         self.mutate_dataset('in_cell_spectrum', n, self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',     n, self.smp_data_avg['pmt'])
         
-        # display average signals
+        
         self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
         self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+        
 
         # save each successful shot in ch<number>_arr datasets
         # needs fixing since the number of channels is hardcoded here
@@ -340,8 +341,6 @@ class Scan_Single_Laser(EnvExperiment):
                 self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
                 self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
 
-
-
     def run(self):
 
         # init lasers
@@ -350,51 +349,40 @@ class Scan_Single_Laser(EnvExperiment):
         # pause to wait till laser settles
         time.sleep(1)
 
-        # counter counts setpoints and averages
         counter = 0
-        # loop over setpoints
-        for n, nu in enumerate(self.scan_interval): 
 
-            self.set_lasers(nu)
-
-            print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
-
-            if n == 0:
-                time.sleep(0.1)
-            else:
-                time.sleep(0.1)
+        n = 0
+        # infinite loop
+        while True:
 
             self.smp_data_avg = {}
+             
             # loop over averages
             for i_avg in range(self.scan_count):                
+                
                 print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
+            
                 self.scheduler.pause()                
               
-                repeat_shot = True
-                while repeat_shot:
-                    # fires yag and reads voltages
-                    self.fire_and_read()
+                self.fire_and_read()
 
-                    # readout the data
-                    self.readout_data()
+                # readout the data
+                self.readout_data()
 
-                    repeat_shot = self.check_shot()
-                    if repeat_shot == False:                        
-                        # upon success add data to dataset
-                        self.average_data(first_avg = (i_avg == 0))
-                        
-                        if i_avg == 0:
-                            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-                            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-                        else:
-                            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-                            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+                self.average_data(first_avg = (i_avg == 0))
+                     
+                if i_avg == 0:
+                    self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
+                    self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+                else:
+                    self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
+                    self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
 
-                        self.update_data(counter, n)
+                self.update_data(counter, n)
 
-                        counter += 1
-                    
-                    time.sleep(self.repetition_time)
+                #counter = (counter + 1)
+
+                time.sleep(self.repetition_time)
 
             print()
             print()
