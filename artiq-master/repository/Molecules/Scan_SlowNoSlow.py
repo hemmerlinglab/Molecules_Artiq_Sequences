@@ -14,7 +14,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Scan_SlowNoSlow(EnvExperiment):
     def build(self):
 
         self.config_dict = []
@@ -64,8 +64,9 @@ class Scan_Single_Laser(EnvExperiment):
         # Boomy_leans
         self.my_setattr('yag_check',BooleanValue(default=True))
         self.my_setattr('blue_check',BooleanValue(default=True))
-        
-        self.my_setattr('shutter_on',BooleanValue(default=False))
+       
+        # slowing laser shutter
+        self.my_setattr('slowing_shutter_on',BooleanValue(default=False))
         self.my_setattr('uniblitz_on',BooleanValue(default=True))
         
     def my_setattr(self, arg, val):
@@ -120,8 +121,8 @@ class Scan_Single_Laser(EnvExperiment):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
-                if self.shutter_on:
-                    # shut slowing laser off from the start                    
+                if self.slowing_shutter_on:
+                    # when the trigger is set, the slowing laser is shut off
                     delay((self.slowing_shutter_start_time)*ms)
                     self.ttl8.on()
                     delay((self.slowing_shutter_duration)*ms)
@@ -129,6 +130,7 @@ class Scan_Single_Laser(EnvExperiment):
 
             with sequential:
                 if self.uniblitz_on:
+                    # this is the shutter inside the dewar
                     delay((self.shutter_start_time)*ms)
                     self.ttl7.on()
                     delay((self.shutter_open_time)*ms)
@@ -174,11 +176,20 @@ class Scan_Single_Laser(EnvExperiment):
         self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
         self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
         
+        # data set without slowing
         self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch1_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+
+        # data set with slowing
+        self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch1_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch2_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch3_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+        self.set_dataset('ch4_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
+
 
         # dataset for plotting average signals
         self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
@@ -201,6 +212,11 @@ class Scan_Single_Laser(EnvExperiment):
                              {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
                              {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
                              {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
+                             {'var' : 'ch0_slow_arr', 'name' : self.smp_data_sets['ch0']},
+                             {'var' : 'ch1_slow_arr', 'name' : self.smp_data_sets['ch1']},
+                             {'var' : 'ch2_slow_arr', 'name' : self.smp_data_sets['ch2']},
+                             {'var' : 'ch3_slow_arr', 'name' : self.smp_data_sets['ch3']},
+                             {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']}
                              ]
 
         # save sequence file name
@@ -310,8 +326,11 @@ class Scan_Single_Laser(EnvExperiment):
         for k in range(5):
             slice_ind = (counter)
             hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
-        
-            self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+                    
+            if slowing_data:
+                self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
+            else:
+                self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
     def set_single_laser(self, my_file, freq):
         setpoint_file = open(my_file, 'w')
@@ -356,6 +375,7 @@ class Scan_Single_Laser(EnvExperiment):
 
         # counter counts setpoints and averages
         counter = 0
+
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
 
@@ -368,37 +388,53 @@ class Scan_Single_Laser(EnvExperiment):
             else:
                 time.sleep(0.1)
 
-            self.smp_data_avg = {}
-            # loop over averages
-            for i_avg in range(self.scan_count):                
-                print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
-                self.scheduler.pause()                
-              
-                repeat_shot = True
-                while repeat_shot:
-                    # fires yag and reads voltages
-                    self.fire_and_read()
+            for i_slow in range(2):
 
-                    # readout the data
-                    self.readout_data()
+                if i_slow == 0:
+                    slowing_data = True
+                    print('\nSlowing shot')
+                    self.slowing_shutter_on = True
+                else:
+                    slowing_data = False
+                    print('\nNo slowing shot')
+                    self.slowing_shutter_on = False
 
-                    repeat_shot = self.check_shot()
-                    if repeat_shot == False:                        
-                        # upon success add data to dataset
-                        self.average_data(first_avg = (i_avg == 0))
+                    # reset counter since we are doing double the shots
+                    counter -= len(range(self.scan_count))
+
+                self.smp_data_avg = {}
+                # loop over averages
+                for i_avg in range(self.scan_count):                
+                    print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
+                    self.scheduler.pause()                
+                  
+                    repeat_shot = True
+                    while repeat_shot:
+
+                        # fires yag and reads voltages
+                        self.fire_and_read()
+
+                        # readout the data
+                        self.readout_data()
+
+                        repeat_shot = self.check_shot()
+                        if repeat_shot == False:                        
+                            # upon success add data to dataset
+                            self.average_data(first_avg = (i_avg == 0))
+        
+                            # these lines are just for the purposes of displaying the averages on the screen
+                            if i_avg == 0:
+                                self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
+                                self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+                            else:
+                                self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
+                                self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+
+                            self.update_data(counter, n, slowing_data = slowing_data)
+
+                            counter += 1
                         
-                        if i_avg == 0:
-                            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-                            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-                        else:
-                            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-                            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
-
-                        self.update_data(counter, n)
-
-                        counter += 1
-                    
-                    time.sleep(self.repetition_time)
+                        time.sleep(self.repetition_time)
 
             print()
             print()
