@@ -48,6 +48,8 @@ class Yag_Test(EnvExperiment):
         self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
         
+        self.my_setattr('slowing_shutter_start_time',NumberValue(default=5,unit='ms',scale=1,ndecimals=0,step=1))
+        
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -119,6 +121,7 @@ class Yag_Test(EnvExperiment):
             with sequential:
                 if self.shutter_on:
                     # shut slowing laser off from the start
+                    delay((self.slowing_shutter_start_time)*ms)
                     self.ttl8.on()
                     delay(500*ms)
                     self.ttl8.off()
