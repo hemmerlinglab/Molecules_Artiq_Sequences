@@ -42,7 +42,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
         
         # offset of lasers
-        self.my_setattr('offset_laser1',NumberValue(default=375.762800,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser1',NumberValue(default=375.762950,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763102,unit='THz',scale=1,ndecimals=6,step=.000001))
 
         self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
@@ -64,10 +64,10 @@ class Scan_SlowNoSlow(EnvExperiment):
         
         # Boomy_leans
         self.my_setattr('yag_check',BooleanValue(default=True))
-        self.my_setattr('blue_check',BooleanValue(default=True))
+        self.my_setattr('blue_check',BooleanValue(default=False))
        
         # slowing laser shutter
-        self.my_setattr('slowing_laser_shutter_on',BooleanValue(default=False))
+        self.my_setattr('slowing_laser_shutter_on',BooleanValue(default=True))
         self.my_setattr('uniblitz_on',BooleanValue(default=True))
         
     def my_setattr(self, arg, val):
