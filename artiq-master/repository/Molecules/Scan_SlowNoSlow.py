@@ -33,23 +33,24 @@ class Scan_SlowNoSlow(EnvExperiment):
 
         # EnvExperiment attribute: number of voltage samples per scan
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-        self.my_setattr('scan_count',NumberValue(default=2,unit='averages',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scan_count',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
         
         self.my_setattr('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_min',NumberValue(default=-750,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.my_setattr('setpoint_max',NumberValue(default=1500,unit='MHz',scale=1,ndecimals=0,step=1))
-        self.my_setattr('which_scanning_laser',NumberValue(default=1,unit='',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
+        self.my_setattr('setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
+        #self.my_setattr('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
+        self.my_setattr('scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
         
         # offset of lasers
-        self.my_setattr('offset_laser1',NumberValue(default=382.11035,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.my_setattr('offset_laser2',NumberValue(default=375.763,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser1',NumberValue(default=375.762800,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser2',NumberValue(default=375.763102,unit='THz',scale=1,ndecimals=6,step=.000001))
 
         self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
         
-        self.my_setattr('slowing_shutter_start_time',NumberValue(default=16,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('slowing_shutter_duration',NumberValue(default=20,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('slowing_shutter_start_time',NumberValue(default=10,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('slowing_shutter_duration',NumberValue(default=40,unit='ms',scale=1,ndecimals=0,step=1))
         
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -57,7 +58,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-        self.my_setattr('repetition_time',NumberValue(default=0.1,unit='s',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
         
@@ -66,7 +67,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('blue_check',BooleanValue(default=True))
        
         # slowing laser shutter
-        self.my_setattr('slowing_shutter_on',BooleanValue(default=False))
+        self.my_setattr('slowing_laser_shutter_on',BooleanValue(default=False))
         self.my_setattr('uniblitz_on',BooleanValue(default=True))
         
     def my_setattr(self, arg, val):
@@ -105,6 +106,10 @@ class Scan_SlowNoSlow(EnvExperiment):
         data4 = [0]*self.scope_count # post select, checks slow blue
         smp = [0]*8 # individual sample
 
+        ## shut slowing laser off before anything starts
+        #if not self.slowing_laser_shutter_on:
+        #    self.ttl8.on()
+
         ### Fire and sample
         with parallel:
             
@@ -121,12 +126,15 @@ class Scan_SlowNoSlow(EnvExperiment):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
-                if self.slowing_shutter_on:
+                if self.slowing_laser_shutter_on:
                     # when the trigger is set, the slowing laser is shut off
                     delay((self.slowing_shutter_start_time)*ms)
                     self.ttl8.on()
                     delay((self.slowing_shutter_duration)*ms)
                     self.ttl8.off()
+                else:
+                    self.ttl8.on()
+
 
             with sequential:
                 if self.uniblitz_on:
@@ -146,6 +154,9 @@ class Scan_SlowNoSlow(EnvExperiment):
                     data4[j] = smp[4]
                     #delay(5*us)
                     delay(self.step_size*us) # plus 9us from sample_mu
+
+        # release shutter of slowing laser
+        self.ttl8.off()
 
         ### Allocate and Transmit Data All Channels
         self.set_dataset('ch0', (data0), broadcast = True)
@@ -194,13 +205,14 @@ class Scan_SlowNoSlow(EnvExperiment):
         # dataset for plotting average signals
         self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
         self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
-        
-        # if int(self.which_scanning_laser) == 1:
+                
+        if self.scanning_laser == 'Hodor':
+            self.which_scanning_laser = 2
+        elif self.scanning_laser == 'Davos':
+            self.which_scanning_laser = 1
+ 
         self.set_dataset('offset1',self.offset_laser1,broadcast=True)
-        # elif int(self.which_scanning_laser) == 2:
         self.set_dataset('offset2',self.offset_laser2,broadcast=True)
-        # else:
-            # pass
         self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
 
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
@@ -365,8 +377,7 @@ class Scan_SlowNoSlow(EnvExperiment):
 
 
 
-    def run(self):
-
+    def run(self):               
         # init lasers
         self.set_lasers(init = True)
        

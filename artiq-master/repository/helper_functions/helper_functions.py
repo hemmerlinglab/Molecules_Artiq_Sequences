@@ -28,6 +28,7 @@ def set_laser_frequency(channel, frequency):
 
 def get_laser_frequencies():
 
+    #print('Getting laser frequencies ...')
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -35,6 +36,9 @@ def get_laser_frequencies():
     #server_address = ('localhost', 10000)
     # server_address = ('192.168.42.20', 63800)
     server_address = ('192.168.42.20', 62500)
+
+    #sock.settimeout(5)
+
     #print('connecting to %s port %s' % server_address)
     sock.connect(server_address)
 
