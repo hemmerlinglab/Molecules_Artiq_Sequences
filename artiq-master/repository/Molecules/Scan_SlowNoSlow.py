@@ -19,7 +19,7 @@ class Scan_SlowNoSlow(EnvExperiment):
 
         self.config_dict = []
         self.wavemeter_frequencies = []
-        
+
         self.setattr_device('core') # Core Artiq Device (required)
         self.setattr_device('ttl4') # flash-lamp
         self.setattr_device('ttl6') # q-switch
@@ -34,13 +34,13 @@ class Scan_SlowNoSlow(EnvExperiment):
         # EnvExperiment attribute: number of voltage samples per scan
         self.my_setattr('scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
         self.my_setattr('scan_count',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
-        
+
         self.my_setattr('setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
         self.my_setattr('setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
         self.my_setattr('setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
         #self.my_setattr('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
         self.my_setattr('scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
-        
+
         # offset of lasers
         self.my_setattr('offset_laser1',NumberValue(default=375.762950,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763102,unit='THz',scale=1,ndecimals=6,step=.000001))
@@ -48,10 +48,10 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
-        
+
         self.my_setattr('slowing_shutter_start_time',NumberValue(default=10,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('slowing_shutter_duration',NumberValue(default=40,unit='ms',scale=1,ndecimals=0,step=1))
-        
+
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -61,17 +61,17 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
-        
+
         # Boomy_leans
         self.my_setattr('yag_check',BooleanValue(default=True))
         self.my_setattr('blue_check',BooleanValue(default=False))
-       
+
         # slowing laser shutter
         self.my_setattr('slowing_laser_shutter_on',BooleanValue(default=True))
         self.my_setattr('uniblitz_on',BooleanValue(default=True))
-        
+
     def my_setattr(self, arg, val):
-        
+
         # define the attribute
         self.setattr_argument(arg,val)
 
@@ -92,12 +92,12 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
         self.sampler0.init() # initializes sampler device
         # print('made it here')
-        ### Set Channel Gain 
+        ### Set Channel Gain
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
-        
+
         delay(260*us)
-        
+
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
         data1 = [0]*self.scope_count # fire check data
@@ -112,7 +112,7 @@ class Scan_SlowNoSlow(EnvExperiment):
 
         ### Fire and sample
         with parallel:
-            
+
             with sequential:
                 self.ttl9.pulse(10*us) # experimental start
 
@@ -156,7 +156,7 @@ class Scan_SlowNoSlow(EnvExperiment):
                     delay(self.step_size*us) # plus 9us from sample_mu
 
         # release shutter of slowing laser
-        self.ttl8.off()
+        #self.ttl8.off()
 
         ### Allocate and Transmit Data All Channels
         self.set_dataset('ch0', (data0), broadcast = True)
@@ -186,7 +186,7 @@ class Scan_SlowNoSlow(EnvExperiment):
 
         self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
         self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
-        
+
         # data set without slowing
         self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
         self.set_dataset('ch1_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
@@ -205,12 +205,12 @@ class Scan_SlowNoSlow(EnvExperiment):
         # dataset for plotting average signals
         self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
         self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
-                
+
         if self.scanning_laser == 'Hodor':
             self.which_scanning_laser = 2
         elif self.scanning_laser == 'Davos':
             self.which_scanning_laser = 1
- 
+
         self.set_dataset('offset1',self.offset_laser1,broadcast=True)
         self.set_dataset('offset2',self.offset_laser2,broadcast=True)
         self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
@@ -263,7 +263,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         save_config(self.basefilename, self.config_dict)
 
         add_scan_to_list(self)
-        
+
         print('Scan ' + self.basefilename + ' finished.')
         print('Scan finished.')
 
@@ -305,30 +305,30 @@ class Scan_SlowNoSlow(EnvExperiment):
 
         # read laser frequencies
         self.wavemeter_frequencies = get_laser_frequencies()
-        
+
     def average_data(self, first_avg = True):
         # toggle through all channels and average the data
         for channel in self.smp_data_sets.keys():
-            
+
             # needs slices for each channel
             ind_1 = int(self.slice_min * 1e3/self.step_size)
             ind_2 = int(self.slice_max * 1e3/self.step_size)
-        
-            # self.smp_data['pmt_spectrum'] = ...                            
+
+            # self.smp_data['pmt_spectrum'] = ...
             ds = self.smp_data[self.smp_data_sets[channel]]
-        
+
             if first_avg:
                 self.smp_data_avg[self.smp_data_sets[channel]]  = np.sum(ds[ind_1:ind_2])
             else:
                 self.smp_data_avg[self.smp_data_sets[channel]] += np.sum(ds[ind_1:ind_2])
-               
+
     def update_data(self, counter, n, slowing_data = False):
         # this updates the gui for every shot
         self.mutate_dataset('set_points', counter, self.current_setpoint)
         self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
         self.mutate_dataset('in_cell_spectrum', n, self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',     n, self.smp_data_avg['pmt'])
-        
+
         # display average signals
         self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
         self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
@@ -338,7 +338,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         for k in range(5):
             slice_ind = (counter)
             hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
-                    
+
             if slowing_data:
                 self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
             else:
@@ -377,10 +377,10 @@ class Scan_SlowNoSlow(EnvExperiment):
 
 
 
-    def run(self):               
+    def run(self):
         # init lasers
         self.set_lasers(init = True)
-       
+
         # pause to wait till laser settles
         time.sleep(1)
 
@@ -388,7 +388,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         counter = 0
 
         # loop over setpoints
-        for n, nu in enumerate(self.scan_interval): 
+        for n, nu in enumerate(self.scan_interval):
 
             self.set_lasers(nu)
 
@@ -415,10 +415,10 @@ class Scan_SlowNoSlow(EnvExperiment):
 
                 self.smp_data_avg = {}
                 # loop over averages
-                for i_avg in range(self.scan_count):                
+                for i_avg in range(self.scan_count):
                     print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
-                    self.scheduler.pause()                
-                  
+                    self.scheduler.pause()
+
                     repeat_shot = True
                     while repeat_shot:
 
@@ -429,10 +429,10 @@ class Scan_SlowNoSlow(EnvExperiment):
                         self.readout_data()
 
                         repeat_shot = self.check_shot()
-                        if repeat_shot == False:                        
+                        if repeat_shot == False:
                             # upon success add data to dataset
                             self.average_data(first_avg = (i_avg == 0))
-        
+
                             # these lines are just for the purposes of displaying the averages on the screen
                             if i_avg == 0:
                                 self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
@@ -444,9 +444,8 @@ class Scan_SlowNoSlow(EnvExperiment):
                             self.update_data(counter, n, slowing_data = slowing_data)
 
                             counter += 1
-                        
+
                         time.sleep(self.repetition_time)
 
             print()
             print()
-
