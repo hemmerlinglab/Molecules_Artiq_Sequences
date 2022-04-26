@@ -42,15 +42,18 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
 
         # offset of lasers
-        self.my_setattr('offset_laser1',NumberValue(default=375.762950,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.my_setattr('offset_laser2',NumberValue(default=375.763102,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser1',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser2',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
 
-        self.my_setattr('yag_fire_time',NumberValue(default=13,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('shutter_open_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('yag_fire_time',NumberValue(default=20,unit='ms',scale=1,ndecimals=0,step=1))
 
-        self.my_setattr('slowing_shutter_start_time',NumberValue(default=10,unit='ms',scale=1,ndecimals=0,step=1))
-        self.my_setattr('slowing_shutter_duration',NumberValue(default=40,unit='ms',scale=1,ndecimals=0,step=1))
+        # dewar shutter
+        self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('shutter_open_time',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
+
+        # slowing laser shutter
+        self.my_setattr('slowing_shutter_start_time',NumberValue(default=4.5,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slowing_shutter_duration',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
 
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -59,7 +62,7 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
 
         self.my_setattr('repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
-        self.my_setattr('yag_power',NumberValue(default=5,unit='',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('yag_power',NumberValue(default=7,unit='',scale=1,ndecimals=1,step=0.1))
         self.my_setattr('he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
 
         # Boomy_leans
@@ -73,7 +76,7 @@ class Scan_SlowNoSlow(EnvExperiment):
     def my_setattr(self, arg, val):
 
         # define the attribute
-        self.setattr_argument(arg,val)
+        self.setattr_argument(arg, val)
 
         # add each attribute to the config dictionary
         if hasattr(val, 'unit'):
@@ -107,8 +110,72 @@ class Scan_SlowNoSlow(EnvExperiment):
         smp = [0]*8 # individual sample
 
         ## shut slowing laser off before anything starts
-        #if not self.slowing_laser_shutter_on:
-        #    self.ttl8.on()
+        self.ttl8.on()
+        delay(25*ms)
+
+        ### Fire and sample
+        with parallel:
+
+            with sequential:
+                self.ttl9.pulse(10*us) # experimental start
+
+                delay((self.yag_fire_time)*ms) # additional delay since shutter is slow, subtracting delays until yag fires
+
+                delay(150*us)
+                self.ttl4.pulse(15*us) # trigger flash lamp
+                delay(135*us) # wait optimal time (see Minilite manual)
+                self.ttl6.pulse(15*us) # trigger q-switch, <------------------ YAG FIRES ON (60ns after) THIS RISING EDGE
+                delay(100*us) # wait until some time after green flash
+                self.ttl5.pulse(15*us) # trigger uv ccd
+
+            with sequential:
+                if self.uniblitz_on:
+                    # this is the shutter inside the dewar
+                    # shutter needs 13ms to start opening
+                    delay((self.shutter_start_time)*ms)
+                    self.ttl7.on()
+                    delay((self.shutter_open_time)*ms)
+                    self.ttl7.off()
+
+            with sequential:
+                for j in range(self.scope_count):
+                    self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
+                    data0[j] = smp[0]
+                    data1[j] = smp[1]
+                    data2[j] = smp[2]
+                    data3[j] = smp[3]
+                    data4[j] = smp[4]
+                    #delay(5*us)
+                    delay(self.step_size*us) # plus 9us from sample_mu
+
+        # release shutter of slowing laser
+        self.ttl8.off()
+
+        ### Allocate and Transmit Data All Channels
+        self.set_dataset('ch0', (data0), broadcast = True)
+        self.set_dataset('ch1', (data1), broadcast = True)
+        self.set_dataset('ch2', (data2), broadcast = True)
+        self.set_dataset('ch3', (data3), broadcast = True)
+        self.set_dataset('ch4', (data4), broadcast = True)
+
+    @kernel
+    def fire_and_read_slow(self):
+        self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
+        self.sampler0.init() # initializes sampler device
+        # print('made it here')
+        ### Set Channel Gain
+        for i in range(8):
+            self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
+
+        delay(260*us)
+
+        ### Data Variable Initialization
+        data0 = [0]*self.scope_count # signal data
+        data1 = [0]*self.scope_count # fire check data
+        data2 = [0]*self.scope_count # uhv data (pmt)
+        data3 = [0]*self.scope_count # post select, checks spec blue
+        data4 = [0]*self.scope_count # post select, checks slow blue
+        smp = [0]*8 # individual sample
 
         ### Fire and sample
         with parallel:
@@ -132,13 +199,12 @@ class Scan_SlowNoSlow(EnvExperiment):
                     self.ttl8.on()
                     delay((self.slowing_shutter_duration)*ms)
                     self.ttl8.off()
-                else:
-                    self.ttl8.on()
 
 
             with sequential:
                 if self.uniblitz_on:
                     # this is the shutter inside the dewar
+                    # shutter needs 13ms to start opening
                     delay((self.shutter_start_time)*ms)
                     self.ttl7.on()
                     delay((self.shutter_open_time)*ms)
@@ -404,11 +470,11 @@ class Scan_SlowNoSlow(EnvExperiment):
                 if i_slow == 0:
                     slowing_data = True
                     print('\nSlowing shot')
-                    self.slowing_shutter_on = True
+                    #self.slowing_shutter_on = True
                 else:
                     slowing_data = False
                     print('\nNo slowing shot')
-                    self.slowing_shutter_on = False
+                    #self.slowing_shutter_on = False
 
                     # reset counter since we are doing double the shots
                     counter -= len(range(self.scan_count))
@@ -423,7 +489,10 @@ class Scan_SlowNoSlow(EnvExperiment):
                     while repeat_shot:
 
                         # fires yag and reads voltages
-                        self.fire_and_read()
+                        if slowing_data:
+                            self.fire_and_read_slow()
+                        else:
+                            self.fire_and_read()
 
                         # readout the data
                         self.readout_data()
