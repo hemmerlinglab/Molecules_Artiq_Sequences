@@ -425,24 +425,24 @@ class Scan_SlowNoSlow(EnvExperiment):
             nu = np.min(self.scan_interval)
 
             if  self.which_scanning_laser == 1:
-                self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2)
+                self.current_setpoint = nu
+                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
+                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor)
 
             elif  self.which_scanning_laser == 2:
-                self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1)
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
+                self.current_setpoint = nu
+                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos)
+                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
 
         else:
 
             if  self.which_scanning_laser == 1:
-                self.current_setpoint = nu #self.offset_laser1 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser1 + nu/1.0e6)
+                self.current_setpoint = nu
+                self.set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
 
             elif  self.which_scanning_laser == 2:
-                self.current_setpoint = nu #self.offset_laser2 + nu/1.0e6
-                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser2 + nu/1.0e6)
+                self.current_setpoint = nu
+                self.set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
 
 
 
