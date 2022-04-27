@@ -42,8 +42,8 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
 
         # offset of lasers
-        self.my_setattr('offset_laser1',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
-        self.my_setattr('offset_laser2',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
+        self.my_setattr('offset_laser_Hodor',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
 
         self.my_setattr('yag_fire_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
         self.my_setattr('sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
@@ -280,8 +280,8 @@ class Scan_SlowNoSlow(EnvExperiment):
         elif self.scanning_laser == 'Davos':
             self.which_scanning_laser = 1
 
-        self.set_dataset('offset1',self.offset_laser1,broadcast=True)
-        self.set_dataset('offset2',self.offset_laser2,broadcast=True)
+        self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
+        self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
         self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
 
         self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
