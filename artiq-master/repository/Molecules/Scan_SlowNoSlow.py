@@ -45,15 +45,16 @@ class Scan_SlowNoSlow(EnvExperiment):
         self.my_setattr('offset_laser1',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
         self.my_setattr('offset_laser2',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
 
-        self.my_setattr('yag_fire_time',NumberValue(default=20,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('yag_fire_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
+        self.my_setattr('sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
 
         # dewar shutter
-        self.my_setattr('shutter_start_time',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.my_setattr('shutter_open_time',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('shutter_start_time',NumberValue(default=15,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('shutter_open_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=1,step=0.1))
 
         # slowing laser shutter
         self.my_setattr('slowing_shutter_start_time',NumberValue(default=4.5,unit='ms',scale=1,ndecimals=1,step=0.1))
-        self.my_setattr('slowing_shutter_duration',NumberValue(default=40,unit='ms',scale=1,ndecimals=1,step=0.1))
+        self.my_setattr('slowing_shutter_duration',NumberValue(default=60,unit='ms',scale=1,ndecimals=1,step=0.1))
 
         self.my_setattr('step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
         self.my_setattr('slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -138,6 +139,7 @@ class Scan_SlowNoSlow(EnvExperiment):
                     self.ttl7.off()
 
             with sequential:
+                delay(self.sampler_delay_time*ms)
                 for j in range(self.scope_count):
                     self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
                     data0[j] = smp[0]
@@ -211,6 +213,7 @@ class Scan_SlowNoSlow(EnvExperiment):
                     self.ttl7.off()
 
             with sequential:
+                delay(self.sampler_delay_time*ms)
                 for j in range(self.scope_count):
                     self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
                     data0[j] = smp[0]
