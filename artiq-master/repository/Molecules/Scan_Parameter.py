@@ -7,7 +7,7 @@ import os
 import time
 import csv
 
-from base_functions import *
+from base_functions_parameter_scan import *
 from base_sequences import *
 
 import sys
@@ -17,7 +17,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Scan_Parameter(EnvExperiment):
     
     def build(self):
         base_build(self)
@@ -33,27 +33,36 @@ class Scan_Single_Laser(EnvExperiment):
     def reset_core(self):
         self.core.reset()
 
-    def run(self):
 
-        # init lasers
-        set_lasers(self, init = True)
-       
-        # pause to wait till laser settles
-        time.sleep(1)
+    def set_flow(self, flow, wait_time = 10.0):
+
+        # Create a TCP/IP socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = ('192.168.42.30', 63800)
+        print('connecting to %s port %s' % server_address)
+        sock.connect(server_address)
+    
+        message = "{0:2.1f}".format(flow / 5.0)
+        sock.sendall(message.encode())
+        sock.close()
+ 
+        time.sleep(wait_time)
+
+        return
+
+
+    def run(self):
 
         # counter counts setpoints and averages
         counter = 0
         # loop over setpoints
-        for n, nu in enumerate(self.scan_interval): 
+        for n, flow in enumerate(self.scan_interval): 
 
-            set_lasers(self, nu)
+            # set Helium flow
+            self.set_flow(flow)
+            self.current_setpoint = flow
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
-
-            if n == 0:
-                time.sleep(0.1)
-            else:
-                time.sleep(0.1)
 
             self.smp_data_avg = {}
             # loop over averages
@@ -90,3 +99,4 @@ class Scan_Single_Laser(EnvExperiment):
             print()
             print()
 
+        self.set_flow(0.0)

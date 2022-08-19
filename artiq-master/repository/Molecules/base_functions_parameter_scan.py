@@ -42,9 +42,9 @@ def base_build(self):
     my_setattr(self, 'scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'scan_count',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
 
-    my_setattr(self, 'setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
+    #my_setattr(self, 'setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
+    #my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
+    #my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
     #my_setattrself, ('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
 
@@ -74,9 +74,9 @@ def base_build(self):
     my_setattr(self, 'he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
     
     
-    #my_setattr(self, 'he_flow_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    #my_setattr(self, 'he_flow_max',NumberValue(default=5,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    #my_setattr(self, 'he_flow_step',NumberValue(default=.1,unit='sccm',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'he_flow_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'he_flow_max',NumberValue(default=5,unit='sccm',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'he_flow_steps',NumberValue(default=10,unit='',scale=1,ndecimals=0,step=1))
 
 
     # Boomy_leans
@@ -231,7 +231,9 @@ def my_prepare(self):
             'ch4' : 'spec_check'
             }
 
-    self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+    self.setpoint_count = self.he_flow_steps
+
+    self.scan_interval = np.linspace(self.he_flow_min, self.he_flow_max, self.setpoint_count)
     self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
     self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
