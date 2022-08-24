@@ -5,68 +5,100 @@ import shutil
 from configparser import ConfigParser
 import socket
 import socket
+import os
+import time
 
 
-def set_laser_frequency(channel, frequency):
-    # channel = 1,2,...
-    # frequency = 377.124354 
+def set_helium_flow(flow, wait_time = 10.0):
 
-    # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # flow in sccm
 
-    # Connect the socket to the port where the server is listening
-    server_address = ('192.168.42.20', 63800)
-    #print('connecting to %s port %s' % server_address)
-    sock.connect(server_address)
-    message = "{0},{1},{2:10.6f}".format(0,np.int(channel),frequency)
-    sock.sendall(message.encode())
+    print('Changing flow to ... {0:.3f} sccm'.format(flow))
 
-    sock.close()
+    path = '/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions/mfc_exec' 
+
+    os.system('{0} 192.168.42.99 -s {1:.3f}  >/dev/null 2>&1'.format(path, flow / 5.0))
+
+    # wait until flow has settled
+    print('Waiting for flow to settle ... {0} s'.format(wait_time))
+    time.sleep(wait_time)
 
     return
- 
 
-def get_laser_frequencies():
+#def switch_fiber_channel(channel):
+#
+#    #print('Getting laser frequencies ...')
+#    # Create a TCP/IP socket
+#    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#
+#    # Connect the socket to the port where the server is listening
+#    server_address = ('192.168.42.20', 65000)
+#
+#    sock.connect(server_address)
+#
+#    sock.sendall(str(channel).encode())
+#    sock.close()
+#
+#    return
+#
+#
+#def get_laser_frequencies(which_channels = []):
+#
+#    freqs = [0.0] * len(which_channels)
+#
+#    return
 
-    #print('Getting laser frequencies ...')
+def get_single_laser_frequencies():
+
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Connect the socket to the port where the server is listening
-    #server_address = ('localhost', 10000)
-    # server_address = ('192.168.42.20', 63800)
-    server_address = ('192.168.42.20', 62500)
+    server_address = ('192.168.42.20', 62200)
 
-    #sock.settimeout(5)
-
-    #print('connecting to %s port %s' % server_address)
     sock.connect(server_address)
 
-    try:
-    
-        # Send data
+    try:    
+        # Request data
         message = 'request'
         #print('sending "%s"' % message)
         sock.sendall(message.encode())
 
-        # Look for the response
-        amount_received = 0
-        amount_expected = len(message)
-    
-        while amount_received < amount_expected:
-            data = sock.recv(16)
-            amount_received += len(data)
-            #print('received "%s"' % data)
+        len_msg = int(sock.recv(2).decode())
+
+        data = sock.recv(len_msg)
 
     finally:
-        #print('closing socket')
         sock.close()
 
     # return a list of freqs
     # currently only one frequency is returned
-    freqs = [np.float(data.decode())]
+    freqs = float(data.decode())
 
+    print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
+    
     return freqs
+
+
+#def set_laser_frequency(channel, frequency):
+#    # channel = 1,2,...
+#    # frequency = 377.124354 
+#
+#    # Create a TCP/IP socket
+#    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#
+#    # Connect the socket to the port where the server is listening
+#    server_address = ('192.168.42.20', 63800)
+#    #print('connecting to %s port %s' % server_address)
+#    sock.connect(server_address)
+#    message = "{0},{1},{2:10.6f}".format(0,np.int(channel),frequency)
+#    sock.sendall(message.encode())
+#
+#    sock.close()
+#
+#    return
+ 
+
 
 def get_basefilename(self, extension = ''):
     my_timestamp = datetime.datetime.today()

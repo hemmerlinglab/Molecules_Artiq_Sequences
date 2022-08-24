@@ -25,14 +25,14 @@ class Raster_Target_New(EnvExperiment):
         base_build(self)
         
         # x
-        my_setattr('min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
-        my_setattr('max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
-        my_setattr('steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+        my_setattr(self, 'min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
         
         # y
-        my_setattr('min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
-        my_setattr('max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
-        my_setattr('steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+        my_setattr(self, 'min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
 
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called

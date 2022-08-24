@@ -34,23 +34,6 @@ class Scan_Parameter(EnvExperiment):
         self.core.reset()
 
 
-    def set_flow(self, flow, wait_time = 10.0):
-
-        # Create a TCP/IP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = ('192.168.42.30', 63800)
-        print('connecting to %s port %s' % server_address)
-        sock.connect(server_address)
-    
-        message = "{0:2.1f}".format(flow / 5.0)
-        sock.sendall(message.encode())
-        sock.close()
- 
-        time.sleep(wait_time)
-
-        return
-
-
     def run(self):
 
         # counter counts setpoints and averages
@@ -59,7 +42,7 @@ class Scan_Parameter(EnvExperiment):
         for n, flow in enumerate(self.scan_interval): 
 
             # set Helium flow
-            self.set_flow(flow)
+            set_helium_flow(flow)
             self.current_setpoint = flow
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
@@ -99,4 +82,6 @@ class Scan_Parameter(EnvExperiment):
             print()
             print()
 
-        self.set_flow(0.0)
+        set_helium_flow(0.0, wait_time = 0.0)
+
+

@@ -51,6 +51,7 @@ def base_build(self):
     # offset of laseself, rs
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
     my_setattr(self, 'offset_laser_Hodor',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
+    my_setattr(self, 'offset_laser_Daenerys',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
 
     my_setattr(self, 'yag_fire_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
@@ -72,7 +73,7 @@ def base_build(self):
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'yag_power',NumberValue(default=7,unit='',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    
+    my_setattr(self, 'he_flow_wait',NumberValue(default=10,unit='s',scale=1,ndecimals=1,step=0.1))
     
     #my_setattr(self, 'he_flow_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
     #my_setattr(self, 'he_flow_max',NumberValue(default=5,unit='sccm',scale=1,ndecimals=1,step=0.1))
@@ -86,6 +87,10 @@ def base_build(self):
     # slowing laser self, shutter
     my_setattr(self, 'slowing_laser_shutter_on',BooleanValue(default=True))
     my_setattr(self, 'uniblitz_on',BooleanValue(default=True))
+    
+    my_setattr(self, 'relock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'relock_laser_steps', NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
 
     return
 
@@ -115,7 +120,7 @@ def readout_data(self):
         self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
 
     # read laser frequencies
-    self.wavemeter_frequencies = get_laser_frequencies()
+    self.wavemeter_frequencies = get_single_laser_frequencies()
 
     return
 
@@ -186,40 +191,74 @@ def check_shot(self):
 
     return repeat_shot
 
-def set_single_laser(my_file, freq):
-    setpoint_file = open(my_file, 'w')
-    setpoint_file.write(str(freq))
-    setpoint_file.close()
+#def set_single_laser(my_file, freq):
+#    setpoint_file = open(my_file, 'w')
+#    setpoint_file.write(str(freq))
+#    setpoint_file.close()
+#
+#    return
+#
+#def set_lasers(self, nu = 0.0, init = False):
+#
+#    if init:
+#        # set lasers to starting points of the scan and to their initial values
+#        nu = np.min(self.scan_interval)
+#
+#        if  self.which_scanning_laser == 1:
+#            self.current_setpoint = nu
+#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
+#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor)
+#
+#        elif  self.which_scanning_laser == 2:
+#            self.current_setpoint = nu
+#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos)
+#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
+#
+#    else:
+#
+#        if  self.which_scanning_laser == 1:
+#            self.current_setpoint = nu
+#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
+#
+#        elif  self.which_scanning_laser == 2:
+#            self.current_setpoint = nu
+#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
+#
+#    return
 
-    return
 
-def set_lasers(self, nu = 0.0, init = False):
+def set_single_laser(self, which_laser, frequency, do_switch = False, wait_time = None):
 
-    if init:
-        # set lasers to starting points of the scan and to their initial values
-        nu = np.min(self.scan_interval)
-
-        if  self.which_scanning_laser == 1:
-            self.current_setpoint = nu
-            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
-            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor)
-
-        elif  self.which_scanning_laser == 2:
-            self.current_setpoint = nu
-            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos)
-            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
-
+    if which_laser == 'Hodor':
+        channel = 2
+    elif which_laser == 'Daenerys':
+        channel = 3
     else:
+        print('Error: No laser to set or scan')
+        asd
 
-        if  self.which_scanning_laser == 1:
-            self.current_setpoint = nu
-            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
+    if do_switch:
+        switch = 1
+    else:
+        switch = 0
 
-        elif  self.which_scanning_laser == 2:
-            self.current_setpoint = nu
-            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_address = ('192.168.42.20', 63700)
+
+    print('Sending new setpoint for {1}: {0:.6f}'.format(frequency, which_laser))
+    sock.connect(server_address)
+
+    message = "{0:1d},{1:.9f},{2:1d},{3:3d}".format(int(channel), float(frequency), int(switch), int(wait_time))
+
+    sock.sendall(message.encode())
+
+    sock.close()
+
+    time.sleep(2*wait_time/1000.0)
 
     return
+
 
 
 def my_prepare(self):

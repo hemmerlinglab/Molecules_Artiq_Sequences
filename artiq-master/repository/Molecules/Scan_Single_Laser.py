@@ -33,11 +33,16 @@ class Scan_Single_Laser(EnvExperiment):
     def reset_core(self):
         self.core.reset()
 
+
     def run(self):
 
+        # init flow
+        set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
+
         # init lasers
-        set_lasers(self, init = True)
-       
+        set_single_laser(self, 'Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
+        set_single_laser(self, 'Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
+
         # pause to wait till laser settles
         time.sleep(1)
 
@@ -46,7 +51,20 @@ class Scan_Single_Laser(EnvExperiment):
         # loop over setpoints
         for n, nu in enumerate(self.scan_interval): 
 
-            set_lasers(self, nu)
+            self.scheduler.pause()
+
+            self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
+
+            # set laser frequencies
+            # re-lock lasers
+            if n % self.relock_laser_steps == 0:
+                print('Relocking laser ..')
+                set_single_laser(self, 'Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
+                # last laser here should be the one being scanned
+                set_single_laser(self, 'Hodor', self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
+            else:
+                set_single_laser(self, 'Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
+ 
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
 
@@ -89,4 +107,10 @@ class Scan_Single_Laser(EnvExperiment):
 
             print()
             print()
+
+        # set laser back to initial point
+        set_single_laser(self, 'Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
+        # switch off Helium flow
+        set_helium_flow(0.0, wait_time = 0.0)
+
 
