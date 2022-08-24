@@ -36,6 +36,7 @@ def base_build(self):
     self.setattr_device('ttl7') # uniblitz shutter control
 
     self.setattr_device('sampler0') # adc voltage sampler
+    self.setattr_device('sampler1') # adc voltage sampler
     self.setattr_device('scheduler') # scheduler used
 
     # EnvExperiment attribute: number of voltage samples per scan
