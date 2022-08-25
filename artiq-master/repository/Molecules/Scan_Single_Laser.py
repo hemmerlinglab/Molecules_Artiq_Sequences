@@ -21,17 +21,27 @@ class Scan_Single_Laser(EnvExperiment):
     
     def build(self):
         base_build(self)
- 
+
+        pulsed_scan_build(self)
+
+        return
+
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
         my_prepare(self)
 
+        return
+
     def analyze(self):
         my_analyze(self)
+
+        return
 
     @kernel
     def reset_core(self):
         self.core.reset()
+
+        return
 
 
     def run(self):

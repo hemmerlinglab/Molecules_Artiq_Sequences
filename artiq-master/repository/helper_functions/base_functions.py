@@ -24,6 +24,8 @@ def my_setattr(self, arg, val):
 
 
 def base_build(self):
+
+    # the base parameters all sequences have in common
     self.config_dict = []
     self.wavemeter_frequencies = []
 
@@ -39,9 +41,37 @@ def base_build(self):
     self.setattr_device('sampler1') # adc voltage sampler
     self.setattr_device('scheduler') # scheduler used
 
-    # EnvExperiment attribute: number of voltage samples per scan
     my_setattr(self, 'scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'scan_count',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
+
+    my_setattr(self, 'step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+
+    my_setattr(self, 'relock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'relock_laser_steps', NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+
+
+def rb_calibration_build(self):
+    # EnvExperiment attribute: number of voltage samples per scan
+    my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
+
+    my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+
+    my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
+    
+    return
+
+
+
+def pulsed_scan_build(self):
+    # EnvExperiment attribute: number of voltage samples per scan
 
     my_setattr(self, 'setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
@@ -51,8 +81,8 @@ def base_build(self):
 
     # offset of laseself, rs
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
-    my_setattr(self, 'offset_laser_Hodor',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
-    my_setattr(self, 'offset_laser_Daenerys',NumberValue(default=375.763302,unit='THz',scale=1,ndecimals=6,step=.000001))
+    my_setattr(self, 'offset_laser_Hodor',NumberValue(default=377.11121,unit='THz',scale=1,ndecimals=6,step=.000001))
+    my_setattr(self, 'offset_laser_Daenerys',NumberValue(default=286.86,unit='THz',scale=1,ndecimals=6,step=.000001))
 
     my_setattr(self, 'yag_fire_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
@@ -65,22 +95,11 @@ def base_build(self):
     my_setattr(self, 'slowing_shutter_start_time',NumberValue(default=4.5,unit='ms',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'slowing_shutter_duration',NumberValue(default=60,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-    my_setattr(self, 'step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'yag_power',NumberValue(default=7,unit='',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow_wait',NumberValue(default=10,unit='s',scale=1,ndecimals=1,step=0.1))
     
-    #my_setattr(self, 'he_flow_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    #my_setattr(self, 'he_flow_max',NumberValue(default=5,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    #my_setattr(self, 'he_flow_step',NumberValue(default=.1,unit='sccm',scale=1,ndecimals=1,step=0.1))
-
-
     # Boomy_leans
     my_setattr(self, 'yag_check',BooleanValue(default=True))
     my_setattr(self, 'blue_check',BooleanValue(default=False))
@@ -89,10 +108,6 @@ def base_build(self):
     my_setattr(self, 'slowing_laser_shutter_on',BooleanValue(default=True))
     my_setattr(self, 'uniblitz_on',BooleanValue(default=True))
     
-    my_setattr(self, 'relock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'relock_laser_steps', NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
-
     return
 
 
@@ -192,45 +207,12 @@ def check_shot(self):
 
     return repeat_shot
 
-#def set_single_laser(my_file, freq):
-#    setpoint_file = open(my_file, 'w')
-#    setpoint_file.write(str(freq))
-#    setpoint_file.close()
-#
-#    return
-#
-#def set_lasers(self, nu = 0.0, init = False):
-#
-#    if init:
-#        # set lasers to starting points of the scan and to their initial values
-#        nu = np.min(self.scan_interval)
-#
-#        if  self.which_scanning_laser == 1:
-#            self.current_setpoint = nu
-#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
-#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor)
-#
-#        elif  self.which_scanning_laser == 2:
-#            self.current_setpoint = nu
-#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos)
-#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
-#
-#    else:
-#
-#        if  self.which_scanning_laser == 1:
-#            self.current_setpoint = nu
-#            set_single_laser(self.setpoint_filename_laser1, self.offset_laser_Davos + nu/1.0e6)
-#
-#        elif  self.which_scanning_laser == 2:
-#            self.current_setpoint = nu
-#            set_single_laser(self.setpoint_filename_laser2, self.offset_laser_Hodor + nu/1.0e6)
-#
-#    return
-
 
 def set_single_laser(self, which_laser, frequency, do_switch = False, wait_time = None):
 
-    if which_laser == 'Hodor':
+    if which_laser == 'Davos':
+        channel = 1
+    elif which_laser == 'Hodor':
         channel = 2
     elif which_laser == 'Daenerys':
         channel = 3
@@ -263,6 +245,7 @@ def set_single_laser(self, which_laser, frequency, do_switch = False, wait_time 
 
 
 def my_prepare(self):
+    
     self.smp_data_sets = {
             'ch0' : 'absorption',
             'ch1' : 'fire_check',
@@ -271,7 +254,6 @@ def my_prepare(self):
             'ch4' : 'spec_check'
             }
 
-    self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
     self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
     self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
@@ -299,6 +281,7 @@ def my_prepare(self):
 
     # dataset for plotting average signals
     self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
 
     if self.scanning_laser == 'Hodor':

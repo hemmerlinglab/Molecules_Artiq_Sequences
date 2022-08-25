@@ -10,7 +10,6 @@ import csv
 
 import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
-sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/Molecules")
 
 from base_functions import *
 from base_sequences import *
@@ -23,28 +22,39 @@ class Scan_Rb_Reference(EnvExperiment):
     
     def build(self):
         base_build(self)
+
+        rubidium_calibration_build(self)
+
+        return
+
  
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
+            
+        #self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+        self.df = 100.0
+        self.scan_interval = get_rb_scan_interval(no_of_points = int(self.setpoint_count/6), df = self.df, cnt_freq = self.offset_laser_Hodor*1e12) 
+        
+        # call the preparation that is in common of all experiments
         my_prepare(self)
+
+        return
 
     def analyze(self):
         my_analyze(self)
+
+        return
 
     @kernel
     def reset_core(self):
         self.core.reset()
 
+        return
+
 
     def run(self):
 
-        self.df = 100.0
 
-        self.scan_interval = get_rb_scan_interval(no_of_points = int(self.setpoint_count/6), df = self.df, cnt_freq = self.offset_laser_Hodor*1e12) 
-
-        #self.setpoint_count = len(self.scan_interval)
-
-        #print(self.scan_interval)
 
         # init lasers
         set_single_laser(self, 'Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
@@ -93,12 +103,10 @@ class Scan_Rb_Reference(EnvExperiment):
                         average_data(self, first_avg = (i_avg == 0))
                         
                         if i_avg == 0:
-                            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
                             self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
                             self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
                         else:
-                            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-                            self.ch1_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
+                            self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
                             self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
 
                         update_data(self, counter, n)

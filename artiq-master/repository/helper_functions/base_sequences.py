@@ -101,10 +101,6 @@ def read_rubidium(self):
         data4 = [0]*self.scope_count # post select, checks slow blue
         smp = [0]*8 # individual sample
 
-        ## shut slowing laser off before anything starts
-        self.ttl8.on()
-        delay(25*ms)
-
         ### Fire and sample
         with parallel:
 
@@ -112,7 +108,6 @@ def read_rubidium(self):
                 self.ttl9.pulse(10*us) # experimental start
 
             with sequential:
-                delay(self.sampler_delay_time*ms)
                 for j in range(self.scope_count):
                     self.sampler1.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
                     data0[j] = smp[0]

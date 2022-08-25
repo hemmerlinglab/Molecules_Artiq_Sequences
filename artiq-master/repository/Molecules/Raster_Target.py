@@ -13,13 +13,13 @@ from base_sequences import *
 
 import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
-sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/Drivers")
+#sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/Drivers")
 
 from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Raster_Target_New(EnvExperiment):
+class Raster_Target(EnvExperiment):
     def build(self):
                 
         base_build(self)
@@ -33,17 +33,25 @@ class Raster_Target_New(EnvExperiment):
         my_setattr(self, 'min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
         my_setattr(self, 'max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
         my_setattr(self, 'steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+    
+        return
 
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
         my_prepare(self)
 
+        return
+
     def analyze(self):
         my_analyze(self)
+
+        return
 
     @kernel
     def reset_core(self):
         self.core.reset()
+
+        return
 
 
     def run(self):
