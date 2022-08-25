@@ -70,6 +70,8 @@ class Scan_Rb_Reference(EnvExperiment):
         # pause to wait till laser settles
         time.sleep(1)
 
+        self.last_setpoint = 0.0
+
         # counter counts setpoints and averages
         counter = 0
         # loop over setpoints
@@ -78,6 +80,12 @@ class Scan_Rb_Reference(EnvExperiment):
             self.scheduler.pause()
 
             self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
+
+            if np.abs(self.last_setpoint - self.current_setpoint) > 100e6 and not n == 0:
+                print('Sleeping for 3 ...')
+                time.sleep(3)
+            
+            self.last_setpoint = self.current_setpoint
 
             # set laser frequencies
             set_single_laser('Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
