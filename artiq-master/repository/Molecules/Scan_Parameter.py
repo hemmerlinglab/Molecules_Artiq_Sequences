@@ -7,12 +7,11 @@ import os
 import time
 import csv
 
-from base_functions_parameter_scan import *
-from base_sequences import *
-
 import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
 
+from base_functions import *
+from base_sequences import *
 from helper_functions import *
 
 

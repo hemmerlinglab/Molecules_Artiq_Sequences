@@ -7,12 +7,11 @@ import os
 import time
 import csv
 
-from base_functions import *
-from base_sequences import *
-
 import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
 
+from base_functions import *
+from base_sequences import *
 from helper_functions import *
 
 
@@ -28,6 +27,10 @@ class Scan_Single_Laser(EnvExperiment):
 
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
+
+        self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
+        self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
+
         my_prepare(self)
 
         return
@@ -100,15 +103,8 @@ class Scan_Single_Laser(EnvExperiment):
                     repeat_shot = check_shot(self)
                     if repeat_shot == False:                        
                         # upon success add data to dataset
-                        average_data(self, first_avg = (i_avg == 0))
+                        average_data(self, i_avg)
                         
-                        if i_avg == 0:
-                            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-                            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-                        else:
-                            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-                            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
-
                         update_data(self, counter, n)
 
                         counter += 1

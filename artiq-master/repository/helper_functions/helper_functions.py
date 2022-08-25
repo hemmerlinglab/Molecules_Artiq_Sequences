@@ -25,28 +25,26 @@ def set_helium_flow(flow, wait_time = 10.0):
 
     return
 
-#def switch_fiber_channel(channel):
-#
-#    #print('Getting laser frequencies ...')
-#    # Create a TCP/IP socket
-#    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#
-#    # Connect the socket to the port where the server is listening
-#    server_address = ('192.168.42.20', 65000)
-#
-#    sock.connect(server_address)
-#
-#    sock.sendall(str(channel).encode())
-#    sock.close()
-#
-#    return
-#
-#
-#def get_laser_frequencies(which_channels = []):
-#
-#    freqs = [0.0] * len(which_channels)
-#
-#    return
+
+def move_yag_mirror(xpos, ypos, wait_time = None):
+    # init connection to python server to send commands to move mirrors
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ('192.168.42.20', 62000)
+    print('connecting to %s port %s' % server_address)
+    sock.connect(server_address)
+
+    message = "{0:5.3f}/{1:5.3f}".format(xpos, ypos)
+    print('Moving mirrors ... ' + message)
+    
+    sock.sendall(message.encode())
+
+    if not wait_time == None:
+        time.sleep(wait_time)
+
+    sock.close()
+
+    return
 
 def get_single_laser_frequencies():
 
@@ -80,24 +78,41 @@ def get_single_laser_frequencies():
     return freqs
 
 
-#def set_laser_frequency(channel, frequency):
-#    # channel = 1,2,...
-#    # frequency = 377.124354 
-#
-#    # Create a TCP/IP socket
-#    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#
-#    # Connect the socket to the port where the server is listening
-#    server_address = ('192.168.42.20', 63800)
-#    #print('connecting to %s port %s' % server_address)
-#    sock.connect(server_address)
-#    message = "{0},{1},{2:10.6f}".format(0,np.int(channel),frequency)
-#    sock.sendall(message.encode())
-#
-#    sock.close()
-#
-#    return
- 
+def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None):
+
+    if which_laser == 'Davos':
+        channel = 1
+    elif which_laser == 'Hodor':
+        channel = 2
+    elif which_laser == 'Daenerys':
+        channel = 3
+    else:
+        print('Error: No laser to set or scan')
+        asd
+
+    if do_switch:
+        switch = 1
+    else:
+        switch = 0
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_address = ('192.168.42.20', 63700)
+
+    print('Sending new setpoint for {1}: {0:.6f}'.format(frequency, which_laser))
+    sock.connect(server_address)
+
+    message = "{0:1d},{1:.9f},{2:1d},{3:3d}".format(int(channel), float(frequency), int(switch), int(wait_time))
+
+    sock.sendall(message.encode())
+
+    sock.close()
+
+    if not wait_time == None:
+        time.sleep(2*wait_time/1000.0)
+
+    return
+
 
 
 def get_basefilename(self, extension = ''):

@@ -93,9 +93,6 @@ def calculate_Rb_transitions():
 
 def get_rb_scan_interval(no_of_points = 5, df = 50.0, cnt_freq = 384.230e12):
 
-    #print(no_of_points)
-    #print(df)
-
     # creates intervals over hyperfine lines of Rb transitions
     scan_interval = []
     

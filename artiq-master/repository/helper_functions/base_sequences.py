@@ -65,7 +65,7 @@ def fire_and_read(self):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(self.step_size*us) # plus 9us from sample_mu
+                    delay(self.time_step_size*us) # plus 9us from sample_mu
 
         # release shutter of slowing laser
         self.ttl8.off()
@@ -116,7 +116,7 @@ def read_rubidium(self):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(self.step_size*us) # plus 9us from sample_mu
+                    delay(self.time_step_size*us) # plus 9us from sample_mu
 
         # release shutter of slowing laser
         self.ttl8.off()
@@ -194,7 +194,7 @@ def fire_and_read_slow(self):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     #delay(5*us)
-                    delay(self.step_size*us) # plus 9us from sample_mu
+                    delay(self.time_step_size*us) # plus 9us from sample_mu
 
         # release shutter of slowing laser
         #self.ttl8.off()

@@ -41,10 +41,13 @@ def base_build(self):
     self.setattr_device('sampler1') # adc voltage sampler
     self.setattr_device('scheduler') # scheduler used
 
+    # number of time steps
     my_setattr(self, 'scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'scan_count',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
 
-    my_setattr(self, 'step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+    # number of averages
+    my_setattr(self, 'no_of_averages',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
+
+    my_setattr(self, 'time_step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
@@ -54,15 +57,13 @@ def base_build(self):
     my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
     my_setattr(self, 'relock_laser_steps', NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
 
+    return
 
 def rb_calibration_build(self):
     # EnvExperiment attribute: number of voltage samples per scan
     my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
-
-    my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    
+    my_setattr(self, 'offset_laser_Hodor',NumberValue(default=377.10701,unit='THz',scale=1,ndecimals=6,step=.000001))
 
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
     
@@ -111,6 +112,98 @@ def pulsed_scan_build(self):
     return
 
 
+
+def my_prepare(self, data_to_save = None):
+    
+    self.smp_data_sets = {
+            'ch0' : 'absorption',
+            'ch1' : 'fire_check',
+            'ch2' : 'pmt',
+            'ch3' : 'slow_check',
+            'ch4' : 'spec_check'
+            }
+
+    self.time_interval = np.linspace(0,(self.time_step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
+
+    self.set_dataset('set_points', ([0] * (self.no_of_averages * self.setpoint_count)),broadcast=True)
+    self.set_dataset('act_freqs', ([0] * (self.no_of_averages * self.setpoint_count)),broadcast=True)
+    self.set_dataset('freqs',      (self.scan_interval),broadcast=True)
+    self.set_dataset('times',      (self.time_interval),broadcast=True)
+
+    # data set without slowing
+    self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch1_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+
+    # data set with slowing
+    self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch1_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch2_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch3_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch4_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+
+    # dataset for plotting average signals
+    self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch3_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch4_avg',  ([0] * len(self.time_interval)),broadcast=True)
+
+    if self.scanning_laser == 'Hodor':
+        self.which_scanning_laser = 2
+    elif self.scanning_laser == 'Davos':
+        self.which_scanning_laser = 1
+    elif self.scanning_laser == 'Daenerys':
+        self.which_scanning_laser = 3
+
+    #self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
+    #self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
+    #self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
+
+    if data_to_save == None:
+        self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
+                         {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
+                         {'var' : 'freqs', 'name' : 'freqs'},
+                         {'var' : 'times', 'name' : 'times'},
+                         {'var' : 'ch0_arr', 'name' : self.smp_data_sets['ch0']},
+                         {'var' : 'ch1_arr', 'name' : self.smp_data_sets['ch1']},
+                         {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
+                         {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
+                         {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
+                         {'var' : 'ch0_slow_arr', 'name' : self.smp_data_sets['ch0']},
+                         {'var' : 'ch1_slow_arr', 'name' : self.smp_data_sets['ch1']},
+                         {'var' : 'ch2_slow_arr', 'name' : self.smp_data_sets['ch2']},
+                         {'var' : 'ch3_slow_arr', 'name' : self.smp_data_sets['ch3']},
+                         {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']}
+                         ]
+    else:
+        self.data_to_save = data_to_save
+
+    # save sequence file name
+    self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
+
+    for k in range(5):
+        print("")
+    print("*"*100)
+    print("* Starting new scan")
+    print("*"*100)
+    print("")
+    print("")
+
+    # Initializes Artiq (required)
+    # get the filename for the scan, e.g. 20190618_105557
+    get_basefilename(self)
+    # save the config
+    save_config(self.basefilename, self.config_dict)
+
+    # self.core.reset() #### put in @kernel
+    self.reset_core()
+    # print('made it here')
+
+
+
 def my_analyze(self):
         
     # function is run after the experiment, i.e. after run() is called
@@ -140,23 +233,43 @@ def readout_data(self):
 
     return
 
-def average_data(self, first_avg = True):
+
+
+def average_data(self, i_avg):
     # toggle through all channels and average the data
     for channel in self.smp_data_sets.keys():
 
         # needs slices for each channel
-        ind_1 = int(self.slice_min * 1e3/self.step_size)
-        ind_2 = int(self.slice_max * 1e3/self.step_size)
+        ind_1 = int(self.slice_min * 1e3/self.time_step_size)
+        ind_2 = int(self.slice_max * 1e3/self.time_step_size)
 
         # self.smp_data['pmt_spectrum'] = ...
         ds = self.smp_data[self.smp_data_sets[channel]]
 
-        if first_avg:
+        if i_avg == 0:
+            # first average
             self.smp_data_avg[self.smp_data_sets[channel]]  = np.sum(ds[ind_1:ind_2])
         else:
             self.smp_data_avg[self.smp_data_sets[channel]] += np.sum(ds[ind_1:ind_2])
 
+        # these are for display purposes only
+        if i_avg == 0:
+            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
+            self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
+            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+            self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
+            self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
+        else:
+            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
+            self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
+            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+            self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
+            self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
+
     return
+
+
+
 
 def update_data(self, counter, n, slowing_data = False):
     # this updates the gui for every shot
@@ -167,7 +280,10 @@ def update_data(self, counter, n, slowing_data = False):
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
     self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
 
     # save each successful shot in ch<number>_arr datasets
     # needs fixing since the number of channels is hardcoded here
@@ -178,9 +294,71 @@ def update_data(self, counter, n, slowing_data = False):
         if slowing_data:
             self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
         else:
-                self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+            self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
     return
+
+
+
+     
+def update_data_raster(self, counter, nx, ny):
+    # this updates the gui for every shot
+    
+    #print(self.get_dataset('target_img_incell'))
+    slice_ind = ((nx,nx+1), (ny,ny+1))
+    self.mutate_dataset('target_img_incell', slice_ind, self.smp_data_avg['absorption'])
+
+    # save each successful shot in ch<number>_arr datasets
+    # needs fixing since the number of channels is hardcoded here
+    for k in range(5):
+        slice_ind = (counter)
+        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
+
+        self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+
+    # display average signals
+    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
+    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+
+
+    return
+
+
+
+
+def update_data_calibration(self, counter, n, last_point = True, slowing_data = False):
+    # this updates the gui for every shot
+    self.mutate_dataset('set_points', counter, self.current_setpoint)
+    self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
+    
+    # average over time trace to display
+    if last_point:
+        # only plot once all averages are taken
+        self.mutate_dataset('rb_spectrum',     n, self.smp_data_avg['fire_check'])
+
+    # display average signals
+    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
+    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+
+    # save each successful shot in ch<number>_arr datasets
+    # needs fixing since the number of channels is hardcoded here
+    for k in range(5):
+        slice_ind = (counter)
+        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
+
+        if slowing_data:
+            self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
+        else:
+            self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+
+    return
+
 
 def check_shot(self):
     repeat_shot = False
@@ -192,141 +370,19 @@ def check_shot(self):
 
     # check if spectroscopy light was there
     blue_min = splr.adc_mu_to_volt(20)
-    if self.which_scanning_laser == 1:
-        if self.blue_check and np.min(self.smp_data['spec_check']) < blue_min:
-            repeat_shot = True
-            print('No spectroscopy')
+    if self.blue_check:
+        if self.which_scanning_laser == 1:
+            if np.min(self.smp_data['spec_check']) < blue_min:
+                repeat_shot = True
+                print('No spectroscopy')
 
-    elif self.which_scanning_laser == 2:
-        if self.blue_check and np.min(self.smp_data['slow_check']) < blue_min:
-            repeat_shot = True
-            print('No spectroscopy')
-
-    else:
-        print('bad scanning laser')
+        elif self.which_scanning_laser == 2:
+          if np.min(self.smp_data['slow_check']) < blue_min:
+                repeat_shot = True
+                print('No spectroscopy')
+        else:
+            print('Not checking spectroscopy laser')
 
     return repeat_shot
 
-
-def set_single_laser(self, which_laser, frequency, do_switch = False, wait_time = None):
-
-    if which_laser == 'Davos':
-        channel = 1
-    elif which_laser == 'Hodor':
-        channel = 2
-    elif which_laser == 'Daenerys':
-        channel = 3
-    else:
-        print('Error: No laser to set or scan')
-        asd
-
-    if do_switch:
-        switch = 1
-    else:
-        switch = 0
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    server_address = ('192.168.42.20', 63700)
-
-    print('Sending new setpoint for {1}: {0:.6f}'.format(frequency, which_laser))
-    sock.connect(server_address)
-
-    message = "{0:1d},{1:.9f},{2:1d},{3:3d}".format(int(channel), float(frequency), int(switch), int(wait_time))
-
-    sock.sendall(message.encode())
-
-    sock.close()
-
-    time.sleep(2*wait_time/1000.0)
-
-    return
-
-
-
-def my_prepare(self):
-    
-    self.smp_data_sets = {
-            'ch0' : 'absorption',
-            'ch1' : 'fire_check',
-            'ch2' : 'pmt',
-            'ch3' : 'slow_check',
-            'ch4' : 'spec_check'
-            }
-
-    self.time_interval = np.linspace(0,(self.step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
-
-    self.set_dataset('set_points', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
-    self.set_dataset('act_freqs', ([0] * (self.scan_count * self.setpoint_count)),broadcast=True)
-    self.set_dataset('freqs',      (self.scan_interval),broadcast=True)
-    self.set_dataset('times',      (self.time_interval),broadcast=True)
-
-    self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
-    self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
-
-    # data set without slowing
-    self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch1_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-
-    # data set with slowing
-    self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch1_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch2_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch3_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch4_slow_arr',  ([[0] * len(self.time_interval)] * self.scan_count * self.setpoint_count),broadcast=True)
-
-
-    # dataset for plotting average signals
-    self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
-
-    if self.scanning_laser == 'Hodor':
-        self.which_scanning_laser = 2
-    elif self.scanning_laser == 'Davos':
-        self.which_scanning_laser = 1
-
-    self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
-    self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
-    self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
-
-    self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
-                         {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
-                         {'var' : 'freqs', 'name' : 'freqs'},
-                         {'var' : 'times', 'name' : 'times'},
-                         {'var' : 'ch0_arr', 'name' : self.smp_data_sets['ch0']},
-                         {'var' : 'ch1_arr', 'name' : self.smp_data_sets['ch1']},
-                         {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
-                         {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
-                         {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
-                         {'var' : 'ch0_slow_arr', 'name' : self.smp_data_sets['ch0']},
-                         {'var' : 'ch1_slow_arr', 'name' : self.smp_data_sets['ch1']},
-                         {'var' : 'ch2_slow_arr', 'name' : self.smp_data_sets['ch2']},
-                         {'var' : 'ch3_slow_arr', 'name' : self.smp_data_sets['ch3']},
-                         {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']}
-                         ]
-
-    # save sequence file name
-    self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
-
-    for k in range(5):
-        print("")
-    print("*"*100)
-    print("* Starting new scan")
-    print("*"*100)
-    print("")
-    print("")
-
-    # Initializes Artiq (required)
-    # get the filename for the scan, e.g. 20190618_105557
-    get_basefilename(self)
-    # save the config
-    save_config(self.basefilename, self.config_dict)
-
-    # self.core.reset() #### put in @kernel
-    self.reset_core()
-    # print('made it here')
 
