@@ -20,17 +20,36 @@ class Scan_Parameter(EnvExperiment):
     
     def build(self):
         base_build(self)
+
+        pulsed_scan_build(self) 
+        
+        self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
+        self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
+      
+        my_setattr(self, 'he_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        my_setattr(self, 'he_max',NumberValue(default=10,unit='sccm',scale=1,ndecimals=1,step=0.1))
+
+        return
  
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
+        
+        self.scan_interval = np.linspace(self.he_min, self.he_max, self.setpoint_count)
+        
         my_prepare(self)
+
+        return
 
     def analyze(self):
         my_analyze(self)
 
+        return
+
     @kernel
     def reset_core(self):
         self.core.reset()
+
+        return
 
 
     def run(self):
@@ -48,8 +67,8 @@ class Scan_Parameter(EnvExperiment):
 
             self.smp_data_avg = {}
             # loop over averages
-            for i_avg in range(self.scan_count):                
-                print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
+            for i_avg in range(self.no_of_averages):                
+                print(str(i_avg+1) + ' / ' + str(self.no_of_averages) + ' averages')
                 self.scheduler.pause()                
               
                 repeat_shot = True
@@ -63,15 +82,8 @@ class Scan_Parameter(EnvExperiment):
                     repeat_shot = check_shot(self)
                     if repeat_shot == False:                        
                         # upon success add data to dataset
-                        average_data(self, first_avg = (i_avg == 0))
+                        average_data(self, i_avg)
                         
-                        if i_avg == 0:
-                            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-                            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-                        else:
-                            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-                            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
-
                         update_data(self, counter, n)
 
                         counter += 1
