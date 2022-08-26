@@ -81,7 +81,7 @@ class Scan_Rb_Reference(EnvExperiment):
 
             self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
 
-            if np.abs(self.last_setpoint - self.current_setpoint) > 100e6 and not n == 0:
+            if np.abs(self.last_setpoint - self.current_setpoint) > 100e-6 and not n == 0:
                 print('Sleeping for 3 ...')
                 time.sleep(3)
             

@@ -48,10 +48,10 @@ def base_build(self):
     my_setattr(self, 'no_of_averages',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
 
     my_setattr(self, 'time_step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_min',NumberValue(default=5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_max',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slice_min',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_min',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
 
     my_setattr(self, 'relock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
     my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))

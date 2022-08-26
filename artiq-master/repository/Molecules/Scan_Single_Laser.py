@@ -31,6 +31,8 @@ class Scan_Single_Laser(EnvExperiment):
         self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
         self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
 
+        self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
+        
         my_prepare(self)
 
         return
@@ -53,8 +55,9 @@ class Scan_Single_Laser(EnvExperiment):
         set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
 
         # init lasers
-        set_single_laser(self, 'Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
-        set_single_laser(self, 'Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
+        #set_single_laser('Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
+        set_single_laser('Davos', self.offset_laser_Davos + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
+        set_single_laser('Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
 
         # pause to wait till laser settles
         time.sleep(1)
@@ -66,17 +69,20 @@ class Scan_Single_Laser(EnvExperiment):
 
             self.scheduler.pause()
 
-            self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
+            #self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
+            self.current_setpoint = self.offset_laser_Davos + nu/1.0e6
 
             # set laser frequencies
             # re-lock lasers
             if n % self.relock_laser_steps == 0:
                 print('Relocking laser ..')
-                set_single_laser(self, 'Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
+                set_single_laser('Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
                 # last laser here should be the one being scanned
-                set_single_laser(self, 'Hodor', self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
+                #set_single_laser('Hodor', self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
+                set_single_laser('Davos', self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
             else:
-                set_single_laser(self, 'Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
+                #set_single_laser('Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
+                set_single_laser('Davos', self.current_setpoint, wait_time = self.lock_wait_time)
  
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
@@ -88,8 +94,8 @@ class Scan_Single_Laser(EnvExperiment):
 
             self.smp_data_avg = {}
             # loop over averages
-            for i_avg in range(self.scan_count):                
-                print(str(i_avg+1) + ' / ' + str(self.scan_count) + ' averages')
+            for i_avg in range(self.no_of_averages):                
+                print(str(i_avg+1) + ' / ' + str(self.no_of_averages) + ' averages')
                 self.scheduler.pause()                
               
                 repeat_shot = True
@@ -115,7 +121,7 @@ class Scan_Single_Laser(EnvExperiment):
             print()
 
         # set laser back to initial point
-        set_single_laser(self, 'Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
+        set_single_laser('Davos', self.offset_laser_Davos + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
         # switch off Helium flow
         set_helium_flow(0.0, wait_time = 0.0)
 
