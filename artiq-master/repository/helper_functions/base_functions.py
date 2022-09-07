@@ -78,7 +78,7 @@ def pulsed_scan_build(self):
     my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
     #my_setattrself, ('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor'],default='Hodor'))
+    my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Hodor'))
 
     # offset of laseself, rs
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
@@ -248,9 +248,9 @@ def average_data(self, i_avg):
 
         if i_avg == 0:
             # first average
-            self.smp_data_avg[self.smp_data_sets[channel]]  = np.sum(ds[ind_1:ind_2])
+            self.smp_data_avg[self.smp_data_sets[channel]]  = np.mean(ds[ind_1:ind_2])
         else:
-            self.smp_data_avg[self.smp_data_sets[channel]] += np.sum(ds[ind_1:ind_2])
+            self.smp_data_avg[self.smp_data_sets[channel]] += np.mean(ds[ind_1:ind_2]) * (i_avg)/(i_avg+1.0)
 
         # these are for display purposes only
         if i_avg == 0:

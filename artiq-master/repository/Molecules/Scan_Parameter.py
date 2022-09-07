@@ -23,9 +23,7 @@ class Scan_Parameter(EnvExperiment):
 
         pulsed_scan_build(self) 
         
-        self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
-        self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
-      
+     
         my_setattr(self, 'he_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
         my_setattr(self, 'he_max',NumberValue(default=10,unit='sccm',scale=1,ndecimals=1,step=0.1))
 
@@ -35,6 +33,9 @@ class Scan_Parameter(EnvExperiment):
         # function is run before the experiment, i.e. before run() is called
         
         self.scan_interval = np.linspace(self.he_min, self.he_max, self.setpoint_count)
+ 
+        self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
+        self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
         
         my_prepare(self)
 
@@ -60,7 +61,7 @@ class Scan_Parameter(EnvExperiment):
         for n, flow in enumerate(self.scan_interval): 
 
             # set Helium flow
-            set_helium_flow(flow)
+            set_helium_flow(flow, wait_time = self.he_flow_wait)
             self.current_setpoint = flow
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
