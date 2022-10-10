@@ -82,6 +82,7 @@ class Scan_Single_Laser(EnvExperiment):
                 print('Relocking laser ..')
                 # last laser here should be the one being scanned
                 # Needs update when using two lasers
+                #set_single_laser('Davos', self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
                 set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
             else:
                 set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
