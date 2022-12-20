@@ -61,7 +61,7 @@ class Scan_Single_Laser(EnvExperiment):
             hlp_frequency_offset = self.offset_laser_Hodor
         elif self.scanning_laser == 'Davos':
             hlp_frequency_offset = self.offset_laser_Davos
-         
+
         set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
 
         # pause to wait till laser settles
