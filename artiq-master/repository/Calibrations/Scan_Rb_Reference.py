@@ -27,6 +27,9 @@ class Scan_Rb_Reference(EnvExperiment):
 
         my_setattr(self, 'setpoint_count', NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
         my_setattr(self, 'df', NumberValue(default=50,unit='MHz',scale=1,ndecimals=0,step=1))
+        
+        my_setattr(self, 'hene_calibration', NumberValue(default=473.6124,unit='THz',scale=1,ndecimals=6,step=1))
+        my_setattr(self, 'wavemeter_offset', NumberValue(default=0.0,unit='MHz',scale=1,ndecimals=1,step=1))
 
         
         return
@@ -81,14 +84,16 @@ class Scan_Rb_Reference(EnvExperiment):
 
             self.current_setpoint = self.offset_laser_Hodor + nu/1.0e6
 
-            if np.abs(self.last_setpoint - self.current_setpoint) > 100e-6 and not n == 0:
+            # set laser frequencies
+            set_single_laser('Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
+
+            # if there is a setpoint jump larger than 200 MHz, then wait for longer
+            if np.abs(self.last_setpoint - self.current_setpoint) > 200e-6 and not n == 0:
                 print('Sleeping for 3 ...')
                 time.sleep(3)
             
             self.last_setpoint = self.current_setpoint
 
-            # set laser frequencies
-            set_single_laser('Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
 
@@ -123,4 +128,5 @@ class Scan_Rb_Reference(EnvExperiment):
         # set laser back to initial point
         set_single_laser('Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
 
+        time.sleep(2)
 
