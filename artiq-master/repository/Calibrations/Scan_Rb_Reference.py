@@ -22,6 +22,7 @@ class Scan_Rb_Reference(EnvExperiment):
     
     def build(self):
         base_build(self)
+        self.sequence_filename = os.path.abspath(__file__)
 
         rb_calibration_build(self)
 

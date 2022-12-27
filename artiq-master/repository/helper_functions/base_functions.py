@@ -182,7 +182,7 @@ def my_prepare(self, data_to_save = None):
         self.data_to_save = data_to_save
 
     # save sequence file name
-    self.config_dict.append({'par' : 'sequence_file', 'val' : os.path.abspath(__file__), 'cmt' : 'Filename of the main sequence file'})
+    self.config_dict.append({'par' : 'sequence_file', 'val' : self.sequence_filename, 'cmt' : 'Filename of the main sequence file'})
 
     for k in range(5):
         print("")

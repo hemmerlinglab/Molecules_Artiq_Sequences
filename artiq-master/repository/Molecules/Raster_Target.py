@@ -18,9 +18,9 @@ from helper_functions import *
 
 # every Experiment needs a build and a run function
 class Raster_Target(EnvExperiment):
-    def build(self):
-                
+    def build(self):                
         base_build(self)
+        self.sequence_filename = os.path.abspath(__file__)
         
         pulsed_scan_build(self)
 

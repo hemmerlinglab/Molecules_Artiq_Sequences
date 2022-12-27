@@ -20,6 +20,7 @@ class Scan_Single_Laser(EnvExperiment):
 
     def build(self):
         base_build(self)
+        self.sequence_filename = os.path.abspath(__file__)
 
         pulsed_scan_build(self)
 
