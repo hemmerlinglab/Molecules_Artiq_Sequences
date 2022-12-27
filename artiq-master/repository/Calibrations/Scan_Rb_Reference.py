@@ -41,7 +41,7 @@ class Scan_Rb_Reference(EnvExperiment):
                
         #self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
         self.scan_interval = get_rb_scan_interval(no_of_points = int(self.setpoint_count), df = self.df, cnt_freq = self.offset_laser_Hodor*1e12) 
-        self.setpoint_count *= 6 # this needs to be added since we calculate the line intervals here
+        self.setpoint_count *= 5 # this needs to be added since we calculate the line intervals here
         
 
         self.set_dataset('rb_spectrum',     ([0] * self.setpoint_count), broadcast=True)
@@ -88,7 +88,7 @@ class Scan_Rb_Reference(EnvExperiment):
             set_single_laser('Hodor', self.current_setpoint, wait_time = self.lock_wait_time)
 
             # if there is a setpoint jump larger than 200 MHz, then wait for longer
-            if np.abs(self.last_setpoint - self.current_setpoint) > 200e-6 and not n == 0:
+            if np.abs(self.last_setpoint - self.current_setpoint) > 50e-6 and not n == 0:
                 print('Sleeping for 3 ...')
                 time.sleep(3)
             

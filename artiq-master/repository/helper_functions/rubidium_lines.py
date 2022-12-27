@@ -80,7 +80,7 @@ def calculate_Rb_transitions():
     #my_lines.append(create_transition(Rb87, 'S1/2', 'P1/2', '2', '2'))
     #my_lines.append(create_transition(Rb87, 'S1/2', 'P1/2', '2', '1', Fe_co = '2', crossover = True))
     
-    my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '2', '2'))
+    #my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '2', '2'))
     my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '2', '3'))
     my_lines.append(create_transition(Rb85, 'S1/2', 'P1/2', '2', '2', Fe_co = '3', crossover = True))
 
