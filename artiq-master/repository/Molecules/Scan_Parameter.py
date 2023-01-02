@@ -56,6 +56,8 @@ class Scan_Parameter(EnvExperiment):
 
     def run(self):
 
+        set_single_laser(self.scanning_laser, self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
+        
         # counter counts setpoints and averages
         counter = 0
         # loop over setpoints
