@@ -29,8 +29,8 @@ class Scan_Single_Laser(EnvExperiment):
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
 
-        self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
-        self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
+        self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
+        self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
         self.scan_interval = np.linspace(self.setpoint_min, self.setpoint_max, self.setpoint_count)
 
@@ -128,3 +128,5 @@ class Scan_Single_Laser(EnvExperiment):
         set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
         # switch off Helium flow
         set_helium_flow(0.0, wait_time = 0.0)
+
+

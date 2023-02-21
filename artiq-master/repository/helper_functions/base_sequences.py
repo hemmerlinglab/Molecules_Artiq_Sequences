@@ -17,15 +17,18 @@ def fire_and_read(self):
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
 
-        delay(260*us)
+        #delay(260*us)
+        delay(300*us)
 
         ### Data Variable Initialization
-        data0 = [0]*self.scope_count # signal data
+        data0 = [0]*self.scope_count # absorption signal data
         data1 = [0]*self.scope_count # fire check data
         data2 = [0]*self.scope_count # uhv data (pmt)
         data3 = [0]*self.scope_count # post select, checks spec blue
         data4 = [0]*self.scope_count # post select, checks slow blue
-        smp = [0]*8 # individual sample
+        data5 = [0]*self.scope_count # absorption signal reference data
+        
+        smp   = [0]*8 # individual sample
 
         ## shut slowing laser off before anything starts
         self.ttl8.on()
@@ -64,7 +67,8 @@ def fire_and_read(self):
                     data2[j] = smp[2]
                     data3[j] = smp[3]
                     data4[j] = smp[4]
-                    #delay(5*us)
+                    data5[j] = smp[7]
+
                     delay(self.time_step_size*us) # plus 9us from sample_mu
 
         # release shutter of slowing laser
@@ -76,6 +80,7 @@ def fire_and_read(self):
         self.set_dataset('ch2', (data2), broadcast = True)
         self.set_dataset('ch3', (data3), broadcast = True)
         self.set_dataset('ch4', (data4), broadcast = True)
+        self.set_dataset('ch5', (data5), broadcast = True)
 
         return
 
@@ -134,6 +139,9 @@ def read_rubidium(self):
 @kernel
 def fire_and_read_slow(self):
 
+        # needs added ch5
+        DELIBERATE_CRASH
+        
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
         self.sampler0.init() # initializes sampler device
         # print('made it here')

@@ -100,7 +100,7 @@ class Raster_Target(EnvExperiment):
         set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
 
         # init lasers
-        set_single_laser('Daenerys', self.offset_laser_Daenerys, do_switch = True, wait_time = self.relock_wait_time)
+        set_single_laser('Davos', self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
         
         counter = 0
         # loop over setpoints

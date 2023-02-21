@@ -27,6 +27,7 @@ def set_helium_flow(flow, wait_time = 10.0):
 
 
 def move_yag_mirror(xpos, ypos, wait_time = None):
+
     # init connection to python server to send commands to move mirrors
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -120,7 +120,8 @@ def my_prepare(self, data_to_save = None):
             'ch1' : 'fire_check',
             'ch2' : 'pmt',
             'ch3' : 'slow_check',
-            'ch4' : 'spec_check'
+            'ch4' : 'spec_check',
+            'ch5' : 'absorption_reference'
             }
 
     self.time_interval = np.linspace(0,(self.time_step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
@@ -136,6 +137,7 @@ def my_prepare(self, data_to_save = None):
     self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
     self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
     self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch5_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
 
     # data set with slowing
     self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
@@ -143,13 +145,15 @@ def my_prepare(self, data_to_save = None):
     self.set_dataset('ch2_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
     self.set_dataset('ch3_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
     self.set_dataset('ch4_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch6_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
 
-    # dataset for plotting average signals
+    # dataset only for plotting average signals
     self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch3_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch4_avg',  ([0] * len(self.time_interval)),broadcast=True)
+    self.set_dataset('ch5_avg',  ([0] * len(self.time_interval)),broadcast=True)
 
     if self.scanning_laser == 'Hodor':
         self.which_scanning_laser = 2
@@ -163,7 +167,8 @@ def my_prepare(self, data_to_save = None):
     #self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
 
     if data_to_save == None:
-        self.data_to_save = [{'var' : 'set_points', 'name' : 'set_points'},
+        self.data_to_save = [
+                         {'var' : 'set_points', 'name' : 'set_points'},
                          {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
                          {'var' : 'freqs', 'name' : 'freqs'},
                          {'var' : 'times', 'name' : 'times'},
@@ -172,11 +177,13 @@ def my_prepare(self, data_to_save = None):
                          {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
                          {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
                          {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
+                         {'var' : 'ch5_arr', 'name' : self.smp_data_sets['ch5']},
                          {'var' : 'ch0_slow_arr', 'name' : self.smp_data_sets['ch0']},
                          {'var' : 'ch1_slow_arr', 'name' : self.smp_data_sets['ch1']},
                          {'var' : 'ch2_slow_arr', 'name' : self.smp_data_sets['ch2']},
                          {'var' : 'ch3_slow_arr', 'name' : self.smp_data_sets['ch3']},
-                         {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']}
+                         {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']},
+                         {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch5']}
                          ]
     else:
         self.data_to_save = data_to_save
@@ -221,7 +228,11 @@ def my_analyze(self):
 
     return
 
+
+
+
 def readout_data(self):
+    
     # readout data from Artiq by toggling through all channels and saving the data in a list
     self.smp_data = {}
     for channel in self.smp_data_sets.keys():
@@ -235,48 +246,104 @@ def readout_data(self):
 
 
 
+###################################################################################
+
+#def sub_average_data(self, ds, channel, i_avg):
+#
+#    # integrate the time trace between slice_min and slice_max and average
+#    if i_avg == 0:
+#        # first average
+#        self.smp_data_avg[self.smp_data_sets[channel]]  = ds
+#    else:
+#        self.smp_data_avg[self.smp_data_sets[channel]] += ds * (i_avg)/(i_avg+1.0)
+#
+#    return
+
+
 def average_data(self, i_avg):
+
+    ###############################################################################
+    # the following are for display purposes only
+    # it continuously updates the averaged data
+    ###############################################################################
+
+    # offset subtraction for absorption
+    offset_points = 20
+
+    hlp1 = self.smp_data[self.smp_data_sets['ch0']]
+    hlp2 = self.smp_data[self.smp_data_sets['ch5']]
+
+    ## subtract the offset
+
+    # subtract offset from the endpoints
+    #hlp1 = hlp1 - np.mean(hlp1[:-offset_points])
+    #hlp2 = hlp2 - np.mean(hlp2[:-offset_points])
+
+    # subtract offset from the beginning
+    hlp1 = hlp1 - np.mean(hlp1[0:offset_points])
+    hlp2 = hlp2 - np.mean(hlp2[0:offset_points])
+
+
+    if i_avg == 0:
+        
+        # calculate the absorption - absorption reference
+        self.ch0_avg = hlp1 - hlp2
+
+        self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
+        self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+        self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
+        self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
+        
+        self.ch5_avg = self.ch0_avg
+        
+    else:
+        self.ch0_avg = (self.ch0_avg * (i_avg) + (hlp1 - hlp2) ) / (i_avg+1.0)
+
+        self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
+        self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+        self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
+        self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
+
+        self.ch5_avg = self.ch0_avg
+
+
+    # get time slices for each channel
+    ind_1 = int(self.slice_min * 1e3/self.time_step_size)
+    ind_2 = int(self.slice_max * 1e3/self.time_step_size)
+
+    ## toggle through all channels and average the data
+    ## ch0, ch1, ch2, ...
+    #for channel in self.smp_data_sets.keys():
+
+    #    # get each data set
+    #    # self.smp_data['pmt_spectrum'] = ...
+    #    ds = self.smp_data[self.smp_data_sets[channel]]
+
+    #    self.sub_average_data(ds[ind_1:ind_2], channel, i_avg)
+
     # toggle through all channels and average the data
-    for channel in self.smp_data_sets.keys():
 
-        # needs slices for each channel
-        ind_1 = int(self.slice_min * 1e3/self.time_step_size)
-        ind_2 = int(self.slice_max * 1e3/self.time_step_size)
+    # integrate in-cell signal
 
-        # self.smp_data['pmt_spectrum'] = ...
-        ds = self.smp_data[self.smp_data_sets[channel]]
+    # integrate pmt signal
+    channel = 'pmt'
+    self.smp_data_avg[channel] = np.mean(self.ch2_avg[ind_1:ind_2])
 
-        if i_avg == 0:
-            # first average
-            self.smp_data_avg[self.smp_data_sets[channel]]  = np.mean(ds[ind_1:ind_2])
-        else:
-            self.smp_data_avg[self.smp_data_sets[channel]] += np.mean(ds[ind_1:ind_2]) * (i_avg)/(i_avg+1.0)
-
-        # these are for display purposes only
-        if i_avg == 0:
-            self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-            self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
-            self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-            self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
-            self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
-        else:
-            self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-            self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
-            self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
-            self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
-            self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
+    channel = 'absorption'
+    self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
 
     return
 
 
-
+###################################################################################
 
 def update_data(self, counter, n, slowing_data = False):
+    
     # this updates the gui for every shot
-    self.mutate_dataset('set_points', counter, self.current_setpoint)
-    self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
-    self.mutate_dataset('in_cell_spectrum', n, self.smp_data_avg['absorption'])
-    self.mutate_dataset('pmt_spectrum',     n, self.smp_data_avg['pmt'])
+    self.mutate_dataset('set_points',       counter, self.current_setpoint)
+    self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
+    self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
+    self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
@@ -284,10 +351,11 @@ def update_data(self, counter, n, slowing_data = False):
     self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
     self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
     self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch4_avg, broadcast = True)
 
     # save each successful shot in ch<number>_arr datasets
     # needs fixing since the number of channels is hardcoded here
-    for k in range(5):
+    for k in range(6):
         slice_ind = (counter)
         hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
 
@@ -322,6 +390,7 @@ def update_data_raster(self, counter, nx, ny):
     self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
     self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
     self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch4_avg, broadcast = True)
 
 
     return
@@ -345,10 +414,11 @@ def update_data_calibration(self, counter, n, last_point = True, slowing_data = 
     self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
     self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
     self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch4_avg, broadcast = True)
 
     # save each successful shot in ch<number>_arr datasets
     # needs fixing since the number of channels is hardcoded here
-    for k in range(5):
+    for k in range(6):
         slice_ind = (counter)
         hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
 
@@ -367,6 +437,8 @@ def check_shot(self):
     if self.yag_check and np.max(self.smp_data['fire_check']) < 0.3:
         repeat_shot = True
         print('No Yag')
+                
+        os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
 
     # check if spectroscopy light was there
     blue_min = splr.adc_mu_to_volt(20)
@@ -375,11 +447,16 @@ def check_shot(self):
             if np.min(self.smp_data['spec_check']) < blue_min:
                 repeat_shot = True
                 print('No spectroscopy')
+                
+                os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
 
         elif self.which_scanning_laser == 2:
           if np.min(self.smp_data['slow_check']) < blue_min:
                 repeat_shot = True
                 print('No spectroscopy')
+                
+                os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
+
         else:
             print('Not checking spectroscopy laser')
 
