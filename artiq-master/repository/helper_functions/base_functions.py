@@ -332,6 +332,11 @@ def average_data(self, i_avg):
     channel = 'absorption'
     self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
 
+    # for Rb absorption
+    channel = 'fire_check'
+    self.smp_data_avg[channel] = np.mean(self.ch1_avg[ind_1:ind_2])
+
+
     return
 
 
@@ -403,7 +408,7 @@ def update_data_calibration(self, counter, n, last_point = True, slowing_data = 
     self.mutate_dataset('set_points', counter, self.current_setpoint)
     self.mutate_dataset('act_freqs', counter, self.wavemeter_frequencies)
     
-    # average over time trace to display
+    ## average over time trace to display
     if last_point:
         # only plot once all averages are taken
         self.mutate_dataset('rb_spectrum',     n, self.smp_data_avg['fire_check'])

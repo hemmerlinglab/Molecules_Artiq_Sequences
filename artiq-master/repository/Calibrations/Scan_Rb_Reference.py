@@ -130,4 +130,9 @@ class Scan_Rb_Reference(EnvExperiment):
         set_single_laser('Hodor', self.offset_laser_Hodor + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
 
         time.sleep(2)
+        
+        # run fit and then run HeNe calibration
+
+        
+
 
