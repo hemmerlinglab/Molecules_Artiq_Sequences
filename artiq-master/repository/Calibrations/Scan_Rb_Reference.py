@@ -50,6 +50,15 @@ class Scan_Rb_Reference(EnvExperiment):
         # call the preparation that is in common of all experiments
         my_prepare(self)
 
+        self.smp_data_sets = {
+            'ch0' : 'abs_diff',
+            'ch1' : 'absorption_spec',
+            'ch2' : 'absorption_spec_reference',
+            'ch3' : 'null',
+            'ch4' : 'null',
+            'ch5' : 'null'
+            }
+
         return
 
 
@@ -91,7 +100,7 @@ class Scan_Rb_Reference(EnvExperiment):
             # if there is a setpoint jump larger than 200 MHz, then wait for longer
             if np.abs(self.last_setpoint - self.current_setpoint) > 50e-6 and not n == 0:
                 print('Sleeping for 3 ...')
-                time.sleep(3)
+                time.sleep(0.3)
             
             self.last_setpoint = self.current_setpoint
 
@@ -115,7 +124,7 @@ class Scan_Rb_Reference(EnvExperiment):
 
                     if True:
                         # upon success add data to dataset
-                        average_data(self, i_avg)
+                        average_data_calibration(self, i_avg)
                         
                         update_data_calibration(self, counter, n, last_point = (i_avg == self.no_of_averages-1))
 

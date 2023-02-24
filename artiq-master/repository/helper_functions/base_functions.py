@@ -332,9 +332,61 @@ def average_data(self, i_avg):
     channel = 'absorption'
     self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
 
+
+    return
+
+def average_data_calibration(self, i_avg):
+
+    ###############################################################################
+    # the following are for display purposes only
+    # it continuously updates the averaged data
+    ###############################################################################
+
+    # offset subtraction for absorption
+    offset_points = 20
+
+    hlp1 = self.smp_data[self.smp_data_sets['ch1']]
+    hlp2 = self.smp_data[self.smp_data_sets['ch2']]
+
+    ## subtract the offset
+    ## subtract offset from the beginning
+    #hlp1 = hlp1 - np.mean(hlp1[0:offset_points])
+    #hlp2 = hlp2 - np.mean(hlp2[0:offset_points])
+
+    if i_avg == 0:
+        
+        # calculate the absorption - absorption reference
+        self.ch0_avg = hlp1 - hlp2
+
+        self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
+        self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+        #self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
+        #self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
+        
+        #self.ch5_avg = self.ch0_avg
+        
+    else:
+        self.ch0_avg = (self.ch0_avg * (i_avg) + (hlp1 - hlp2) ) / (i_avg+1.0)
+
+        self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
+        self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+        #self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
+        #self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
+
+        #self.ch5_avg = self.ch0_avg
+
+
+    # get time slices for each channel
+    ind_1 = int(self.slice_min * 1e3/self.time_step_size)
+    ind_2 = int(self.slice_max * 1e3/self.time_step_size)
+
     # for Rb absorption
-    channel = 'fire_check'
-    self.smp_data_avg[channel] = np.mean(self.ch1_avg[ind_1:ind_2])
+    channel = 'absorption_spec'
+    self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
+
+    #channel = 'absorption_spec_reference'
+    #self.smp_data_avg[channel] = np.mean(self.ch2_avg[ind_1:ind_2])
+
 
 
     return
@@ -411,15 +463,15 @@ def update_data_calibration(self, counter, n, last_point = True, slowing_data = 
     ## average over time trace to display
     if last_point:
         # only plot once all averages are taken
-        self.mutate_dataset('rb_spectrum',     n, self.smp_data_avg['fire_check'])
+        self.mutate_dataset('rb_spectrum',     n, self.smp_data_avg['absorption_spec'])
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
     self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
     self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
-    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
-    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
-    self.set_dataset('ch5_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch0_avg, broadcast = True)
 
     # save each successful shot in ch<number>_arr datasets
     # needs fixing since the number of channels is hardcoded here
