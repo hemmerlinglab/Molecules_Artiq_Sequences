@@ -99,9 +99,16 @@ class Raster_Target(EnvExperiment):
         # init flow
         set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
 
-        # init lasers
-        set_single_laser('Davos', self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
-        
+        # init scanning laser
+        if self.scanning_laser == 'Daenerys':
+            hlp_frequency_offset = self.offset_laser_Daenerys
+        elif self.scanning_laser == 'Hodor':
+            hlp_frequency_offset = self.offset_laser_Hodor
+        elif self.scanning_laser == 'Davos':
+            hlp_frequency_offset = self.offset_laser_Davos
+
+        set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
+
         counter = 0
         # loop over setpoints
         for nx, xpos in enumerate(self.scan_x_interval): 
