@@ -56,8 +56,19 @@ class Scan_Parameter(EnvExperiment):
 
     def run(self):
 
-        set_single_laser(self.scanning_laser, self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
+        #set_single_laser(self.scanning_laser, self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
         
+        # init scanning laser
+        if self.scanning_laser == 'Daenerys':
+            hlp_frequency_offset = self.offset_laser_Daenerys
+        elif self.scanning_laser == 'Hodor':
+            hlp_frequency_offset = self.offset_laser_Hodor
+        elif self.scanning_laser == 'Davos':
+            hlp_frequency_offset = self.offset_laser_Davos
+
+        set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
+
+
         # counter counts setpoints and averages
         counter = 0
         # loop over setpoints

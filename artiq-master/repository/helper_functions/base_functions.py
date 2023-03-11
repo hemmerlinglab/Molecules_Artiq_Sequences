@@ -226,6 +226,8 @@ def my_analyze(self):
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
 
+    os.system('mpg321 -quiet ~/boat.mp3')
+    
     return
 
 
@@ -495,24 +497,24 @@ def check_shot(self):
         repeat_shot = True
         print('No Yag')
                 
-        os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
+        os.system('mpg321 -quiet ~/klaxon.mp3')
 
     # check if spectroscopy light was there
-    blue_min = splr.adc_mu_to_volt(20)
+    blue_min = splr.adc_mu_to_volt(15)
     if self.blue_check:
         if self.which_scanning_laser == 1:
             if np.min(self.smp_data['spec_check']) < blue_min:
                 repeat_shot = True
                 print('No spectroscopy')
                 
-                os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
+                os.system('mpg321 -quiet ~/klaxon.mp3')
 
         elif self.which_scanning_laser == 2:
           if np.min(self.smp_data['slow_check']) < blue_min:
                 repeat_shot = True
                 print('No spectroscopy')
                 
-                os.system('mpg321 -quiet /home/molecules/Downloads/klaxon.mp3')
+                os.system('mpg321 -quiet ~/klaxon.mp3')
 
         else:
             print('Not checking spectroscopy laser')
