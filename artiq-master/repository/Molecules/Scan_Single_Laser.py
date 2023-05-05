@@ -88,6 +88,13 @@ class Scan_Single_Laser(EnvExperiment):
             else:
                 set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
 
+            ## fire scanning cavity calibration shots
+            #print('Fire calibration shots')
+            #for k_dummy in range(3):
+            #    print(k_dummy)
+            #    fire_dummy_shot(self)
+            #    time.sleep(1.0)
+
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
 

@@ -18,8 +18,7 @@ def fire_and_read(self):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
 
         #delay(260*us)
-        #delay(300*us)
-        delay(500*us)
+        delay(300*us)
 
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # absorption signal data
@@ -28,8 +27,6 @@ def fire_and_read(self):
         data3 = [0]*self.scope_count # post select, checks spec blue
         data4 = [0]*self.scope_count # post select, checks slow blue
         data5 = [0]*self.scope_count # absorption signal reference data
-        data6 = [0]*self.scope_count # absorption signal reference data
-        data7 = [0]*self.scope_count # absorption signal reference data
         
         smp   = [0]*8 # individual sample
 
@@ -79,9 +76,7 @@ def fire_and_read(self):
                     data2[j] = smp[2]
                     data3[j] = smp[3]
                     data4[j] = smp[4]
-                    data5[j] = smp[5]
-                    data6[j] = smp[6]
-                    data7[j] = smp[7]
+                    data5[j] = smp[6] # channel 6 to save the UV pmt output
 
                     delay(self.time_step_size*us) # plus 9us from sample_mu
 
@@ -95,8 +90,6 @@ def fire_and_read(self):
         self.set_dataset('ch3', (data3), broadcast = True)
         self.set_dataset('ch4', (data4), broadcast = True)
         self.set_dataset('ch5', (data5), broadcast = True)
-        self.set_dataset('ch6', (data6), broadcast = True)
-        self.set_dataset('ch7', (data7), broadcast = True)
 
         return
 
