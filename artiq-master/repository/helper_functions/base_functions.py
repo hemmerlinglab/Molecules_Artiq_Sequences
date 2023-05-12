@@ -406,10 +406,6 @@ def average_data_calibration(self, i_avg):
     channel = 'absorption_spec'
     self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
 
-    #channel = 'absorption_spec_reference'
-    #self.smp_data_avg[channel] = np.mean(self.ch2_avg[ind_1:ind_2])
-
-
 
     return
 

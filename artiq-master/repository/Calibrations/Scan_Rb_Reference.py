@@ -54,9 +54,11 @@ class Scan_Rb_Reference(EnvExperiment):
             'ch0' : 'abs_diff',
             'ch1' : 'absorption_spec',
             'ch2' : 'absorption_spec_reference',
-            'ch3' : 'null',
-            'ch4' : 'null',
-            'ch5' : 'null'
+            'ch3' : 'null1',
+            'ch4' : 'null2',
+            'ch5' : 'null3',
+            'ch6' : 'null4',
+            'ch7' : 'null5'
             }
 
         return

@@ -113,7 +113,7 @@ def read_rubidium(self):
         for i in range(8):
             self.sampler1.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
 
-        delay(300*us)
+        delay(500*us)
 
         ### Data Variable Initialization
         data0 = [0]*self.scope_count # signal data
@@ -122,6 +122,8 @@ def read_rubidium(self):
         data3 = [0]*self.scope_count # post select, checks spec blue
         data4 = [0]*self.scope_count # post select, checks slow blue
         data5 = [0]*self.scope_count # post select, checks slow blue
+        data6 = [0]*self.scope_count # post select, checks slow blue
+        data7 = [0]*self.scope_count # post select, checks slow blue
 
         smp = [0]*8 # individual sample
 
@@ -140,6 +142,8 @@ def read_rubidium(self):
                     data3[j] = smp[3]
                     data4[j] = smp[4]
                     data5[j] = smp[5]
+                    data6[j] = smp[6]
+                    data7[j] = smp[7]
 
                     #delay(5*us)
                     delay(self.time_step_size*us) # plus 9us from sample_mu
@@ -154,6 +158,8 @@ def read_rubidium(self):
         self.set_dataset('ch3', (data3), broadcast = True)
         self.set_dataset('ch4', (data4), broadcast = True)
         self.set_dataset('ch5', (data5), broadcast = True)
+        self.set_dataset('ch6', (data6), broadcast = True)
+        self.set_dataset('ch7', (data7), broadcast = True)
 
         return
 
