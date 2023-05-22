@@ -19,7 +19,7 @@ try:
     sock.sendall(message.encode())
     
     # send hene frequency
-    message = '473.612483'
+    message = '473.612463'
     sock.sendall(message.encode())
 
 
