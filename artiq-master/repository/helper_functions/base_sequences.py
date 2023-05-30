@@ -34,20 +34,34 @@ def fire_and_read(self):
         smp   = [0]*8 # individual sample
 
         ## shut slowing laser off before anything starts
-        self.ttl8.on()
-        delay(25*ms)
+        #self.ttl8.on()
+        #delay(25*ms)
 
         ### Fire and sample
+        
+        # wait for trigger on channel 3
+        delay(10*us)
+        while self.ttl3.watch_stay_off():
+              delay(10*us)
+              pass
+
+        # fire sequence only at a certain time after the pulsetube cycle
+        delay(self.pulse_tube_sync_wait*ms)
+        
         with parallel:
 
             with sequential:
-               
+
+                # cavity ramp                
                 # starting ramp 2ms before yag
+
                 delay((0.01 + self.yag_fire_time + 0.15 + 0.015 + 0.135 + 0.15 + 0.1 - 24.0)*ms) 
                 
                 self.ttl11.pulse(100*us) # start cavity scan
 
             with sequential:
+                
+                # yag sequence
 
                 self.ttl9.pulse(10*us) # experimental start
                 
@@ -62,6 +76,9 @@ def fire_and_read(self):
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
             with sequential:
+
+                # uniblitz shutter
+                
                 if self.uniblitz_on:
                     # this is the shutter inside the dewar
                     # shutter needs 13ms to start opening
@@ -71,6 +88,9 @@ def fire_and_read(self):
                     self.ttl7.off()
 
             with sequential:
+
+                # sampler readout sequence
+
                 delay(self.sampler_delay_time*ms)
                 for j in range(self.scope_count):
                     self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
@@ -84,9 +104,14 @@ def fire_and_read(self):
                     data7[j] = smp[7]
 
                     delay(self.time_step_size*us) # plus 9us from sample_mu
+        
+        # this has to be called if watch_stay_off() was called
+        if self.ttl3.watch_done():
+            delay(25*us)
+            pass
 
-        # release shutter of slowing laser
-        self.ttl8.off()
+        ## release shutter of slowing laser
+        #self.ttl8.off()
 
         ### Allocate and Transmit Data All Channels
         self.set_dataset('ch0', (data0), broadcast = True)

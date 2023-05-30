@@ -30,6 +30,7 @@ def base_build(self):
     self.wavemeter_frequencies = []
 
     self.setattr_device('core') # Core Artiq Device (required)
+    self.setattr_device('ttl3') # trigger in, sync to pulse tube
     self.setattr_device('ttl4') # flash-lamp
     self.setattr_device('ttl6') # q-switch
     self.setattr_device('ttl5') # uv ccd trigger
@@ -52,12 +53,12 @@ def base_build(self):
     my_setattr(self, 'time_step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'slice_min',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_min',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_min',NumberValue(default=5.5,unit='ms',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'pmt_slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-    my_setattr(self, 'relock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'lock_wait_time', NumberValue(default=1000,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'relock_laser_steps', NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'relock_wait_time', NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'lock_wait_time', NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'relock_laser_steps', NumberValue(default=3000,unit='',scale=1,ndecimals=0,step=1))
 
     return
 
@@ -76,11 +77,11 @@ def rb_calibration_build(self):
 def pulsed_scan_build(self):
     # EnvExperiment attribute: number of voltage samples per scan
 
-    my_setattr(self, 'setpoint_count',NumberValue(default=3,unit='setpoints',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'setpoint_count',NumberValue(default=30,unit='setpoints',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
     #my_setattrself, ('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Hodor'))
+    my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Daenerys'))
 
     # offset of laseself, rs
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
@@ -99,17 +100,19 @@ def pulsed_scan_build(self):
     my_setattr(self, 'slowing_shutter_duration',NumberValue(default=60,unit='ms',scale=1,ndecimals=1,step=0.1))
 
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'yag_power',NumberValue(default=7,unit='',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'he_flow',NumberValue(default=3,unit='sccm',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'he_flow_wait',NumberValue(default=10,unit='s',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'yag_power',NumberValue(default=13,unit='',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'he_flow',NumberValue(default=2,unit='sccm',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'he_flow_wait',NumberValue(default=2,unit='s',scale=1,ndecimals=1,step=0.1))
+    
+    my_setattr(self, 'pulse_tube_sync_wait',NumberValue(default=10,unit='ms',scale=1,ndecimals=1,step=0.1))
     
     # Boomy_leans
     my_setattr(self, 'yag_check',BooleanValue(default=True))
     my_setattr(self, 'blue_check',BooleanValue(default=False))
 
     # slowing laser self, shutter
-    my_setattr(self, 'slowing_laser_shutter_on',BooleanValue(default=True))
-    my_setattr(self, 'uniblitz_on',BooleanValue(default=True))
+    my_setattr(self, 'slowing_laser_shutter_on',BooleanValue(default=False))
+    my_setattr(self, 'uniblitz_on',BooleanValue(default=False))
     
     return
 

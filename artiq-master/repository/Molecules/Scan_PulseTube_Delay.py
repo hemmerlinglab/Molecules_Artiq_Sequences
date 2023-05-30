@@ -16,7 +16,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Parameter(EnvExperiment):
+class Scan_Pulse_Tube_Delay(EnvExperiment):
     
     def build(self):
         base_build(self)
@@ -25,15 +25,15 @@ class Scan_Parameter(EnvExperiment):
         pulsed_scan_build(self) 
         
      
-        my_setattr(self, 'he_min',NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
-        my_setattr(self, 'he_max',NumberValue(default=10,unit='sccm',scale=1,ndecimals=1,step=0.1))
+        my_setattr(self, 'delay_min',NumberValue(default=0,unit='ms',scale=1,ndecimals=1,step=1))
+        my_setattr(self, 'delay_max',NumberValue(default=700,unit='ms',scale=1,ndecimals=1,step=1))
 
         return
  
     def prepare(self):
         # function is run before the experiment, i.e. before run() is called
         
-        self.scan_interval = np.linspace(self.he_min, self.he_max, self.setpoint_count)
+        self.scan_interval = np.linspace(self.delay_min, self.delay_max, self.setpoint_count)
  
         self.set_dataset('in_cell_spectrum', ([0] * self.setpoint_count),broadcast=True)
         self.set_dataset('pmt_spectrum',     ([0] * self.setpoint_count),broadcast=True)
@@ -68,15 +68,19 @@ class Scan_Parameter(EnvExperiment):
 
         set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
 
-
+        # set Helium flow
+        set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
+ 
         # counter counts setpoints and averages
         counter = 0
         # loop over setpoints
-        for n, flow in enumerate(self.scan_interval): 
+        for n, my_delay in enumerate(self.scan_interval): 
 
-            # set Helium flow
-            set_helium_flow(flow, wait_time = self.he_flow_wait)
-            self.current_setpoint = flow
+           
+            # set pulse tube delay
+            self.current_setpoint = self.pulse_tube_sync_wait
+            self.pulse_tube_sync_wait = my_delay
+
 
             print(str(n+1) + ' / ' + str(self.setpoint_count) + ' setpoints')
 
