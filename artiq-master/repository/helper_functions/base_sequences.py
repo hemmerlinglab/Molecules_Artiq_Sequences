@@ -42,11 +42,22 @@ def fire_and_read(self):
         # wait for trigger on channel 3
         delay(10*us)
         while self.ttl3.watch_stay_off():
-              delay(10*us)
+              delay(50*us)
               pass
 
+        delay(1*ms)
+        
+        # this has to be called if watch_stay_off() was called
+        if self.ttl3.watch_done():
+            #delay(50*us)
+            delay(50*us)
+            pass
+
+        delay(1*ms)
+
         # fire sequence only at a certain time after the pulsetube cycle
-        delay(self.pulse_tube_sync_wait*ms)
+        if self.pulse_tube_sync_wait>0:
+            delay(self.pulse_tube_sync_wait*ms)
         
         with parallel:
 
@@ -105,11 +116,6 @@ def fire_and_read(self):
 
                     delay(self.time_step_size*us) # plus 9us from sample_mu
         
-        # this has to be called if watch_stay_off() was called
-        if self.ttl3.watch_done():
-            delay(25*us)
-            pass
-
         ## release shutter of slowing laser
         #self.ttl8.off()
 
