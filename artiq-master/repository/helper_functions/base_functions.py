@@ -28,6 +28,7 @@ def base_build(self):
     # the base parameters all sequences have in common
     self.config_dict = []
     self.wavemeter_frequencies = []
+    self.comb_spectrum_current = []
 
     self.setattr_device('core') # Core Artiq Device (required)
     self.setattr_device('ttl3') # trigger in, sync to pulse tube
@@ -175,6 +176,8 @@ def my_prepare(self, data_to_save = None):
     elif self.scanning_laser == 'Daenerys':
         self.which_scanning_laser = 3
 
+    self.set_dataset('frequency_comb_spectrum',  ([[0] * 1000] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    
     #self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
     #self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
     #self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
@@ -201,6 +204,7 @@ def my_prepare(self, data_to_save = None):
                          {'var' : 'ch5_slow_arr', 'name' : self.smp_data_sets['ch5']},
                          {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch6']},
                          {'var' : 'ch7_slow_arr', 'name' : self.smp_data_sets['ch7']},
+                         {'var' : 'frequency_comb_spectrum', 'name' : 'frequency_comb_spectrum'},
                          ]
     else:
         self.data_to_save = data_to_save
@@ -260,6 +264,17 @@ def readout_data(self):
 
     # read laser frequencies
     self.wavemeter_frequencies = get_single_laser_frequencies()
+
+    check_spectrum = True
+    while check_spectrum:
+        self.comb_spectrum_current = get_keysight_trace()
+
+        #print(len(self.comb_spectrum_current))
+        if not len(self.comb_spectrum_current) == 1000:
+            check_spectrum = True
+            print('Retaking comb trace')
+        else:
+            check_spectrum = False
 
     return
 
@@ -421,7 +436,8 @@ def update_data(self, counter, n, slowing_data = False):
     self.mutate_dataset('set_points',       counter, self.current_setpoint)
     self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
     self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
-    self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])
+    self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
+    self.mutate_dataset('frequency_comb_spectrum',     counter,  self.comb_spectrum_current)
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)

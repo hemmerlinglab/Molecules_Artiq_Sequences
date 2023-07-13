@@ -7,7 +7,7 @@ import socket
 import socket
 import os
 import time
-
+from keysight import Keysight
 
 def set_helium_flow(flow, wait_time = 10.0):
 
@@ -77,6 +77,32 @@ def get_single_laser_frequencies():
     print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
     
     return freqs
+
+
+
+def get_keysight_trace():
+
+    # Extracts single trace from spectrum analyzer
+
+    spec = Keysight()
+
+    low_freq = 1e6 
+    high_freq = 211e6
+
+    span_freq = high_freq - low_freq
+    cnt_freq = (high_freq + low_freq)/2.0
+
+    spec.set_center_freq(cnt_freq)
+    spec.set_span(span_freq)
+
+    spec.set_sweep()
+    try:
+        d = spec.get_trace()
+    except:
+        d = []
+    spec.close()
+    
+    return d
 
 
 def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None):
