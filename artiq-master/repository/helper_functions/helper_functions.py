@@ -96,13 +96,18 @@ def get_keysight_trace():
     spec.set_span(span_freq)
 
     spec.set_sweep()
+
+    (m1, m2, m3) = spec.do_peak_search()
+    
+    peaks = [m1, m2, m3]
+
     try:
         d = spec.get_trace()
     except:
         d = []
     spec.close()
     
-    return d
+    return (d, peaks)
 
 
 def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None):

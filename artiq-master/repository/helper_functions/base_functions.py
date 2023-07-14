@@ -29,6 +29,7 @@ def base_build(self):
     self.config_dict = []
     self.wavemeter_frequencies = []
     self.comb_spectrum_current = []
+    self.comb_peaks_current = []
 
     self.setattr_device('core') # Core Artiq Device (required)
     self.setattr_device('ttl3') # trigger in, sync to pulse tube
@@ -178,6 +179,8 @@ def my_prepare(self, data_to_save = None):
 
     self.set_dataset('frequency_comb_spectrum',  ([[0] * 1000] * self.no_of_averages * self.setpoint_count),broadcast=True)
     
+    self.set_dataset('frequency_comb_peaks',  ([[0] * 3] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    
     #self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
     #self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
     #self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
@@ -205,6 +208,7 @@ def my_prepare(self, data_to_save = None):
                          {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch6']},
                          {'var' : 'ch7_slow_arr', 'name' : self.smp_data_sets['ch7']},
                          {'var' : 'frequency_comb_spectrum', 'name' : 'frequency_comb_spectrum'},
+                         {'var' : 'frequency_comb_peaks', 'name' : 'frequency_comb_peaks'},
                          ]
     else:
         self.data_to_save = data_to_save
@@ -267,7 +271,7 @@ def readout_data(self):
 
     check_spectrum = True
     while check_spectrum:
-        self.comb_spectrum_current = get_keysight_trace()
+        self.comb_spectrum_current, self.comb_peaks_current = get_keysight_trace()
 
         #print(len(self.comb_spectrum_current))
         if not len(self.comb_spectrum_current) == 1000:
@@ -437,7 +441,8 @@ def update_data(self, counter, n, slowing_data = False):
     self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
     self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
     self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
-    self.mutate_dataset('frequency_comb_spectrum',     counter,  self.comb_spectrum_current)
+    self.mutate_dataset('frequency_comb_spectrum',  counter,  self.comb_spectrum_current)
+    self.mutate_dataset('frequency_comb_peaks',     counter,  self.comb_peaks_current)
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
@@ -459,6 +464,19 @@ def update_data(self, counter, n, slowing_data = False):
             self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
         else:
             self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+
+
+    # save data after some averaged shots
+    if (counter % (3*self.no_of_averages) == 0): 
+        # and (counter % self.no_of_averages == 0)
+        print(self.no_of_averages) 
+        print('Temp saving data ... counter = {0}'.format(counter))
+
+        # save data
+        save_all_data(self)
+
+        # save config
+        save_config(self.basefilename, self.config_dict)
 
     return
 

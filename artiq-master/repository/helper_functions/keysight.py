@@ -63,6 +63,26 @@ class Keysight:
 
         self.send(':CALC:MARK' + str(no) + ':STATE ON')
 
+
+    def do_peak_search(self):
+
+        self.send(':CALC:MARK1:MAX')
+        m1 = self.query(':CALC:MARK1:X?')
+        
+        self.send(':CALC:MARK1:MAX:LEFT')
+        m2 = self.query(':CALC:MARK1:X?')
+
+        self.send(':CALC:MARK1:MAX:LEFT')
+        m3 = self.query(':CALC:MARK1:X?')
+
+        m1 = float(m1)
+        m2 = float(m2)
+        m3 = float(m3)
+
+        return (m1, m2, m3)
+
+
+
     def get_trace(self):
 
         #print('Getting trace')
