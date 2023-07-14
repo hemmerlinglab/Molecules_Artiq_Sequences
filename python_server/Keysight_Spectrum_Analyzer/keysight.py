@@ -63,6 +63,61 @@ class Keysight:
 
         self.send(':CALC:MARK' + str(no) + ':STATE ON')
 
+        return
+
+    def do_peak_search(self):
+
+        self.send(':CALC:MARK1:MAX')
+        m1 = self.query(':CALC:MARK1:X?')
+        
+        self.send(':CALC:MARK1:MAX:LEFT')
+        m2 = self.query(':CALC:MARK1:X?')
+
+        self.send(':CALC:MARK1:MAX:LEFT')
+        m3 = self.query(':CALC:MARK1:X?')
+
+
+        return (m1, m2, m3)
+
+
+#    def get_trace(self):
+#
+#        #print('Getting trace')
+#        #
+#        #
+#        ##my_format = (self.query('FORMAT:TRACE:DATA?'))
+#
+#        #print(no_of_points)
+#        ##print(my_format)
+#
+#        ##d = self.query(':TRACE:DATA? TRACE1', number_of_bytes = 17*no_of_points)
+#
+#        #no_of_points = int(self.query('SENS:SWE:POIN?'))
+#        
+#        #print(no_of_points)
+#        
+#        d2 = []
+#        
+#        no_of_points = 821
+#
+#        d = self.query(':TRACE:DATA? TRACE1', number_of_bytes = 17*no_of_points)
+#        
+#        d = d + self.query(':TRACE:DATA? TRACE1', number_of_bytes = 17*no_of_points)
+#        
+#        d = d.strip(',').split(',')
+#              
+#        
+#        for n in range(len(d)):
+#            try:
+#                d2.append( float(d[n]) )
+#            except:
+#                d2.append(0)
+#        
+#        return d2
+
+
+
+
     def get_trace(self):
 
         #print('Getting trace')
@@ -92,18 +147,23 @@ class Keysight:
         return d2[:-1]
 
 
-    def set_sweep(self):
 
+    def set_sweep(self):
         
+        self.marker_on(1)
+
         self.send(':TRACE:CLE TRACE1')
 
         self.send(':INIT:CONT OFF')
         
-        self.query('*OPC?')
+        self.send(':TRACE:CLE TRACE1')
+        
+        print(self.query('*OPC?'))
        
         self.send(':INIT:IMM')
+        #time.sleep(3) 
         
-        self.query('*OPC?')
+        print(self.query('*OPC?'))
         
         return 
 

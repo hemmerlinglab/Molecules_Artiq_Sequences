@@ -14,8 +14,8 @@ y_arr = []
 
 
 
-low_freq = 10e6 
-high_freq = 210e6
+low_freq = 1e6 
+high_freq = 220e6
 
 no_of_scans = 200
 
@@ -25,28 +25,40 @@ cnt_freq = (high_freq + low_freq)/2.0
 no_of_scans = 2
 
 results = []
-for k in range(no_of_scans):
-    try:
-        spec = Keysight()
 
-        spec.set_center_freq(cnt_freq)
-        spec.set_span(span_freq)
+spec = Keysight()
+
+spec.set_center_freq(cnt_freq)
+spec.set_span(span_freq)
+
+spec.set_sweep()
+
+d = []
+
+(m1, m2, m3) = spec.do_peak_search()
+
+print('Getting trace ...')
+d = spec.get_trace()
 
 
-        spec.set_sweep()
-        d = spec.get_trace()
-        spec.close()
+print('marker1')
+print(m1)
+print('marker1')
+print(m2)
+print(m3)
 
-        if len(d) == 1000:
-            results.append(d)
-    except:
-        pass
+#print(d)
 
-results = np.array(results)
+spec.close()
 
-print(results.shape)
 
-plt.plot(results[0])
+x = np.linspace(low_freq, high_freq, len(d))/1e6
+y = d
 
+plt.plot(x, y)
+
+#plt.plot(y)
+
+plt.ylim(-100, 0)
 plt.show()
 
