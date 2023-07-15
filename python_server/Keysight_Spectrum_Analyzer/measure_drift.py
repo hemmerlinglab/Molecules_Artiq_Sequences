@@ -21,7 +21,7 @@ high_freq = 250e6
 high_freq = 210e6
 
 
-no_of_scans = 20
+no_of_scans = 300
 
 span_freq = high_freq - low_freq
 cnt_freq = (high_freq + low_freq)/2.0
