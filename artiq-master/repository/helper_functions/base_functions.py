@@ -9,6 +9,10 @@ sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master
 from helper_functions import *
 
 
+sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
+from rigol import Rigol_RSA3030, Rigol_DSG821
+from frequency_comb import DFC
+
 
 
 def my_setattr(self, arg, val):
@@ -28,8 +32,14 @@ def base_build(self):
     # the base parameters all sequences have in common
     self.config_dict = []
     self.wavemeter_frequencies = []
-    self.comb_spectrum_current = []
-    self.comb_peaks_current = []
+    #self.comb_spectrum_current = []
+    #self.comb_peaks_current = []
+
+    # add instruments
+    self.EOM_function_generator = Rigol_DSG821()
+    self.frequency_comb         = DFC()
+    self.spectrum_analyzer      = Rigol_RSA3030()
+
 
     self.setattr_device('core') # Core Artiq Device (required)
     self.setattr_device('ttl3') # trigger in, sync to pulse tube
@@ -177,9 +187,9 @@ def my_prepare(self, data_to_save = None):
     elif self.scanning_laser == 'Daenerys':
         self.which_scanning_laser = 3
 
-    self.set_dataset('frequency_comb_spectrum',  ([[0] * 1000] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    #self.set_dataset('frequency_comb_spectrum',  ([[0] * 1000] * self.no_of_averages * self.setpoint_count),broadcast=True)
     
-    self.set_dataset('frequency_comb_peaks',  ([[0] * 3] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    #self.set_dataset('frequency_comb_peaks',  ([[0] * 3] * self.no_of_averages * self.setpoint_count),broadcast=True)
     
     #self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
     #self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
@@ -207,8 +217,8 @@ def my_prepare(self, data_to_save = None):
                          {'var' : 'ch5_slow_arr', 'name' : self.smp_data_sets['ch5']},
                          {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch6']},
                          {'var' : 'ch7_slow_arr', 'name' : self.smp_data_sets['ch7']},
-                         {'var' : 'frequency_comb_spectrum', 'name' : 'frequency_comb_spectrum'},
-                         {'var' : 'frequency_comb_peaks', 'name' : 'frequency_comb_peaks'},
+                         #{'var' : 'frequency_comb_spectrum', 'name' : 'frequency_comb_spectrum'},
+                         #{'var' : 'frequency_comb_peaks', 'name' : 'frequency_comb_peaks'},
                          ]
     else:
         self.data_to_save = data_to_save
@@ -251,6 +261,13 @@ def my_analyze(self):
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
 
+
+    # Disconnect instruments
+    self.EOM_function_generator.close()
+    self.spectrum_analyzer.close()
+    self.frequency_comb.close()
+
+    # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
     
     return
@@ -269,16 +286,23 @@ def readout_data(self):
     # read laser frequencies
     self.wavemeter_frequencies = get_single_laser_frequencies()
 
-    check_spectrum = True
-    while check_spectrum:
-        self.comb_spectrum_current, self.comb_peaks_current = get_keysight_trace()
+    # read repetition rate of comb
+    frep = self.frequency_comb.get_frep()
 
-        #print(len(self.comb_spectrum_current))
-        if not len(self.comb_spectrum_current) == 1000:
-            check_spectrum = True
-            print('Retaking comb trace')
-        else:
-            check_spectrum = False
+    # read spectrum
+    (x, y) = self.spectrum_analyzer.get_trace()
+       
+
+    #check_spectrum = False
+    #while check_spectrum:
+    #    self.comb_spectrum_current, self.comb_peaks_current = get_keysight_trace()
+
+    #    #print(len(self.comb_spectrum_current))
+    #    if not len(self.comb_spectrum_current) == 1000:
+    #        check_spectrum = True
+    #        print('Retaking comb trace')
+    #    else:
+    #        check_spectrum = False
 
     return
 
@@ -441,8 +465,8 @@ def update_data(self, counter, n, slowing_data = False):
     self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
     self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
     self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
-    self.mutate_dataset('frequency_comb_spectrum',  counter,  self.comb_spectrum_current)
-    self.mutate_dataset('frequency_comb_peaks',     counter,  self.comb_peaks_current)
+    #self.mutate_dataset('frequency_comb_spectrum',  counter,  self.comb_spectrum_current)
+    #self.mutate_dataset('frequency_comb_peaks',     counter,  self.comb_peaks_current)
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)

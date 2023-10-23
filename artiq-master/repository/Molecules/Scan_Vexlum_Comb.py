@@ -16,7 +16,7 @@ from helper_functions import *
 
 
 # every Experiment needs a build and a run function
-class Scan_Single_Laser(EnvExperiment):
+class Scan_Vexlum_Comb(EnvExperiment):
 
     def build(self):
         base_build(self)

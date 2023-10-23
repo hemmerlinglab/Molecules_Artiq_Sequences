@@ -7,7 +7,7 @@ import socket
 import socket
 import os
 import time
-from keysight import Keysight
+#from keysight import Keysight
 
 def set_helium_flow(flow, wait_time = 10.0):
 
@@ -49,6 +49,8 @@ def move_yag_mirror(xpos, ypos, wait_time = None):
 
 def get_single_laser_frequencies():
 
+    # reads out laser frequencies from wavemeter
+
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -80,34 +82,37 @@ def get_single_laser_frequencies():
 
 
 
-def get_keysight_trace():
-
-    # Extracts single trace from spectrum analyzer
-
-    spec = Keysight()
-
-    low_freq = 1e6 
-    high_freq = 211e6
-
-    span_freq = high_freq - low_freq
-    cnt_freq = (high_freq + low_freq)/2.0
-
-    spec.set_center_freq(cnt_freq)
-    spec.set_span(span_freq)
-
-    spec.set_sweep()
-
-    (m1, m2, m3) = spec.do_peak_search()
     
-    peaks = [m1, m2, m3]
 
-    try:
-        d = spec.get_trace()
-    except:
-        d = []
-    spec.close()
-    
-    return (d, peaks)
+
+#def get_keysight_trace():
+#
+#    # Extracts single trace from spectrum analyzer
+#
+#    spec = Keysight()
+#
+#    low_freq = 1e6 
+#    high_freq = 211e6
+#
+#    span_freq = high_freq - low_freq
+#    cnt_freq = (high_freq + low_freq)/2.0
+#
+#    spec.set_center_freq(cnt_freq)
+#    spec.set_span(span_freq)
+#
+#    spec.set_sweep()
+#
+#    (m1, m2, m3) = spec.do_peak_search()
+#    
+#    peaks = [m1, m2, m3]
+#
+#    try:
+#        d = spec.get_trace()
+#    except:
+#        d = []
+#    spec.close()
+#    
+#    return (d, peaks)
 
 
 def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None):
