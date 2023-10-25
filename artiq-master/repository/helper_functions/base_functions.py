@@ -32,14 +32,20 @@ def base_build(self):
     # the base parameters all sequences have in common
     self.config_dict = []
     self.wavemeter_frequencies = []
-    #self.comb_spectrum_current = []
-    #self.comb_peaks_current = []
+    
 
     # add instruments
     self.EOM_function_generator = Rigol_DSG821()
     self.frequency_comb         = DFC()
     self.spectrum_analyzer      = Rigol_RSA3030()
 
+    # set range of spectrum analyzer
+    #self.spectrum_analyzer.set_freq([1e6, 205e6])
+    self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
+
+    self.EOM_frequency = 0.0 #None
+    self.comb_frep     = None
+    self.beat_node_fft = None
 
     self.setattr_device('core') # Core Artiq Device (required)
     self.setattr_device('ttl3') # trigger in, sync to pulse tube
@@ -187,13 +193,11 @@ def my_prepare(self, data_to_save = None):
     elif self.scanning_laser == 'Daenerys':
         self.which_scanning_laser = 3
 
-    #self.set_dataset('frequency_comb_spectrum',  ([[0] * 1000] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    # parameters for comb
+    self.set_dataset('frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
+    self.set_dataset('EOM_frequency',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
+    self.set_dataset('beat_node_fft',  ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
     
-    #self.set_dataset('frequency_comb_peaks',  ([[0] * 3] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    
-    #self.set_dataset('offset1',self.offset_laser_Davos,broadcast=True)
-    #self.set_dataset('offset2',self.offset_laser_Hodor,broadcast=True)
-    #self.set_dataset("lnum",self.which_scanning_laser,broadcast=True)
 
     if data_to_save == None:
         self.data_to_save = [
@@ -217,8 +221,9 @@ def my_prepare(self, data_to_save = None):
                          {'var' : 'ch5_slow_arr', 'name' : self.smp_data_sets['ch5']},
                          {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch6']},
                          {'var' : 'ch7_slow_arr', 'name' : self.smp_data_sets['ch7']},
-                         #{'var' : 'frequency_comb_spectrum', 'name' : 'frequency_comb_spectrum'},
-                         #{'var' : 'frequency_comb_peaks', 'name' : 'frequency_comb_peaks'},
+                         {'var' : 'frequency_comb_frep', 'name' : 'Repetition frequency of comb'},
+                         {'var' : 'EOM_frequency', 'name' : 'EOM_frequency'},
+                         {'var' : 'beat_node_fft', 'name' : 'FFT of beat node with comb'},
                          ]
     else:
         self.data_to_save = data_to_save
@@ -246,6 +251,34 @@ def my_prepare(self, data_to_save = None):
 
 
 
+def readout_data(self):
+    
+    # readout data from Artiq by toggling through all channels and saving the data in a list
+    self.smp_data = {}
+    for channel in self.smp_data_sets.keys():
+        # self.smp_data['absorption'] = ...
+        self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
+
+    # read laser frequencies
+    self.wavemeter_frequencies = get_wavemeter_readings()
+
+    # read repetition rate of comb
+    try:
+        self.comb_frep = self.frequency_comb.get_frep()
+    except:
+        self.comb_frep = 0.0
+
+    # read spectrum of beat node
+    try:
+        self.beat_node_fft = self.spectrum_analyzer.get_trace()
+    except:
+        self.beat_node_fft = np.array([0,0] * 801)
+
+    return
+
+
+
+
 def my_analyze(self):
         
     # function is run after the experiment, i.e. after run() is called
@@ -261,7 +294,6 @@ def my_analyze(self):
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
 
-
     # Disconnect instruments
     self.EOM_function_generator.close()
     self.spectrum_analyzer.close()
@@ -270,40 +302,6 @@ def my_analyze(self):
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
     
-    return
-
-
-
-
-def readout_data(self):
-    
-    # readout data from Artiq by toggling through all channels and saving the data in a list
-    self.smp_data = {}
-    for channel in self.smp_data_sets.keys():
-        # self.smp_data['absorption'] = ...
-        self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
-
-    # read laser frequencies
-    self.wavemeter_frequencies = get_single_laser_frequencies()
-
-    # read repetition rate of comb
-    frep = self.frequency_comb.get_frep()
-
-    # read spectrum
-    (x, y) = self.spectrum_analyzer.get_trace()
-       
-
-    #check_spectrum = False
-    #while check_spectrum:
-    #    self.comb_spectrum_current, self.comb_peaks_current = get_keysight_trace()
-
-    #    #print(len(self.comb_spectrum_current))
-    #    if not len(self.comb_spectrum_current) == 1000:
-    #        check_spectrum = True
-    #        print('Retaking comb trace')
-    #    else:
-    #        check_spectrum = False
-
     return
 
 
@@ -459,14 +457,20 @@ def average_data_calibration(self, i_avg):
 ###################################################################################
 
 def update_data(self, counter, n, slowing_data = False):
-    
+   
+    # counter is the current shot number
+    # n is the current setpoint number
+
     # this updates the gui for every shot
     self.mutate_dataset('set_points',       counter, self.current_setpoint)
     self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
+
     self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
     self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
-    #self.mutate_dataset('frequency_comb_spectrum',  counter,  self.comb_spectrum_current)
-    #self.mutate_dataset('frequency_comb_peaks',     counter,  self.comb_peaks_current)
+  
+    self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
+    self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
+    self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
@@ -490,7 +494,7 @@ def update_data(self, counter, n, slowing_data = False):
             self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
 
-    # save data after some averaged shots
+    # save data after some averaged shots to avoid data loss
     if (counter % (3*self.no_of_averages) == 0): 
         # and (counter % self.no_of_averages == 0)
         print(self.no_of_averages) 

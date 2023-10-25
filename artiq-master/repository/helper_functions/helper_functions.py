@@ -47,7 +47,7 @@ def move_yag_mirror(xpos, ypos, wait_time = None):
 
     return
 
-def get_single_laser_frequencies():
+def get_wavemeter_readings():
 
     # reads out laser frequencies from wavemeter
 
@@ -172,7 +172,7 @@ def get_basefilename(self, extension = ''):
     self.basefilename = self.datafolder + basefolder + '/' + self.scan_timestamp # 20190618_105557
 
     # add optional extension
-    if not extension is '':
+    if not extension == '':
         self.basefilename += '_' + str(extension)
 
         self.scan_timestamp += '_' + str(extension)
@@ -184,6 +184,25 @@ def save_all_data(self):
         # transform into numpy arrays
         arr = np.array(self.get_dataset(hlp['var']))
        
+        if (len(arr.shape) == 3) and (arr.shape[2] == 2):
+
+            # needs to flatten 3D array
+            # arr = [ [[x1, x2], [y1, y2]], [[x3, x4], [y3, y4], ...]
+            # new_arr = [ [x1, x2], [y1, y2], [x3, x4], [y1, y2], ...]
+
+            #print(arr.shape)
+
+            xarr = arr[:, :, 0]
+            yarr = arr[:, :, 1]
+
+            hlp_arr = []
+            for k in range(arr.shape[0]):
+
+                hlp_arr.append(xarr[k])
+                hlp_arr.append(yarr[k])
+
+            arr = np.array(hlp_arr)
+
         # Write Data to Files
         f_hlp = open(self.basefilename + '_' + hlp['var'],'w')
         np.savetxt(f_hlp, arr, delimiter=",")

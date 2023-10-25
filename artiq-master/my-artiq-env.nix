@@ -25,6 +25,9 @@ in
 		  # ps.usbtmc
         (ps.matplotlib.override { enableQt = true; })
 #        ps.bokeh
+		  ps.pyvisa
+		  ps.pyvisa-py
+		  ps.ifaddr
       ]))
       # List desired non-Python packages here
       artiq-full.openocd  # needed for flashing boards, also provides proxy bitstreams

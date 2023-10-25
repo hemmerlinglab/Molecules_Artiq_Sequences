@@ -1,4 +1,5 @@
 from toptica.lasersdk.client import Client, NetworkConnection
+#from toptica.client import Client, NetworkConnection
 
 
 
@@ -8,9 +9,15 @@ class DFC():
     
     def __init__(self, IP = '192.168.42.42'):
     
-        self.dev = Client(NetworkConnection(IP))
+        try:
+            self.dev = Client(NetworkConnection(IP))
         
-        self.open()
+            self.open()
+        
+        except:
+            print("Can't connect to frequency comb ... initializing dummy instrument")
+
+            self.dev = None
 
         return
 
@@ -22,7 +29,9 @@ class DFC():
 
     def close(self):
 
-        self.dev.close()
+        if not self.dev == None:
+
+            self.dev.close()
 
         return
 
@@ -34,11 +43,17 @@ class DFC():
 
     def get_freq_diff(self):
         
-        return self.dev.get('sys_def:RepRateLock:frequency_difference', float)
+        if self.dev == None:
+            return 0.0
+        else:
+            return self.dev.get('sys_def:RepRateLock:frequency_difference', float)
 
     def get_frep(self):
         
-        return self.dev.get('sys_def:RepRateLock:internal_frep_counter', float)
+        if self.dev == None:
+            return 0.0
+        else:
+            return self.dev.get('sys_def:RepRateLock:internal_frep_counter', float)
 
 
 ##################################################################################################

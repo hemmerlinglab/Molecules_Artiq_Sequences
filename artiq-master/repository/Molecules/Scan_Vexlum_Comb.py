@@ -63,7 +63,7 @@ class Scan_Vexlum_Comb(EnvExperiment):
         elif self.scanning_laser == 'Davos':
             hlp_frequency_offset = self.offset_laser_Davos
 
-        set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
+        #set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, do_switch = True, wait_time = self.relock_wait_time)
 
         # pause to wait till laser settles
         time.sleep(1)
@@ -77,16 +77,16 @@ class Scan_Vexlum_Comb(EnvExperiment):
 
             self.current_setpoint = hlp_frequency_offset + nu/1.0e6
 
-            # set laser frequencies
-            # re-lock lasers
-            if n % self.relock_laser_steps == 0:
-                print('Relocking laser ..')
-                # last laser here should be the one being scanned
-                # Needs update when using two lasers
-                #set_single_laser('Davos', self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
-                set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
-            else:
-                set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
+            ## set laser frequencies
+            ## re-lock lasers
+            #if n % self.relock_laser_steps == 0:
+            #    print('Relocking laser ..')
+            #    # last laser here should be the one being scanned
+            #    # Needs update when using two lasers
+            #    #set_single_laser('Davos', self.offset_laser_Davos, do_switch = True, wait_time = self.relock_wait_time)
+            #    set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
+            #else:
+            #    set_single_laser(self.scanning_laser, self.current_setpoint, do_switch = True, wait_time = self.relock_wait_time)
 
             ## fire scanning cavity calibration shots
             #print('Fire calibration shots')
@@ -111,12 +111,13 @@ class Scan_Vexlum_Comb(EnvExperiment):
 
                 repeat_shot = True
                 while repeat_shot:
+                    
                     # fires yag and reads voltages
                     fire_and_read(self)
-
+                    
                     # readout the data
                     readout_data(self)
-
+                    
                     repeat_shot = check_shot(self)
                     if repeat_shot == False:
                         # upon success add data to dataset
@@ -132,7 +133,7 @@ class Scan_Vexlum_Comb(EnvExperiment):
             print()
 
         # set laser back to initial point
-        set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
+        #set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
         # switch off Helium flow
         set_helium_flow(0.0, wait_time = 0.0)
 

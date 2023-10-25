@@ -15,6 +15,8 @@ from base_sequences import *
 from helper_functions import *
 
 
+# This sequence locks the laser to the wavemeter
+
 # every Experiment needs a build and a run function
 class Scan_Single_Laser(EnvExperiment):
 

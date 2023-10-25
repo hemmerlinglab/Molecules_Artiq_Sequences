@@ -39,25 +39,25 @@ def fire_and_read(self):
 
         ### Fire and sample
         
-        # wait for trigger on channel 3
-        delay(10*us)
-        while self.ttl3.watch_stay_off():
-              delay(50*us)
-              pass
+        ## wait for trigger on channel 3
+        #delay(10*us)
+        #while self.ttl3.watch_stay_off():
+        #      delay(50*us)
+        #      pass
 
-        delay(1*ms)
-        
-        # this has to be called if watch_stay_off() was called
-        if self.ttl3.watch_done():
-            #delay(50*us)
-            delay(50*us)
-            pass
+        #delay(1*ms)
+        #
+        ## this has to be called if watch_stay_off() was called
+        #if self.ttl3.watch_done():
+        #    #delay(50*us)
+        #    delay(50*us)
+        #    pass
 
-        delay(1*ms)
+        #delay(1*ms)
 
-        # fire sequence only at a certain time after the pulsetube cycle
-        if self.pulse_tube_sync_wait>0:
-            delay(self.pulse_tube_sync_wait*ms)
+        ## fire sequence only at a certain time after the pulsetube cycle
+        #if self.pulse_tube_sync_wait>0:
+        #    delay(self.pulse_tube_sync_wait*ms)
         
         with parallel:
 

@@ -22,7 +22,6 @@ class Rigol_RSA3030(base_visa_instrument):
         
         self.wait_finished()
 
-
         self.freq_start = float(self.query(':SENS:FREQUENCY:START?'))
         self.freq_stop  = float(self.query(':SENS:FREQUENCY:STOP?'))
 
@@ -58,6 +57,8 @@ class Rigol_DSG821(base_visa_instrument):
     def set_freq(self, freq):
 
         self.write(':FREQ {0}MHz'.format(float(freq)))
+        
+        time.sleep(1)
 
         return
 
@@ -92,18 +93,20 @@ if __name__ == "__main__":
 
     s = Rigol_RSA3030()
 
-    fg = Rigol_DSG821()
+    #fg = Rigol_DSG821()
 
     s.id()
 
-    fg.id()
+    #fg.id()
 
+    #s.set_freq([1e6, 205e6])
+    
     s.set_freq([1e6, 205e6])
 
     d = s.get_trace()
 
     s.close()
-    fg.close()
+    #fg.close()
 
     plt.figure()
 
