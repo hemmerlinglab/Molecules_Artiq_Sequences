@@ -57,6 +57,9 @@ class Scan_Single_Laser(EnvExperiment):
         # init flow
         set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
 
+        # set voltage on plate
+        set_zotino_voltage(self, 0, self.plate_voltage)
+        
         # init scanning laser
         if self.scanning_laser   == 'Daenerys':
             hlp_frequency_offset = self.offset_laser_Daenerys
@@ -135,7 +138,9 @@ class Scan_Single_Laser(EnvExperiment):
 
         # set laser back to initial point
         set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
+
         # switch off Helium flow
         set_helium_flow(0.0, wait_time = 0.0)
 
-
+        # set plate voltage for zero again
+        set_zotino_voltage(self, 0, 0)

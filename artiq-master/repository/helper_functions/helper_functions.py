@@ -133,20 +133,28 @@ def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None
         switch = 0
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    sock.settimeout(1)
 
     server_address = ('192.168.42.20', 63700)
 
     print('Sending new setpoint for {1}: {0:.6f}'.format(frequency, which_laser))
-    sock.connect(server_address)
+    
+    try:
 
-    message = "{0:1d},{1:.9f},{2:1d},{3:3d}".format(int(channel), float(frequency), int(switch), int(wait_time))
+        sock.connect(server_address)
 
-    sock.sendall(message.encode())
+        message = "{0:1d},{1:.9f},{2:1d},{3:3d}".format(int(channel), float(frequency), int(switch), int(wait_time))
 
-    sock.close()
+        sock.sendall(message.encode())
 
-    if not wait_time == None:
-        time.sleep(2*wait_time/1000.0)
+        sock.close()
+
+        if not wait_time == None:
+            time.sleep(2*wait_time/1000.0)
+
+    except socket.timeout:
+        print('Timeout sending setpoint')
 
     return
 

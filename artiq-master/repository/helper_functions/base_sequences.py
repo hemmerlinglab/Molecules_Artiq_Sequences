@@ -6,7 +6,34 @@ from artiq.experiment import *
     # 2) Wait 150 us
     # 3) Trigger Q Switch
     # 4) In parallel, read off 2 diodes and PMT
-    #
+
+
+@kernel
+def set_zotino_voltage(self, channel, voltage):
+
+    zotino_voltage = (voltage - 489.0) * 8.0/(4449 - 489) + 1.0
+
+    if zotino_voltage < 0:
+        zotino_voltage = 0.0
+    if zotino_voltage > 9.9:
+        zotino_voltage = 9.9
+
+    self.core.break_realtime()
+
+    self.zotino0.init()
+    delay(200*us)
+
+    self.zotino0.write_gain_mu(channel, 65000)
+    self.zotino0.load()
+    delay(200*us)
+    self.zotino0.write_dac(channel, zotino_voltage)
+    self.zotino0.load()
+    delay(200*us)
+
+    return
+
+
+
 @kernel
 def fire_and_read(self):
 

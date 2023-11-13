@@ -27,21 +27,25 @@ def my_setattr(self, arg, val):
         exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + "})")
 
 
-def base_build(self):
+def base_build(self, which_instruments = []):
 
     # the base parameters all sequences have in common
     self.config_dict = []
     self.wavemeter_frequencies = []
     
+    for instr in which_instruments:
+        # add instruments
+        if instr == 'EOM':
+            self.EOM_function_generator = Rigol_DSG821()
 
-    # add instruments
-    self.EOM_function_generator = Rigol_DSG821()
-    self.frequency_comb         = DFC()
-    self.spectrum_analyzer      = Rigol_RSA3030()
+        if instr == 'frequency_comb':
+            self.frequency_comb         = DFC()
 
-    # set range of spectrum analyzer
-    #self.spectrum_analyzer.set_freq([1e6, 205e6])
-    self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
+        if instr == 'spectrum_analyzer':
+            self.spectrum_analyzer      = Rigol_RSA3030()
+
+            # set range of spectrum analyzer
+            self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
 
     self.EOM_frequency = 0.0 #None
     self.comb_frep     = None
@@ -61,6 +65,8 @@ def base_build(self):
     self.setattr_device('sampler0') # adc voltage sampler
     self.setattr_device('sampler1') # adc voltage sampler
     self.setattr_device('scheduler') # scheduler used
+    
+    self.setattr_device('zotino0') # for analog output voltages
 
     # number of time steps
     my_setattr(self, 'scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
@@ -78,6 +84,9 @@ def base_build(self):
     my_setattr(self, 'lock_wait_time', NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
     my_setattr(self, 'relock_laser_steps', NumberValue(default=3000,unit='',scale=1,ndecimals=0,step=1))
 
+    # High voltage
+    my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',scale=1,ndecimals=0,step=1))
+    
     return
 
 def rb_calibration_build(self):
@@ -272,7 +281,7 @@ def readout_data(self):
     try:
         self.beat_node_fft = self.spectrum_analyzer.get_trace()
     except:
-        self.beat_node_fft = np.array([0,0] * 801)
+        self.beat_node_fft = np.transpose(np.vstack([ [0] * 801, [0] * 801 ] ))
 
     return
 
@@ -295,9 +304,18 @@ def my_analyze(self):
     print('Scan finished.')
 
     # Disconnect instruments
-    self.EOM_function_generator.close()
-    self.spectrum_analyzer.close()
-    self.frequency_comb.close()
+    try:
+        self.EOM_function_generator.close()
+    except:
+        pass
+    try:
+        self.spectrum_analyzer.close()
+    except:
+        pass
+    try:
+        self.frequency_comb.close()
+    except:
+        pass
 
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
