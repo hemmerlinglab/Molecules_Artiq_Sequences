@@ -175,8 +175,6 @@ class Furnace():
 
         self.log_file.close()
 
-        print(log_entry)
-
         return
 
 
