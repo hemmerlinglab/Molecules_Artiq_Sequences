@@ -163,7 +163,7 @@ class Furnace():
         self.log_entry = current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
        
         # save data
-        self.logfilename = '~/furnace_data/furnace_log.csv'
+        self.logfilename = '/home/molecules/furnace_data/furnace_log.csv'
 
         # open file and append if already exists
         if os.path.isfile(self.logfilename):
