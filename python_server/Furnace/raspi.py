@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import time
 import RPi.GPIO as io # using RPi.GPIO
 
 class Raspi():
