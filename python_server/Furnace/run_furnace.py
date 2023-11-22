@@ -27,6 +27,8 @@ f.start()
 
 no_of_cycles = int(1.1 * f.get_run_time() / time_interval)
 
+print('Doing {0} number of spectra'.format(no_of_cycles))
+
 for k in range(no_of_cycles):
 
     # read out current temperature of furnace

@@ -124,7 +124,7 @@ class Furnace():
             
             self.device.write_register( time_register, int(time_arr[k]) )
 
-        self.total_run_time = np.sum(time_arr)
+        self.total_run_time = np.sum(time_arr) * 60 # in sec
 
         return
    
