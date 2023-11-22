@@ -75,6 +75,8 @@ class Furnace():
 
             self.device = Dummy_Instrument()
 
+        self.log_entry = ''
+
         return
 
     def get_tact(self):
@@ -147,18 +149,18 @@ class Furnace():
 
         # get timestamp
         my_today = datetime.datetime.today()
-        self.current_time_stamp = str(my_today.strftime('%Y/%m/%d-%H:%M:%S'))
+        current_time_stamp = str(my_today.strftime('%Y/%m/%d-%H:%M:%S'))
         
         # get set value
-        self.Tset = self.get_tset()
+        Tset = self.get_tset()
         
         # get act value        
-        self.Tact = self.get_tact()
+        Tact = self.get_tact()
         
         # get output
         self.out = self.get_output()
 
-        self.log_entry = self.current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
+        self.log_entry = current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
        
         # save data
         self.logfilename = '~/furnace_data/furnace_log.csv'
