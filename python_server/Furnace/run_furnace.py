@@ -13,6 +13,8 @@ time_interval = 10 # in seconds
 #f = Furnace(dummy = True)
 f = Furnace()
 
+r = Raspi()
+
 f.stop()
 
 # set pattern
@@ -33,7 +35,7 @@ for k in range(no_of_cycles):
     f.print_status()
 
     # send trigger to spectrometer
-    raspi.trigger()
+    r.trigger()
 
     time.sleep(time_interval)
 
