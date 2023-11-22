@@ -147,7 +147,7 @@ class Furnace():
 
         # get timestamp
         my_today = datetime.datetime.today()
-        current_time_stamp = str(my_today.strftime('%Y/%m/%d-%H:%M:%S'))
+        self.current_time_stamp = str(my_today.strftime('%Y/%m/%d-%H:%M:%S'))
         
         # get set value
         self.Tset = self.get_tset()

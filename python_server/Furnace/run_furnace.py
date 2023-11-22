@@ -10,7 +10,8 @@ from raspi   import Raspi
 
 time_interval = 10 # in seconds
     
-f = Furnace(dummy = True)
+#f = Furnace(dummy = True)
+f = Furnace()
 
 f.stop()
 
