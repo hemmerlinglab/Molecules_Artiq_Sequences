@@ -11,6 +11,8 @@ class Raspi():
 
         io.setup(4,io.OUT) # make pin into an output
 
+        io.output(4,0)
+        
         self.trigger_length = trigger_length
 
         return
