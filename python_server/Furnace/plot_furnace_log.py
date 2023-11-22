@@ -10,16 +10,18 @@ def get_ccd_data(main_path):
     my_times = []
     d = []
 
-    #for k in range(395, 1364):
-    for k in range(395, 1909):
+    y = range(395, 500)
+    y = range(395, 1900)
+
+    for k in y:
 
         filename = 'test00000{0:04d}.csv'.format(k)
 
         hlp = np.genfromtxt(main_path + filename, delimiter = ';', skip_header = 49, skip_footer = 1)
 
+        # get spectrum
         d.append(hlp[:, 1])
-    
-        
+            
         # get time stamp
         f = open(main_path + filename, 'r')
         f.readline()
@@ -39,7 +41,7 @@ def get_ccd_data(main_path):
     x = hlp[:, 0]
 
 
-    return (x, np.array(my_times, dtype = np.datetime64), np.array(d))
+    return (x, y, np.array(my_times, dtype = np.datetime64), np.array(d))
 
 
 def get_furnace_data(main_path):
@@ -86,45 +88,45 @@ def find_temp_at_time(d_f, ccd_times):
 
 ############################################################
 
+# Potassium 769.9 nm
+
 main_path = '/Users/boerge/Software/offline_furnace/'
 
 
 d_f = get_furnace_data(main_path)
 
-plt.plot(d_f['times'], d_f['data'][:, 1])
-
-
-(x, ccd_times, d) = get_ccd_data(main_path)
-
-
-
-plt.figure()
-
+(x, y, ccd_times, d) = get_ccd_data(main_path)
 
 temp_arr = find_temp_at_time(d_f, ccd_times)
 
 
 
-plt.pcolor(x, temp_arr, d)
+plt.figure()
+
+plt.subplot(2,1,1)
+
+plt.plot(d_f['times'], d_f['data'][:, 1])
+
+plt.subplot(2,1,2)
+
+plt.pcolor(y, x, np.transpose(d))
 
 
 plt.xlabel('Wavelength (nm)')
-plt.ylabel('Temp (C)')
-
-plt.show()
-
-
-asd
+plt.ylabel('Spectrum Index')
 
 
 
 plt.figure()
 
-plt.plot(T_set)
-plt.plot(T_act)
+for k in [3, 10, 20, 500]:
+
+    plt.plot(x, d[k], label = 'Temp {0} C'.format(temp_arr[k]))
+
 
 plt.show()
 
-f.close()
+
+
 
 
