@@ -1,47 +1,65 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from matplotlib.dates import DateFormatter
 import os
+import pickle
 
 
-
-def get_ccd_data(main_path):
+def get_ccd_data(main_path, reload = False):
 
     my_times = []
     d = []
 
-    y = range(395, 500)
-    y = range(395, 1900)
+    #y = range(395, 500)
+    y = range(395, 1924)
 
-    for k in y:
 
-        filename = 'test00000{0:04d}.csv'.format(k)
+    if reload:
+    
+        for k in y:
 
-        hlp = np.genfromtxt(main_path + filename, delimiter = ';', skip_header = 49, skip_footer = 1)
+            filename = 'test00000{0:04d}.csv'.format(k)
 
-        # get spectrum
-        d.append(hlp[:, 1])
+            hlp = np.genfromtxt(main_path + filename, delimiter = ';', skip_header = 49, skip_footer = 1)
+
+            # get spectrum
+            d.append(hlp[:, 1])
+                
+            # get time stamp
+            f = open(main_path + filename, 'r')
+            f.readline()
+            f.readline()
             
-        # get time stamp
-        f = open(main_path + filename, 'r')
-        f.readline()
-        f.readline()
-        
-        my_date = f.readline().split(';')[1].strip()
-        
-        f.readline()
-        my_t    = f.readline().split(';')[1][0:6]
+            my_date = f.readline().split(';')[1].strip()
+            
+            f.readline()
+            my_t    = f.readline().split(';')[1][0:6]
 
-        f.close()
+            f.close()
 
-        timestamp = datetime.strptime(my_date + '-' + my_t, "%Y%m%d-%H%M%S")
-        
-        my_times.append(timestamp)
+            timestamp = datetime.strptime(my_date + '-' + my_t, "%Y%m%d-%H%M%S")
+            
+            my_times.append(timestamp)
 
-    x = hlp[:, 0]
+        x = hlp[:, 0]
 
 
-    return (x, y, np.array(my_times, dtype = np.datetime64), np.array(d))
+        output_arr = (x, np.array(y), np.array(my_times, dtype = np.datetime64), np.array(d))
+
+
+        with open('spectrum_data.pickle', 'wb') as f:
+            pickle.dump(output_arr, f)
+
+    else:
+
+        with open('spectrum_data.pickle', 'rb') as f:
+
+            data_raw = pickle.load(f)
+
+        output_arr = data_raw
+
+    return output_arr
 
 
 def get_furnace_data(main_path):
@@ -88,40 +106,68 @@ def find_temp_at_time(d_f, ccd_times):
 
 ############################################################
 
-# Potassium 769.9 nm
+# Potassium 769.9 nm, 766.5 nm (air)
+# Potassium 770.1 nm, 766.7 nm (vac)
 
 main_path = '/Users/boerge/Software/offline_furnace/'
 
+reload = False
 
 d_f = get_furnace_data(main_path)
 
-(x, y, ccd_times, d) = get_ccd_data(main_path)
+(freq, y, ccd_times, d) = get_ccd_data(main_path, reload = reload)
 
 temp_arr = find_temp_at_time(d_f, ccd_times)
 
 
+d2 = np.mean(d[0:200, :], axis = 0) - d[0, :]
+
+d3 = np.mean(d[200:400, :], axis = 0) - d[300, :]
+
+d4 = np.mean(d[500:700, :], axis = 0) - d[600, :]
+
+plt.plot(freq, d2)
+plt.plot(freq, d3)
+plt.plot(freq, d4)
 
 plt.figure()
 
-plt.subplot(2,1,1)
+plt.plot(freq, np.mean(d, axis = 0))
 
-plt.plot(d_f['times'], d_f['data'][:, 1])
+#plt.xlim(760, 780)
 
-plt.subplot(2,1,2)
+plt.show()
 
-plt.pcolor(y, x, np.transpose(d))
-
-
-plt.xlabel('Wavelength (nm)')
-plt.ylabel('Spectrum Index')
+asd
 
 
+(fig, ax) = plt.subplots(2, 1, figsize = (14,6))
 
-plt.figure()
+ax[0].plot_date(ccd_times, temp_arr, '-')
 
-for k in [3, 10, 20, 500]:
+ax[0].xaxis.set_major_formatter( DateFormatter('%H:%M') )
 
-    plt.plot(x, d[k], label = 'Temp {0} C'.format(temp_arr[k]))
+ax[0].set_xlim(min(ccd_times), max(ccd_times))
+
+
+ind = np.where( np.abs(63.5 - temp_arr) < 0.25 )[0][0]
+
+ax[0].axhline(temp_arr[ind], ls = '-', color = 'k')
+ax[0].axvline(ccd_times[ind], ls = '-', color = 'k')
+
+ax[1].pcolor(y - y[0], freq, np.transpose(d))
+
+
+ax[1].set_xlabel('Spectrum Index')
+ax[1].set_ylabel('Wavelength (nm)')
+
+
+
+#plt.figure()
+#
+#for k in [3, 10, 20, 500]:
+#
+#    plt.plot(x, d[k], label = 'Temp {0} C'.format(temp_arr[k]))
 
 
 plt.show()
