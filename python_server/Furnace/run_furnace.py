@@ -29,6 +29,8 @@ for k in range(no_of_cycles):
     # read out current temperature of furnace
     f.monitor_furnace()
 
+    f.print_status()
+
     # send trigger to spectrometer
     raspi.trigger()
 

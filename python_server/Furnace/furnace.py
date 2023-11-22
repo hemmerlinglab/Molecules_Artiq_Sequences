@@ -137,6 +137,12 @@ class Furnace():
         return self.output
 
 
+    def print_status(self):
+
+        print(self.log_entry)
+
+        return
+
     def monitor_furnace(self):
 
         # get timestamp
@@ -144,15 +150,15 @@ class Furnace():
         current_time_stamp = str(my_today.strftime('%Y/%m/%d-%H:%M:%S'))
         
         # get set value
-        Tset = self.get_tset()
+        self.Tset = self.get_tset()
         
         # get act value        
-        Tact = self.get_tact()
+        self.Tact = self.get_tact()
         
         # get output
-        out = self.get_output()
+        self.out = self.get_output()
 
-        log_entry = current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
+        self.log_entry = self.current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
        
         # save data
         self.logfilename = '~/furnace_data/furnace_log.csv'
