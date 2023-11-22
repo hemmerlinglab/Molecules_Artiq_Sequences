@@ -158,7 +158,7 @@ class Furnace():
         Tact = self.get_tact()
         
         # get output
-        self.out = self.get_output()
+        out = self.get_output()
 
         self.log_entry = current_time_stamp + ',Tset,' + str(Tset) + ',Tact,' + str(Tact) + ',out,' + str(out)
        
@@ -171,7 +171,7 @@ class Furnace():
         else:    
             self.log_file = open(self.logfilename, 'w')
 
-        self.log_file.write(log_entry + "\n")
+        self.log_file.write(self.log_entry + "\n")
 
         self.log_file.close()
 
