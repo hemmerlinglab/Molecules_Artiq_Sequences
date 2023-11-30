@@ -18,7 +18,7 @@ r = Raspi()
 f.stop()
 
 # set pattern
-f.prg_pattern(0, T_arr = [20, 150, 20, 0, 0, 0, 0], time_arr = [1, 60, 60, 0, 0, 0, 0])
+f.prg_pattern(0, T_arr = [20, 170, 20, 0, 0, 0, 0], time_arr = [1, 60, 90, 0, 0, 0, 0])
 
 f.set_pattern(0)
 
