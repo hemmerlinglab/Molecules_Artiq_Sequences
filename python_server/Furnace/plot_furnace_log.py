@@ -6,13 +6,40 @@ import os
 import pickle
 
 
+def get_single_file(filename):
+
+    hlp = np.genfromtxt(filename, delimiter = ';', skip_header = 49, skip_footer = 1)
+        
+    # get time stamp
+    f = open(filename, 'r')
+    f.readline()
+    f.readline()
+    
+    my_date = f.readline().split(';')[1].strip()
+    
+    f.readline()
+    my_t    = f.readline().split(';')[1][0:6]
+            
+    timestamp = datetime.strptime(my_date + '-' + my_t, "%Y%m%d-%H%M%S")
+
+    f.close()
+
+    wavelengths = hlp[:, 0]
+    spectrum = hlp[:, 1]
+
+    return (timestamp, wavelengths, spectrum)
+
+
+
 def get_ccd_data(main_path, reload = False):
 
     my_times = []
     d = []
 
     #y = range(395, 500)
-    y = range(395, 1924)
+    #y = range(395, 1924)
+    #y = range(3, 751)
+    y = range(10, 584)
 
 
     if reload:
@@ -21,28 +48,14 @@ def get_ccd_data(main_path, reload = False):
 
             filename = 'test00000{0:04d}.csv'.format(k)
 
-            hlp = np.genfromtxt(main_path + filename, delimiter = ';', skip_header = 49, skip_footer = 1)
+            (timestamp, wavelengths, spectrum) = get_single_file(main_path + filename)
 
             # get spectrum
-            d.append(hlp[:, 1])
-                
-            # get time stamp
-            f = open(main_path + filename, 'r')
-            f.readline()
-            f.readline()
-            
-            my_date = f.readline().split(';')[1].strip()
-            
-            f.readline()
-            my_t    = f.readline().split(';')[1][0:6]
+            d.append(spectrum)
 
-            f.close()
-
-            timestamp = datetime.strptime(my_date + '-' + my_t, "%Y%m%d-%H%M%S")
-            
             my_times.append(timestamp)
 
-        x = hlp[:, 0]
+        x = wavelengths
 
 
         output_arr = (x, np.array(y), np.array(my_times, dtype = np.datetime64), np.array(d))
@@ -96,9 +109,15 @@ def find_temp_at_time(d_f, ccd_times):
         t0 = ccd_times[k]
 
         # time stamps furnace
-        ind = np.where( np.abs(t0 - d_f['times']) < timedelta(seconds = 10) )
+        try:
+            
+            ind = np.where( np.abs(t0 - d_f['times']) < timedelta(seconds = 20) )
 
-        temp_arr.append(d_f['data'][ind[0][0], 1])
+            temp_arr.append(d_f['data'][ind[0][0], 1])
+
+        except:
+
+            print("Couldn't find time {0} in interval {1} - {2} ".format(t0, d_f['times'][0], d_f['times'][-1]))
 
     return np.array(temp_arr)
 
@@ -111,7 +130,7 @@ def find_temp_at_time(d_f, ccd_times):
 
 main_path = '/Users/boerge/Software/offline_furnace/'
 
-reload = False
+reload = True #False
 
 d_f = get_furnace_data(main_path)
 
@@ -120,15 +139,15 @@ d_f = get_furnace_data(main_path)
 temp_arr = find_temp_at_time(d_f, ccd_times)
 
 
-d2 = np.mean(d[0:200, :], axis = 0) - d[0, :]
+#d2 = np.mean(d[0:200, :], axis = 0) - d[0, :]
 
-d3 = np.mean(d[200:400, :], axis = 0) - d[300, :]
+d2 = np.mean(d[:, :], axis = 0) - 0*d[0, :]
 
-d4 = np.mean(d[500:700, :], axis = 0) - d[600, :]
+#d3 = np.mean(d[200:400, :], axis = 0) - d[300, :]
+#
+#d4 = np.mean(d[500:700, :], axis = 0) - d[600, :]
 
 plt.plot(freq, d2)
-plt.plot(freq, d3)
-plt.plot(freq, d4)
 
 plt.figure()
 
@@ -136,9 +155,9 @@ plt.plot(freq, np.mean(d, axis = 0))
 
 #plt.xlim(760, 780)
 
-plt.show()
+#plt.show()
 
-asd
+#asd
 
 
 (fig, ax) = plt.subplots(2, 1, figsize = (14,6))
@@ -168,6 +187,40 @@ ax[1].set_ylabel('Wavelength (nm)')
 #for k in [3, 10, 20, 500]:
 #
 #    plt.plot(x, d[k], label = 'Temp {0} C'.format(temp_arr[k]))
+
+
+plt.figure()
+
+plt.plot(freq, np.mean(d[:, :], axis = 0))
+
+
+
+
+
+
+(ts, wl, spec) = get_single_file(main_path + 'test00000{0:04d}.csv'.format(3108))
+
+plt.figure()
+
+plt.plot(wl, spec)
+
+
+
+(ts, wl, spec) = get_single_file(main_path + 'icl.csv'.format())
+
+
+plt.figure()
+
+plt.plot(wl, spec)
+
+(ts, wl, spec) = get_single_file(main_path + 'potassium.csv'.format())
+
+
+plt.figure()
+
+plt.plot(wl, spec)
+
+
 
 
 plt.show()
