@@ -12,7 +12,8 @@ from helper_functions import *
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
 from rigol import Rigol_RSA3030, Rigol_DSG821
 from frequency_comb import DFC
-
+sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server/Windfreak")
+from microwave_windfreak import Microwave
 
 
 def my_setattr(self, arg, val):
@@ -41,11 +42,14 @@ def base_build(self, which_instruments = []):
         if instr == 'frequency_comb':
             self.frequency_comb         = DFC()
 
+        if instr == 'microwave':
+            self.microwave              = Microwave()
+
         if instr == 'spectrum_analyzer':
             self.spectrum_analyzer      = Rigol_RSA3030()
 
-            # set range of spectrum analyzer
-            self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
+            ## set range of spectrum analyzer
+            #self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
 
     self.EOM_frequency = 0.0 #None
     self.comb_frep     = None

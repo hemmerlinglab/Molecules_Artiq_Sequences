@@ -28,6 +28,7 @@ in
 		  ps.pyvisa
 		  ps.pyvisa-py
 		  ps.ifaddr
+		  #ps.windfreak
       ]))
       # List desired non-Python packages here
       artiq-full.openocd  # needed for flashing boards, also provides proxy bitstreams

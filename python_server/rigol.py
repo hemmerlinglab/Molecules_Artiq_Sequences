@@ -32,6 +32,7 @@ class Rigol_RSA3030(base_visa_instrument):
         return np.transpose(np.vstack([self.x_data, self.y_data]))
 
     def set_freq(self, freq_interval):
+        # freq_interval = [40.0, 500.0]
 
         self.write('*OPC')
 
