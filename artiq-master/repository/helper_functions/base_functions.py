@@ -109,14 +109,14 @@ def pulsed_scan_build(self):
     # EnvExperiment attribute: number of voltage samples per scan
 
     my_setattr(self, 'setpoint_count',NumberValue(default=30,unit='setpoints',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=3,step=1))
     #my_setattrself, ('which_scanning_laser',NumberValue(default=2,unit='',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Daenerys'))
 
     # offset of laseself, rs
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
-    my_setattr(self, 'offset_laser_Hodor',NumberValue(default=377.11121,unit='THz',scale=1,ndecimals=6,step=.000001))
+    my_setattr(self, 'offset_laser_Hodor',NumberValue(default=391.016005,unit='THz',scale=1,ndecimals=6,step=.000001))
     my_setattr(self, 'offset_laser_Daenerys',NumberValue(default=286.86,unit='THz',scale=1,ndecimals=6,step=.000001))
 
     my_setattr(self, 'yag_fire_time',NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
@@ -395,10 +395,7 @@ def average_data(self, i_avg):
         #self.ch5_avg = self.ch0_avg
 
 
-    # get time slices for each channel
-    ind_1 = int(self.slice_min * 1e3/self.time_step_size)
-    ind_2 = int(self.slice_max * 1e3/self.time_step_size)
-
+   
     ## toggle through all channels and average the data
     ## ch0, ch1, ch2, ...
     #for channel in self.smp_data_sets.keys():
@@ -411,11 +408,19 @@ def average_data(self, i_avg):
 
     # toggle through all channels and average the data
 
-    # integrate in-cell signal
 
     # integrate pmt signal
+    # get time slices for each channel
+    pmt_ind_1 = int(self.pmt_slice_min * 1e3/self.time_step_size)
+    pmt_ind_2 = int(self.pmt_slice_max * 1e3/self.time_step_size)
+
     channel = 'pmt'
-    self.smp_data_avg[channel] = np.mean(self.ch2_avg[ind_1:ind_2])
+    self.smp_data_avg[channel] = np.mean(self.ch2_avg[pmt_ind_1:pmt_ind_2])
+
+    # integrate in-cell signal
+    # get time slices for each channel
+    ind_1 = int(self.slice_min * 1e3/self.time_step_size)
+    ind_2 = int(self.slice_max * 1e3/self.time_step_size)
 
     channel = 'absorption'
     self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])

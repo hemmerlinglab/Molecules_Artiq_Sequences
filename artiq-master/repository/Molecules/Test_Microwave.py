@@ -59,8 +59,8 @@ class Test_Microwave(EnvExperiment):
     def run(self):
 
        
-        #scan_type = 'power'
-        scan_type = 'frequency'
+        scan_type = 'power'
+        #scan_type = 'frequency'
 
 
         if scan_type == 'frequency':

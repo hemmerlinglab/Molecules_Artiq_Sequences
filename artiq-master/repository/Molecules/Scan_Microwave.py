@@ -130,7 +130,7 @@ class Scan_Microwave(EnvExperiment):
             print()
 
         # set laser back to initial point
-        set_single_laser(self.scanning_laser, hlp_frequency_offset + self.scan_interval[0]/1.0e6, wait_time = self.lock_wait_time)
+        set_single_laser(self.scanning_laser, hlp_frequency_offset, wait_time = self.lock_wait_time)
 
         # switch off Helium flow
         set_helium_flow(0.0, wait_time = 0.0)

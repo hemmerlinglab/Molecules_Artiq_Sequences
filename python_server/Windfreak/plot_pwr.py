@@ -2,9 +2,10 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-date = '20240209'
+#date = '20240209'
+date = '20240212'
 
-time = '102023'
+time = '155552'
 
 scan_filename = '/home/molecules/software/data/{0}/{0}_{1}'.format(date, time)
 

@@ -9,6 +9,10 @@ class Microwave():
 
         self.device.init()
 
+        # set device to external frequency reference
+        self.device.reference_mode      = 'external'
+        self.device.reference_frequency = 10.0e6
+
         self.off()
 
         return
