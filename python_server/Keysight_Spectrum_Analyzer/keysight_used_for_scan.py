@@ -59,6 +59,10 @@ class Keysight:
 
         self.send(':FREQ:SPAN ' + str(span) + ' Hz')
 
+    def set_bw(self, bw):
+
+        self.send(':BAND:FREQ:BW ' + str(bw) + ' Hz')
+
     def marker_on(self, no):
 
         self.send(':CALC:MARK' + str(no) + ':STATE ON')
@@ -69,17 +73,18 @@ class Keysight:
         self.send(':CALC:MARK1:MAX')
         m1 = self.query(':CALC:MARK1:X?')
         
-        self.send(':CALC:MARK1:MAX:LEFT')
-        m2 = self.query(':CALC:MARK1:X?')
+        #self.send(':CALC:MARK1:MAX:LEFT')
+        #m2 = self.query(':CALC:MARK1:X?')
 
-        self.send(':CALC:MARK1:MAX:LEFT')
-        m3 = self.query(':CALC:MARK1:X?')
+        #self.send(':CALC:MARK1:MAX:LEFT')
+        #m3 = self.query(':CALC:MARK1:X?')
 
         m1 = float(m1)
-        m2 = float(m2)
-        m3 = float(m3)
+        #m2 = float(m2)
+        #m3 = float(m3)
 
-        return (m1, m2, m3)
+        #return (m1, m2, m3)
+        return m1
 
 
 
@@ -95,7 +100,7 @@ class Keysight:
 
         ##d = self.query(':TRACE:DATA? TRACE1', number_of_bytes = 17*no_of_points)
 
-        no_of_points = int(self.query('SENS:SWE:POIN?'))
+        #no_of_points = int(self.query('SENS:SWE:POIN?'))
         
         #print(no_of_points)
         no_of_points = 821
@@ -113,7 +118,6 @@ class Keysight:
 
 
     def set_sweep(self):
-
         
         self.send(':TRACE:CLE TRACE1')
 
@@ -142,7 +146,7 @@ class Keysight:
         
         err = self.query(':SYST:ERR?')        
 
-        return (np.float64(x), np.float64(y), err)
+        return (np.float64(x), np.float64(y))
 
     def close(self):
 

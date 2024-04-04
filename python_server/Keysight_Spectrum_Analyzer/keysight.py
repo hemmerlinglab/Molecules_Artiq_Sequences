@@ -168,7 +168,6 @@ class Keysight:
         return 
 
 
-
     def marker_measure(self, no, wait_time = None):
 
         self.send(':CALC:MARK' + str(no) + ':MAX')
@@ -183,6 +182,7 @@ class Keysight:
         err = self.query(':SYST:ERR?')        
 
         return (np.float64(x), np.float64(y), err)
+
 
     def close(self):
 

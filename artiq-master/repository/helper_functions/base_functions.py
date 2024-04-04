@@ -89,7 +89,8 @@ def base_build(self, which_instruments = []):
     my_setattr(self, 'relock_laser_steps', NumberValue(default=3000,unit='',scale=1,ndecimals=0,step=1))
 
     # High voltage
-    my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',scale=1,ndecimals=0,step=1))
+    #my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',type='int',scale=1,ndecimals=0,step=1,min=0,max=30.0e3))
     
     return
 
@@ -170,14 +171,14 @@ def my_prepare(self, data_to_save = None):
     self.set_dataset('times',      (self.time_interval),broadcast=True)
 
     # data set without slowing
-    self.set_dataset('ch0_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch1_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch2_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch3_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch4_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch5_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch6_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch7_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch0_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch1_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch2_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch3_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch4_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch5_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch6_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    self.set_dataset('ch7_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
 
     # data set with slowing
     self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
@@ -488,16 +489,17 @@ def update_data(self, counter, n, slowing_data = False):
     # counter is the current shot number
     # n is the current setpoint number
 
-    # this updates the gui for every shot
-    self.mutate_dataset('set_points',       counter, self.current_setpoint)
-    self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
+    if not slowing_data:
+        # this updates the gui for every shot
+        self.mutate_dataset('set_points',       counter, self.current_setpoint)
+        self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
 
-    self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
-    self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
+        self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
+        self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
   
-    self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
-    self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
-    self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
+        self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
+        self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
+        self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
 
     # display average signals
     self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
@@ -520,18 +522,17 @@ def update_data(self, counter, n, slowing_data = False):
         else:
             self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
 
+    ## save data after some averaged shots to avoid data loss
+    #if (counter % (3*self.no_of_averages) == 0): 
+    #    # and (counter % self.no_of_averages == 0)
+    #    print(self.no_of_averages) 
+    #    print('Temp saving data ... counter = {0}'.format(counter))
 
-    # save data after some averaged shots to avoid data loss
-    if (counter % (3*self.no_of_averages) == 0): 
-        # and (counter % self.no_of_averages == 0)
-        print(self.no_of_averages) 
-        print('Temp saving data ... counter = {0}'.format(counter))
+    #    # save data
+    #    save_all_data(self)
 
-        # save data
-        save_all_data(self)
-
-        # save config
-        save_config(self.basefilename, self.config_dict)
+    #    # save config
+    #    save_config(self.basefilename, self.config_dict)
 
     return
 

@@ -76,7 +76,7 @@ def get_wavemeter_readings():
     # currently only one frequency is returned
     freqs = float(data.decode())
 
-    print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
+    #print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
     
     return freqs
 
