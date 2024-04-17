@@ -291,6 +291,15 @@ def readout_data(self):
     return
 
 
+def readout_data_no_freq(self):
+    
+    # readout data from Artiq by toggling through all channels and saving the data in a list
+    self.smp_data = {}
+    for channel in self.smp_data_sets.keys():
+        # self.smp_data['absorption'] = ...
+        self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
+
+    return
 
 
 def my_analyze(self):
@@ -537,6 +546,54 @@ def update_data(self, counter, n, slowing_data = False):
     return
 
 
+def update_data_no_freq(self, counter, n, slowing_data = False):
+   
+    # counter is the current shot number
+    # n is the current setpoint number
+
+    if not slowing_data:
+        # this updates the gui for every shot
+        self.mutate_dataset('set_points',       counter, self.current_setpoint)
+
+        self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
+        self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
+  
+        self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
+
+    # display average signals
+    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
+    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch5_avg, broadcast = True)
+    self.set_dataset('ch6_avg', self.ch6_avg, broadcast = True)
+    self.set_dataset('ch7_avg', self.ch7_avg, broadcast = True)
+
+    # save each successful shot in ch<number>_arr datasets
+    # needs fixing since the number of channels is hardcoded here
+    for k in range(8):
+        slice_ind = (counter)
+        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
+
+        if slowing_data:
+            self.mutate_dataset('ch' + str(k) + '_slow_arr', slice_ind, hlp_data)
+        else:
+            self.mutate_dataset('ch' + str(k) + '_arr', slice_ind, hlp_data)
+
+    ## save data after some averaged shots to avoid data loss
+    #if (counter % (3*self.no_of_averages) == 0): 
+    #    # and (counter % self.no_of_averages == 0)
+    #    print(self.no_of_averages) 
+    #    print('Temp saving data ... counter = {0}'.format(counter))
+
+    #    # save data
+    #    save_all_data(self)
+
+    #    # save config
+    #    save_config(self.basefilename, self.config_dict)
+
+    return
 
      
 def update_data_raster(self, counter, nx, ny):
