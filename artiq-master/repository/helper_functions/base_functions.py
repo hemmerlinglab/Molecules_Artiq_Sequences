@@ -7,7 +7,7 @@ import sys
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
 
 from helper_functions import *
-
+from scan_functions import scan_parameter
 
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
 from rigol import Rigol_RSA3030, Rigol_DSG821
@@ -16,26 +16,27 @@ sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_serve
 from microwave_windfreak import Microwave
 
 
-def my_setattr(self, arg, val):
+
+#######################################################################################################
+
+def my_setattr(self, arg, val, scannable = True):
 
     # define the attribute
     self.setattr_argument(arg, val)
 
     # add each attribute to the config dictionary
     if hasattr(val, 'unit'):
-        exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "'})")
+        exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "', 'scannable' : " + str(scannable) + "})")
     else:
-        exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + "})")
+        exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'scannable' : " + str(scannable) + "})")
 
 
-def base_build(self, which_instruments = []):
+#######################################################################################################
 
-    # the base parameters all sequences have in common
-    self.config_dict = []
-    self.wavemeter_frequencies = []
-    
-    for instr in which_instruments:
-        # add instruments
+def load_instruments(self):
+ 
+    # Load all instruments specified when calling the base_build
+    for instr in self.which_instruments:
         if instr == 'EOM':
             self.EOM_function_generator = Rigol_DSG821()
 
@@ -48,12 +49,50 @@ def base_build(self, which_instruments = []):
         if instr == 'spectrum_analyzer':
             self.spectrum_analyzer      = Rigol_RSA3030()
 
-            ## set range of spectrum analyzer
-            #self.spectrum_analyzer.set_freq([36e6 - 15e6, 36e6 + 15e6])
+    return
 
+#######################################################################################################
+
+def close_instruments(self):
+ 
+    # Disconnect instruments
+    # Load all instruments specified when calling the base_build
+    for instr in self.which_instruments:
+        if instr == 'EOM':
+            self.EOM_function_generator.close()
+
+        if instr == 'frequency_comb':
+            self.frequency_comb.close()
+
+        if instr == 'microwave':
+            self.microwave.close()
+
+        if instr == 'spectrum_analyzer':
+            self.spectrum_analyzer.close()
+
+    return
+
+
+#######################################################################################################
+
+def load_variables(self):
+ 
+    ###########################################################
+    # Base parameters all sequences have in common
+    ###########################################################
+
+    self.config_dict = []
+    self.wavemeter_frequencies = []
     self.EOM_frequency = 0.0 #None
     self.comb_frep     = None
     self.beat_node_fft = None
+
+    return
+
+
+#######################################################################################################
+
+def load_attributes(self):
 
     self.setattr_device('core') # Core Artiq Device (required)
     self.setattr_device('ttl3') # trigger in, sync to pulse tube
@@ -72,27 +111,50 @@ def base_build(self, which_instruments = []):
     
     self.setattr_device('zotino0') # for analog output voltages
 
+    return
+
+
+#######################################################################################################
+
+def load_parameters(self):
+
     # number of time steps
-    my_setattr(self, 'scope_count',NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'scope_count',     NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
 
     # number of averages
-    my_setattr(self, 'no_of_averages',NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'no_of_averages',  NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
 
-    my_setattr(self, 'time_step_size',NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'slice_min',NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_min',NumberValue(default=5.5,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'pmt_slice_max',NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'time_step_size',  NumberValue(default=100,unit='us',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'slice_min',       NumberValue(default=6,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slice_max',       NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_min',   NumberValue(default=5.5,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'pmt_slice_max',   NumberValue(default=7,unit='ms',scale=1,ndecimals=1,step=0.1))
 
-    my_setattr(self, 'relock_wait_time', NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'lock_wait_time', NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'relock_laser_steps', NumberValue(default=3000,unit='',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'relock_wait_time',    NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'lock_wait_time',      NumberValue(default=100,unit='ms',scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'relock_laser_steps',  NumberValue(default=3000,unit='',scale=1,ndecimals=0,step=1))
 
     # High voltage
-    #my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',scale=1,ndecimals=0,step=1))
-    my_setattr(self, 'plate_voltage',NumberValue(default=0,unit='V',type='int',scale=1,ndecimals=0,step=1,min=0,max=30.0e3))
+    my_setattr(self, 'plate_voltage',       NumberValue(default=0,unit='V',type='int',scale=1,ndecimals=0,step=1,min=0,max=30.0e3))
+
+    ##############################
+    # General Scanning Parameter
+    ##############################
     
+    # get all parameters
+    list_of_parameters = [x['par'] for x in self.config_dict if x['scannable']]
+
+    my_setattr(self, 'min_scan', NumberValue(default=100,unit='',scale=1,ndecimals=3,step=.001))
+    my_setattr(self, 'max_scan', NumberValue(default=200,unit='',scale=1,ndecimals=3,step=.001))
+    my_setattr(self, 'steps',    NumberValue(default=100,unit='steps to scan',scale=1,ndecimals=0,step=1))
+
+    # general scanning parameter 
+    my_setattr(self, 'scanning_parameter', EnumerationValue(list_of_parameters, default = list_of_parameters[0]))    
+
     return
+
+
+#######################################################################################################
 
 def rb_calibration_build(self):
     # EnvExperiment attribute: number of voltage samples per scan
@@ -105,6 +167,7 @@ def rb_calibration_build(self):
     return
 
 
+#######################################################################################################
 
 def pulsed_scan_build(self):
     # EnvExperiment attribute: number of voltage samples per scan
@@ -149,9 +212,102 @@ def pulsed_scan_build(self):
     return
 
 
+#######################################################################################################
+
+def base_build(self, which_instruments = []):
+
+    #################################
+    # Load all instruments
+    #################################
+
+    self.which_instruments = which_instruments
+    load_instruments(self)
+
+    #################################
+    # Load all variables
+    #################################
+
+    load_variables(self)
+
+    #################################
+    # Load all attributes
+    #################################
+
+    load_attributes(self)
+
+    #################################
+    # Load all parameters
+    #################################
+
+    load_parameters(self)
+
+    return
+
+
+#######################################################################################################
 
 def my_prepare(self, data_to_save = None):
+
+    prepare_datasets(self)
     
+    #prepare_initial_instruments(self)
+    
+    prepare_saving_configuration(self, data_to_save = data_to_save)
+
+    return
+
+
+#######################################################################################################
+
+def reset_scan_parameter(self):
+    
+    # sets the value of the scanned parameter to the one in the parameter listing
+
+    scan_parameter(self, 0, reset_value = True)
+
+    return
+
+
+#######################################################################################################
+
+def my_analyze(self):
+
+    # reset scan value to setting in parameter
+
+    reset_scan_parameter(self)
+
+    # function is run after the experiment, i.e. after run() is called
+    print('Saving data ...')
+    save_all_data(self)
+
+    # overwrite config file with complete configuration
+    self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
+    save_config(self.basefilename, self.config_dict)
+
+    add_scan_to_list(self)
+
+    print('Scan ' + self.basefilename + ' finished.')
+    print('Scan finished.')
+
+    close_instruments(self)
+
+    # Play sound that scan is finished
+    os.system('mpg321 -quiet ~/boat.mp3')
+    
+    return
+
+
+#######################################################################################################
+
+def prepare_datasets(self):
+
+    # Scan interval
+    self.scan_values = np.linspace(self.min_scan, self.max_scan, self.steps)
+
+    # Check scan range
+    self.scan_ok = scan_parameter(self, 0, scan_check = True)
+
+    # Prepare some data sets
     self.smp_data_sets = {
             'ch0' : 'absorption',   # in-cell
             'ch1' : 'fire_check',   # yag photodiode check
@@ -211,7 +367,15 @@ def my_prepare(self, data_to_save = None):
     self.set_dataset('frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('EOM_frequency',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('beat_node_fft',  ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
-    
+
+    return
+
+
+#######################################################################################################
+
+def prepare_saving_configuration(self, data_to_save = None):
+
+    # Saving data configurations
 
     if data_to_save == None:
         self.data_to_save = [
@@ -253,17 +417,17 @@ def my_prepare(self, data_to_save = None):
     print("")
     print("")
 
-    # Initializes Artiq (required)
     # get the filename for the scan, e.g. 20190618_105557
     get_basefilename(self)
     # save the config
     save_config(self.basefilename, self.config_dict)
 
-    # self.core.reset() #### put in @kernel
     self.reset_core()
-    # print('made it here')
+
+    return
 
 
+#######################################################################################################
 
 def readout_data(self):
     
@@ -301,40 +465,6 @@ def readout_data_no_freq(self):
 
     return
 
-
-def my_analyze(self):
-        
-    # function is run after the experiment, i.e. after run() is called
-    print('Saving data ...')
-    save_all_data(self)
-
-    # overwrite config file with complete configuration
-    self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
-    save_config(self.basefilename, self.config_dict)
-
-    add_scan_to_list(self)
-
-    print('Scan ' + self.basefilename + ' finished.')
-    print('Scan finished.')
-
-    # Disconnect instruments
-    try:
-        self.EOM_function_generator.close()
-    except:
-        pass
-    try:
-        self.spectrum_analyzer.close()
-    except:
-        pass
-    try:
-        self.frequency_comb.close()
-    except:
-        pass
-
-    # Play sound that scan is finished
-    os.system('mpg321 -quiet ~/boat.mp3')
-    
-    return
 
 
 
