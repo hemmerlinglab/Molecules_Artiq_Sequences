@@ -58,27 +58,18 @@ def prepare_datasets(self):
     self.set_dataset('freqs',      (self.scan_values),broadcast=True)
     self.set_dataset('times',      (self.time_interval),broadcast=True)
 
-    # data set without slowing
-    self.set_dataset('ch0_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch1_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch2_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch3_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch4_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch5_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch6_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch7_arr',       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    #############################################
+    # Data sets for saving data
+    #############################################
 
-    # data set with slowing
-    self.set_dataset('ch0_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch1_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch2_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch3_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch4_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch5_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch6_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
-    self.set_dataset('ch7_slow_arr',  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+    for c in self.configurations:
+        for i in range(8):
+            self.set_dataset('ch{0}_cfg{1}_arr'.format(i, c),       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
 
-    # dataset only for plotting average signals
+    #############################################
+    # Avg data sets for display purposes only
+    #############################################
+    
     self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
     self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
@@ -106,6 +97,9 @@ def prepare_datasets(self):
     self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
 
+    # set the slow / no slow configuration starting point
+    self.current_configuration = 0
+    
     return
 
 
@@ -117,30 +111,21 @@ def prepare_saving_configuration(self, data_to_save = None):
 
     if data_to_save == None:
         self.data_to_save = [
-                         {'var' : 'set_points', 'name' : 'set_points'},
-                         {'var' : 'act_freqs', 'name' : 'actual frequencies (wavemeter)'},
-                         {'var' : 'freqs', 'name' : 'freqs'},
-                         {'var' : 'times', 'name' : 'times'},
-                         {'var' : 'ch0_arr', 'name' : self.smp_data_sets['ch0']},
-                         {'var' : 'ch1_arr', 'name' : self.smp_data_sets['ch1']},
-                         {'var' : 'ch2_arr', 'name' : self.smp_data_sets['ch2']},
-                         {'var' : 'ch3_arr', 'name' : self.smp_data_sets['ch3']},
-                         {'var' : 'ch4_arr', 'name' : self.smp_data_sets['ch4']},
-                         {'var' : 'ch5_arr', 'name' : self.smp_data_sets['ch5']},
-                         {'var' : 'ch6_arr', 'name' : self.smp_data_sets['ch6']},
-                         {'var' : 'ch7_arr', 'name' : self.smp_data_sets['ch7']},
-                         {'var' : 'ch0_slow_arr', 'name' : self.smp_data_sets['ch0']},
-                         {'var' : 'ch1_slow_arr', 'name' : self.smp_data_sets['ch1']},
-                         {'var' : 'ch2_slow_arr', 'name' : self.smp_data_sets['ch2']},
-                         {'var' : 'ch3_slow_arr', 'name' : self.smp_data_sets['ch3']},
-                         {'var' : 'ch4_slow_arr', 'name' : self.smp_data_sets['ch4']},
-                         {'var' : 'ch5_slow_arr', 'name' : self.smp_data_sets['ch5']},
-                         {'var' : 'ch6_slow_arr', 'name' : self.smp_data_sets['ch6']},
-                         {'var' : 'ch7_slow_arr', 'name' : self.smp_data_sets['ch7']},
-                         {'var' : 'frequency_comb_frep', 'name' : 'Repetition frequency of comb'},
-                         {'var' : 'EOM_frequency', 'name' : 'EOM_frequency'},
-                         {'var' : 'beat_node_fft', 'name' : 'FFT of beat node with comb'},
+                         {'var' : 'set_points',             'name' : 'set_points'},
+                         {'var' : 'act_freqs',              'name' : 'actual frequencies (wavemeter)'},
+                         {'var' : 'freqs',                  'name' : 'freqs'},
+                         {'var' : 'times',                  'name' : 'times'},
+                         {'var' : 'frequency_comb_frep',    'name' : 'Repetition frequency of comb'},
+                         {'var' : 'EOM_frequency',          'name' : 'EOM_frequency'},
+                         {'var' : 'beat_node_fft',          'name' : 'FFT of beat node with comb'},
                          ]
+
+        # save all data sets
+        for c in self.configurations:
+            for i in range(8):
+                self.data_to_save.append({'var' : 'ch{0}_cfg{1}_arr'.format(i, c), 'name' : self.smp_data_sets['ch{0}'.format(i)]})
+        print(self.data_to_save)
+
     else:
         self.data_to_save = data_to_save
 

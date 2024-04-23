@@ -7,6 +7,7 @@ from scan_functions          import reset_scan_parameter
 from my_instrument_functions import reset_instruments, close_instruments
 from my_prepare_functions    import save_config
 
+
 #######################################################################################################
 
 def my_analyze(self):
@@ -78,6 +79,7 @@ def save_all_data(self):
         np.savetxt(f_hlp, arr, delimiter=",")
         f_hlp.close()
 
+    return
 
 #######################################################################################################
 
@@ -88,6 +90,7 @@ def add_scan_to_list(self):
     f_hlp.write(self.scan_timestamp + '\n')
     f_hlp.close()
 
+    return
         
 
 

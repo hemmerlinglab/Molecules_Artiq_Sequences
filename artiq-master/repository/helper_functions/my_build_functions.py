@@ -130,11 +130,14 @@ def load_parameters(self):
     my_setattr(self, 'he_flow_wait',NumberValue(default=2,unit='s',scale=1,ndecimals=1,step=0.1))
     
     my_setattr(self, 'pulse_tube_sync_wait',NumberValue(default=10,unit='ms',scale=1,ndecimals=1,step=0.1))
+   
+    ####################################################################
+    # Booleans
+    ####################################################################
     
-    # Boomy_leans
     my_setattr(self, 'yag_check',BooleanValue(default=True))
     my_setattr(self, 'blue_check',BooleanValue(default=False))
-
+    my_setattr(self, 'uniblitz_on',BooleanValue(default=False))
     
     # Microwave
     my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz', min=15.0, max = 20.0e3, scale=1,ndecimals=3,step=1))
