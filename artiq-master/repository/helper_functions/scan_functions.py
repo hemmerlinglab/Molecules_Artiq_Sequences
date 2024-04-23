@@ -1,17 +1,19 @@
 import time
 import numpy as np
 
-from base_sequences   import set_mesh_voltage, set_multipoles, set_loading_pulse, set_extraction_pulse, set_MCP_voltages, update_detection_time
 
+########################################################################
 
+def get_scannable_parameters():
 
-# List of scannable parameters
+    # List of scannable parameters
+    
+    SCANNABLE_PARAMETERS = [
+             'microwave_power',
+             'microwave_frequency',
+            ]
 
-SCANNABLE_PARAMETERS = 
-        ['microwave_power',
-         'microwave_frequency',
-        ]
-
+    return SCANNABLE_PARAMETERS
 
 
 ########################################################################
@@ -38,14 +40,14 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     ###############################################
 
     if not scan_check and not reset_value:
-        print("Scanning parameter {3}: {2} ({0}/{1})".format(my_ind, len(self.scan_values), val, self.scanning_parameter))
+        print("Scanning {3}: ({0:2.0f}/{1}) - value: {2:10.2f}".format(my_ind, len(self.scan_values), val, self.scanning_parameter))
 
 
     ###############################################
     # Change the parameter to the new value
     ###############################################
 
-    if self.scanning_parameter in SCANNABLE_PARAMETERS:
+    if self.scanning_parameter in get_scannable_parameters():
 
         return eval('_scan_' + self.scanning_parameter + '(self, val, self.scan_values, scan_check = scan_check)')
 
@@ -53,6 +55,17 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
         
         print('Parameter to scan {0} has no scanning function yet'.format(self.scanning_parameter))        
         return 0
+
+    return
+
+
+#######################################################################################################
+
+def reset_scan_parameter(self):
+    
+    # sets the value of the scanned parameter to the one in the parameter listing
+
+    scan_parameter(self, 0, reset_value = True)
 
     return
 

@@ -29,7 +29,7 @@ class Scan_Diff_Microwave_Power(EnvExperiment):
 
         # additional attributes
         my_setattr(self, 'microwave_power', NumberValue(default = -50,unit='dB',scale=1,ndecimals=1,step=1))
-        my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz',scale=1,ndecimals=1,step=1))
+        my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz',scale=1,ndecimals=3,step=1))
 
         return
 

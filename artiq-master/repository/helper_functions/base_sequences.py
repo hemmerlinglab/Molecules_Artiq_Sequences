@@ -32,6 +32,19 @@ from artiq.experiment import *
 #
 #    return
 
+
+
+##########################################################################
+
+@kernel
+def reset_core(self):
+    self.core.reset()
+
+    return
+
+
+##########################################################################
+
 @kernel
 def set_zotino_voltage(self, channel, voltage):
 
@@ -58,6 +71,7 @@ def set_zotino_voltage(self, channel, voltage):
     return
 
 
+##########################################################################
 
 @kernel
 def fire_and_read(self):
@@ -134,7 +148,7 @@ def fire_and_read(self):
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
                 delay(135*us) # wait optimal time (see Minilite manual)
-                self.ttl6.pulse(15*us) # trigger q-switch, <------------------ YAG FIRES ON (60ns after) THIS RISING EDGE
+                self.ttl6.pulse(15*us) # trigger q-switch, <--- YAG FIRES ON (60ns after) THIS RISING EDGE
                 delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
@@ -184,7 +198,7 @@ def fire_and_read(self):
         return
 
 
-
+##########################################################################
 
 @kernel
 def read_rubidium(self):
@@ -246,6 +260,8 @@ def read_rubidium(self):
 
         return
 
+
+##########################################################################
 
 @kernel
 def fire_and_read_slow(self):
