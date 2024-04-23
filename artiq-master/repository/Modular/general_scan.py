@@ -62,7 +62,8 @@ class General_Scan(EnvExperiment):
                 scan_parameter(self, my_ind)
 
 
-
+                # at each iteration, do two runs for the no of averages
+                # one with and one without the microwave (or whatever)
 
 
                 # counter counts setpoints and averages
