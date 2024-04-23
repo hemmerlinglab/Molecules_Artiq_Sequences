@@ -75,6 +75,8 @@ def _scan_microwave_power(self, val, scan_values, scan_check = False):
 
     if scan_check:
 
+        # check if the scan range is within the limits
+
         return limit_check(self.scanning_parameter, scan_values, [-100.0, 10.0])
     
     else:

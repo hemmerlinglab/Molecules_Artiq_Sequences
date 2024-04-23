@@ -290,11 +290,73 @@ def my_analyze(self):
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
 
+
+    ####################################
+    # Switch off instruments
+    ####################################
+
+    # set laser back to initial point
+    set_single_laser(self.scanning_laser, hlp_frequency_offset, wait_time = self.lock_wait_time)
+
+    # switch off Helium flow
+    set_helium_flow(0.0, wait_time = 0.0)
+
+    # set plate voltage for zero again
+    set_zotino_voltage(self, 0, 0)
+
+    if 'microwave' in self.which_instruments:
+        # switch off microwave
+        self.microwave.off()
+
+    ####################################
+    # Close instruments
+    ####################################
+
     close_instruments(self)
 
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
     
+    return
+
+
+
+#######################################################################################################
+
+def prepare_initial_instruments(self):
+
+    # set initial helium flow
+    set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
+
+    # set voltage on plate
+    set_zotino_voltage(self, 0, self.plate_voltage)
+   
+    #####################################
+    # Set microwave power
+    #####################################
+    
+    if 'microwave' in self.which_instruments:
+        self.microwave.freq(self.scan_interval[0] * 1e6) 
+        self.microwave.power(self.microwave_power)
+        self.microwave.on()
+    
+    #####################################
+    # Set initial laser freqencies
+    #####################################
+    
+    # init scanning laser
+    if self.scanning_laser   == 'Daenerys':
+        hlp_frequency_offset = self.offset_laser_Daenerys
+    elif self.scanning_laser == 'Hodor':
+        hlp_frequency_offset = self.offset_laser_Hodor
+    elif self.scanning_laser == 'Davos':
+        hlp_frequency_offset = self.offset_laser_Davos
+
+    set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
+
+    # pause to wait till laser settles
+    time.sleep(1)
+
     return
 
 
@@ -368,6 +430,11 @@ def prepare_datasets(self):
     self.set_dataset('frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('EOM_frequency',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('beat_node_fft',  ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
+
+
+    # spectrum datasets    
+    self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
+    self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
     return
 
