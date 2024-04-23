@@ -45,7 +45,16 @@ class General_Scan(EnvExperiment):
     
         return
 
+
+    ##############################################################
     
+    def switch_configurations(self, which_configuration):
+
+        # define what happens for the two different sets of configurations
+    
+        return
+
+
     ##############################################################
 
     def run(self):
@@ -64,7 +73,9 @@ class General_Scan(EnvExperiment):
 
                 # at each iteration, do two runs for the no of averages
                 # one with and one without the microwave (or whatever)
-
+                
+                # call switch configurations functions
+                # then run average
 
                 # counter counts setpoints and averages
                 counter = 0
