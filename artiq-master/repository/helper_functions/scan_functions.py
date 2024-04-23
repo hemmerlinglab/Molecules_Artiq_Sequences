@@ -90,6 +90,29 @@ def _scan_microwave_power(self, val, scan_values, scan_check = False):
     return
 
 
+########################################################################
+
+def _scan_microwave_frequency(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [15.0e6, 20.0e9])
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+
+        self.microwave.freq(val * 1e6)
+
+        return 1
+
+    return
+
+
+
+
 
 
 
