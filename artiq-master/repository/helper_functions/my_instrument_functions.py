@@ -11,8 +11,8 @@ from base_sequences import set_zotino_voltage
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server/Windfreak")
 
-from rigol                         import Rigol_RSA3030, Rigol_DSG821
-from frequency_comb                import DFC
+from rigol               import Rigol_RSA3030, Rigol_DSG821
+from frequency_comb      import DFC
 from microwave_windfreak import Microwave
 
 
@@ -40,6 +40,45 @@ def load_instruments(self):
 
 #######################################################################################################
 
+def prepare_initial_instruments(self):
+
+    # set initial helium flow
+    set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
+
+    # set voltage on plate
+    set_zotino_voltage(self, 0, self.plate_voltage)
+   
+    #####################################
+    # Set microwave power
+    #####################################
+    
+    if 'microwave' in self.which_instruments:
+        
+        self.microwave.power(self.microwave_power)
+        self.microwave.freq(self.microwave_frequency * 1e6)
+    
+    #####################################
+    # Set initial laser frequencies
+    #####################################
+    
+    # init scanning laser
+    if self.scanning_laser   == 'Daenerys':
+        hlp_frequency_offset = self.offset_laser_Daenerys
+    elif self.scanning_laser == 'Hodor':
+        hlp_frequency_offset = self.offset_laser_Hodor
+    elif self.scanning_laser == 'Davos':
+        hlp_frequency_offset = self.offset_laser_Davos
+
+    set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
+
+    # pause to wait till laser settles
+    time.sleep(1)
+
+    return
+
+
+#######################################################################################################
+
 def close_instruments(self):
  
     # Disconnect instruments
@@ -60,44 +99,6 @@ def close_instruments(self):
 
     return
 
-
-#######################################################################################################
-
-def prepare_initial_instruments(self):
-
-    # set initial helium flow
-    set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
-
-    # set voltage on plate
-    set_zotino_voltage(self, 0, self.plate_voltage)
-   
-    #####################################
-    # Set microwave power
-    #####################################
-    
-    if 'microwave' in self.which_instruments:
-        #self.microwave.on()
-        print('dummy')
-        pass
-    
-    #####################################
-    # Set initial laser frequencies
-    #####################################
-    
-    # init scanning laser
-    if self.scanning_laser   == 'Daenerys':
-        hlp_frequency_offset = self.offset_laser_Daenerys
-    elif self.scanning_laser == 'Hodor':
-        hlp_frequency_offset = self.offset_laser_Hodor
-    elif self.scanning_laser == 'Davos':
-        hlp_frequency_offset = self.offset_laser_Davos
-
-    set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
-
-    # pause to wait till laser settles
-    time.sleep(1)
-
-    return
 
 
 #######################################################################################################

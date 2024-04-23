@@ -78,16 +78,14 @@ def fire_and_read(self):
 
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
         self.sampler0.init() # initializes sampler device
-        # print('made it here')
-        ### Set Channel Gain
+        
+        # Set Channel Gain
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
 
-        #delay(260*us)
-        #delay(300*us)
         delay(500*us)
 
-        ### Data Variable Initialization
+        # Data Variable Initialization
         data0 = [0]*self.scope_count # absorption signal data
         data1 = [0]*self.scope_count # fire check data
         data2 = [0]*self.scope_count # uhv data (pmt)
@@ -98,28 +96,6 @@ def fire_and_read(self):
         data7 = [0]*self.scope_count # absorption signal reference data
         
         smp   = [0]*8 # individual sample
-
-        ## shut slowing laser off before anything starts
-        #self.ttl8.on()
-        #delay(25*ms)
-
-        ### Fire and sample
-        
-        ## wait for trigger on channel 3
-        #delay(10*us)
-        #while self.ttl3.watch_stay_off():
-        #      delay(50*us)
-        #      pass
-
-        #delay(1*ms)
-        #
-        ## this has to be called if watch_stay_off() was called
-        #if self.ttl3.watch_done():
-        #    #delay(50*us)
-        #    delay(50*us)
-        #    pass
-
-        #delay(1*ms)
 
         ## fire sequence only at a certain time after the pulsetube cycle
         #if self.pulse_tube_sync_wait>0:
@@ -182,9 +158,6 @@ def fire_and_read(self):
 
                     delay(self.time_step_size*us) # plus 9us from sample_mu
         
-        ## release shutter of slowing laser
-        #self.ttl8.off()
-
         ### Allocate and Transmit Data All Channels
         self.set_dataset('ch0', (data0), broadcast = True)
         self.set_dataset('ch1', (data1), broadcast = True)

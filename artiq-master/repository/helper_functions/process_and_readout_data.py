@@ -214,7 +214,6 @@ def update_data_sets(self, counter, n):
         hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
 
         self.mutate_dataset('ch{0}_cfg{1}_arr'.format(k, self.current_configuration), slice_ind, hlp_data)
-    
 
 
     ## save data after some averaged shots to avoid data loss

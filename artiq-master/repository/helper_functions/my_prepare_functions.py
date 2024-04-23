@@ -41,12 +41,12 @@ def prepare_datasets(self):
 
     # Prepare some data sets
     self.smp_data_sets = {
-            'ch0' : 'absorption',   # in-cell
-            'ch1' : 'fire_check',   # yag photodiode check
-            'ch2' : 'pmt',          # pmt
-            'ch3' : 'hodor_pickup', # Hodor blue pickup
-            'ch4' : 'davos_pickup', # Davos blue pickup
-            'ch5' : 'yag_sync',     # Yag sync
+            'ch0' : 'absorption',      # in-cell
+            'ch1' : 'fire_check',      # yag photodiode check
+            'ch2' : 'pmt',             # pmt
+            'ch3' : 'hodor_pickup',    # Hodor blue pickup
+            'ch4' : 'davos_pickup',    # Davos blue pickup
+            'ch5' : 'yag_sync',        # Yag sync
             'ch6' : 'daenerys_pickup', # Daenerys pickup
             'ch7' : 'in_cell_ref'      # in-cell ref
             }
@@ -97,8 +97,8 @@ def prepare_datasets(self):
     self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
 
-    # set the slow / no slow configuration starting point
-    self.current_configuration = 0
+    ## set the slow / no slow configuration starting point
+    #self.current_configuration = 0
     
     return
 
@@ -124,7 +124,7 @@ def prepare_saving_configuration(self, data_to_save = None):
         for c in self.configurations:
             for i in range(8):
                 self.data_to_save.append({'var' : 'ch{0}_cfg{1}_arr'.format(i, c), 'name' : self.smp_data_sets['ch{0}'.format(i)]})
-        print(self.data_to_save)
+        #print(self.data_to_save)
 
     else:
         self.data_to_save = data_to_save

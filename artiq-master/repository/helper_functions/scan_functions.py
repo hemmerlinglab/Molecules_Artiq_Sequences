@@ -1,6 +1,7 @@
 import time
 import numpy as np
 
+from my_instrument_functions import set_single_laser
 
 ########################################################################
 
@@ -11,6 +12,7 @@ def get_scannable_parameters():
     SCANNABLE_PARAMETERS = [
              'microwave_power',
              'microwave_frequency',
+             'offset_laser_Daenerys'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -41,7 +43,7 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     ###############################################
 
     if not scan_check and not reset_value:
-        print("Scanning {3}: ({0:2.0f}/{1}) - value: {2:10.2f}".format(my_ind, len(self.scan_values), val, self.scanning_parameter))
+        print("Scanning {3}: ({0:2.0f}/{1}) - value: {2:10.2f}".format(my_ind + 1, len(self.scan_values), val, self.scanning_parameter))
 
     ###############################################
     # Change the parameter to the new value
@@ -77,7 +79,9 @@ def limit_check(par, scan_values, limits):
     check = (np.min(scan_values) >= limits[0]) and (np.max(scan_values) <= limits[1])
 
     if not check:
+        print()
         print('Scan range out of bounds for parameter {0}.'.format(par))
+        print()
 
     return check
 
@@ -111,13 +115,36 @@ def _scan_microwave_frequency(self, val, scan_values, scan_check = False):
 
         # check if the scan range is within the limits
 
-        return limit_check(self.scanning_parameter, scan_values, [15.0e6, 20.0e9])
+        return limit_check(self.scanning_parameter, scan_values, [15.0, 20.0e3]) # 15 MHz to 20 GHz
     
     else:
 
         # add specific code for parameter change here, including any necessary wait times
 
         self.microwave.freq(val * 1e6)
+
+        return 1
+
+    return
+
+
+########################################################################
+
+def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        frequency = self.offset_laser_Daenerys + val/1.0e6
+
+        set_single_laser('Daenerys', frequency, do_switch = True, wait_time = self.relock_wait_time)
 
         return 1
 
