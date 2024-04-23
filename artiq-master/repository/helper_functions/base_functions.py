@@ -250,7 +250,8 @@ def my_prepare(self, data_to_save = None):
 
     prepare_datasets(self)
     
-    #prepare_initial_instruments(self)
+    # sets all instruments and parameters before the scan
+    prepare_initial_instruments(self)
     
     prepare_saving_configuration(self, data_to_save = data_to_save)
 
