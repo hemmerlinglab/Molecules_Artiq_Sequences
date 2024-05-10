@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from my_instrument_functions import set_single_laser
+from my_instrument_functions import set_single_laser,set_helium_flow
 
 ########################################################################
 
@@ -12,7 +12,8 @@ def get_scannable_parameters():
     SCANNABLE_PARAMETERS = [
              'microwave_power',
              'microwave_frequency',
-             'offset_laser_Daenerys'
+             'offset_laser_Daenerys',
+             'he_flow'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -151,8 +152,22 @@ def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
     return
 
 
+###############################################################################
 
+def _scan_he_flow(self, val, scan_values, scan_check = False):
 
+    if scan_check:
 
+        # check if the scan range is within the limits
 
+        return limit_check(self.scanning_parameter, scan_values, [0, 15]) # 0 sccm to 15 sccm
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        set_helium_flow(val, wait_time = self.he_flow_wait)
+
+        return
+
+    return
 

@@ -189,7 +189,7 @@ def update_data_sets(self, counter, n):
     # since they are the same for all configurations
     ###########################################################
     
-    if self.current_configuration == 0:
+    if (self.current_configuration == 0) or (len(self.configurations) == 1):
         # this updates the gui for every shot
         self.mutate_dataset('set_points',       counter, self.current_setpoint)
         self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
