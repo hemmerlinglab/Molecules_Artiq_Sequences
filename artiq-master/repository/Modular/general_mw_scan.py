@@ -36,7 +36,7 @@ class General_MW_Scan(EnvExperiment):
     
     def prepare(self):
 
-        self.configurations = [0,1]
+        self.configurations = [0]
         
         self.configuration_descriptions = ['Microwave on', 'Microwave off']
 
