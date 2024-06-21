@@ -246,4 +246,66 @@ def update_data_sets(self, counter, n):
     return
 
 
+###################################################################################
+
+def update_data_sets_raster(self, counter, nx, ny):
+   
+    # Counter toggles through each shot including averages
+    # n toggles through the set points
+
+    ###########################################################
+    # Display average signals
+    # For display purposes only
+    ###########################################################
+    
+    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
+    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
+    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
+    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
+    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
+    self.set_dataset('ch5_avg', self.ch5_avg, broadcast = True)
+    self.set_dataset('ch6_avg', self.ch6_avg, broadcast = True)
+    self.set_dataset('ch7_avg', self.ch7_avg, broadcast = True)
+
+    ###########################################################
+    # Save scan parameters for configuration 0 only
+    # since they are the same for all configurations
+    ###########################################################
+    
+    if (self.current_configuration == 0) or (len(self.configurations) == 1):
+        # this updates the gui for every shot
+        self.mutate_dataset('set_points',       counter, self.current_setpoint)
+        self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
+
+        #self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
+        #self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
+  
+        self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
+        self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
+        self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
+        
+    ###########################################################
+    # Save raster image
+    ###########################################################
+
+    slice_ind = ((nx,nx+1), (ny,ny+1))
+    self.mutate_dataset('target_img_incell', slice_ind, self.smp_data_avg['absorption'])
+
+    ###########################################################
+    # Save time traces in correct configuration data array
+    ###########################################################
+    
+    # save each successful shot in ch<number>_cfg{1}_arr datasets
+
+    # toggle through channels
+    for k in range(8):
+
+        slice_ind = (counter)
+        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
+
+        self.mutate_dataset('ch{0}_cfg{1}_arr'.format(k, self.current_configuration), slice_ind, hlp_data)
+
+    return
+
+
 

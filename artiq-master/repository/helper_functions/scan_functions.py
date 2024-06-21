@@ -38,7 +38,10 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     else:
         # reset the value to the one in the parameter listing
         print('Resetting scanning parameter ...')
-        val = eval('self.' + self.scanning_parameter)
+        if not self.scanning_parameter == 'dummy':
+            val = eval('self.' + self.scanning_parameter)
+        else:
+            val = 0.0
 
 
     ###############################################
@@ -52,7 +55,7 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     # Change the parameter to the new value
     ###############################################
 
-    if self.scanning_parameter in get_scannable_parameters():
+    if (self.scanning_parameter in get_scannable_parameters()) or (self.scanning_parameter == 'dummy'):
 
         return eval('_scan_' + self.scanning_parameter + '(self, val, self.scan_values, scan_check = scan_check)')
 
@@ -87,6 +90,25 @@ def limit_check(par, scan_values, limits):
         print()
 
     return check
+
+
+########################################################################
+
+def _scan_dummy(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return 1
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times        
+
+        return 1
+
+    return
 
 
 ########################################################################

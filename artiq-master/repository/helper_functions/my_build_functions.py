@@ -8,7 +8,7 @@ from scan_functions             import get_scannable_parameters
 
 #######################################################################################################
 
-def my_build(self, which_instruments = []):
+def my_build(self, which_instruments = [], raster_scan = False):
 
     #################################
     # Load all instruments
@@ -33,7 +33,7 @@ def my_build(self, which_instruments = []):
     # Load all parameters
     #################################
 
-    load_parameters(self)
+    load_parameters(self, raster_scan = raster_scan)
 
     return
 
@@ -95,7 +95,7 @@ def load_attributes(self):
 
 #######################################################################################################
 
-def load_parameters(self):
+def load_parameters(self, raster_scan = False):
 
     # number of time steps
     my_setattr(self, 'scope_count',     NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
@@ -157,16 +157,33 @@ def load_parameters(self):
     # number of averages
     my_setattr(self, 'no_of_averages',  NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
 
-    # get all parameters
-    #list_of_parameters = [x['par'] for x in self.config_dict if x['scannable']]
-    list_of_parameters = get_scannable_parameters()
+    if not raster_scan:
+        # get all parameters
+        #list_of_parameters = [x['par'] for x in self.config_dict if x['scannable']]
+        list_of_parameters = get_scannable_parameters()
 
-    my_setattr(self, 'min_scan_value', NumberValue(default=100,unit='',scale=1,ndecimals=3,step=.001))
-    my_setattr(self, 'max_scan_value', NumberValue(default=200,unit='',scale=1,ndecimals=3,step=.001))
-    my_setattr(self, 'setpoint_count', NumberValue(default=30,unit='steps to scan',scale=1,ndecimals=0,step=1, min = 1))
+        my_setattr(self, 'min_scan_value', NumberValue(default=100,unit='',scale=1,ndecimals=3,step=.001))
+        my_setattr(self, 'max_scan_value', NumberValue(default=200,unit='',scale=1,ndecimals=3,step=.001))
+        my_setattr(self, 'setpoint_count', NumberValue(default=30,unit='steps to scan',scale=1,ndecimals=0,step=1, min = 1))
 
-    # general scanning parameter 
-    my_setattr(self, 'scanning_parameter', EnumerationValue(list_of_parameters, default = list_of_parameters[0]))    
+        # general scanning parameter 
+        my_setattr(self, 'scanning_parameter', EnumerationValue(list_of_parameters, default = list_of_parameters[0]))    
+
+    else:        
+        my_setattr(self, 'min_scan_value', NumberValue(default=1,unit='',scale=1,ndecimals=3,step=.001))
+        my_setattr(self, 'max_scan_value', NumberValue(default=2,unit='',scale=1,ndecimals=3,step=.001))
+        my_setattr(self, 'setpoint_count', NumberValue(default=2,unit='steps to scan',scale=1,ndecimals=0,step=1, min = 1))
+        my_setattr(self, 'scanning_parameter', EnumerationValue(['dummy'], default = 'dummy'))
+
+        # x
+        my_setattr(self, 'min_x',NumberValue(default=3.5,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'max_x',NumberValue(default=4.6,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'steps_x',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
+        
+        # y
+        my_setattr(self, 'min_y',NumberValue(default=3.25,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'max_y',NumberValue(default=5.50,unit='',scale=1,ndecimals=3,step=0.001))
+        my_setattr(self, 'steps_y',NumberValue(default=3,unit='',scale=1,ndecimals=0,step=1))
 
     return
 

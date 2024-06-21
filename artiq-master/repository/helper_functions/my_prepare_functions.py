@@ -91,11 +91,9 @@ def prepare_datasets(self):
     self.set_dataset('EOM_frequency',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('beat_node_fft',  ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
 
-
     # spectrum datasets    
     self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
     self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
-
 
     ## set the slow / no slow configuration starting point
     #self.current_configuration = 0
@@ -120,14 +118,14 @@ def prepare_saving_configuration(self, data_to_save = None):
                          {'var' : 'beat_node_fft',          'name' : 'FFT of beat node with comb'},
                          ]
 
-        # save all data sets
-        for c in self.configurations:
-            for i in range(8):
-                self.data_to_save.append({'var' : 'ch{0}_cfg{1}_arr'.format(i, c), 'name' : self.smp_data_sets['ch{0}'.format(i)]})
-        #print(self.data_to_save)
-
     else:
         self.data_to_save = data_to_save
+
+    # save all data sets
+    for c in self.configurations:
+        for i in range(8):
+            self.data_to_save.append({'var' : 'ch{0}_cfg{1}_arr'.format(i, c), 'name' : self.smp_data_sets['ch{0}'.format(i)]})
+
 
     # save sequence file name
     self.config_dict.append({'par' : 'sequence_file', 'val' : self.sequence_filename, 'cmt' : 'Filename of the main sequence file'})
