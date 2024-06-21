@@ -35,6 +35,8 @@ def load_instruments(self):
         if instr == 'spectrum_analyzer':
             self.spectrum_analyzer      = Rigol_RSA3030()
 
+            self.spectrum_analyzer.set_freq([5e6, 105e6])
+
     return
 
 

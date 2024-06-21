@@ -11,22 +11,37 @@ from my_instrument_functions import get_wavemeter_readings
 
 def readout_data(self):
     
-    # readout data from Artiq by toggling through all channels and saving the data in a list
+    ############################################################################################
+    # readout ADC data from Artiq by toggling through all channels and saving the data in a list
+    ############################################################################################
+    
     self.smp_data = {}
     for channel in self.smp_data_sets.keys():
         # self.smp_data['absorption'] = ...
         self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
 
-    # read laser frequencies
+
+    ###############################
+    # Read laser frequencies
+    ###############################
+
     self.wavemeter_frequencies = get_wavemeter_readings()
 
-    # read repetition rate of comb
+
+    ###############################
+    # Read repetition rate of comb
+    ###############################
+
     try:
         self.comb_frep = self.frequency_comb.get_frep()
     except:
         self.comb_frep = 0.0
 
+    
+    ###############################
     # read spectrum of beat node
+    ###############################
+
     try:
         self.beat_node_fft = self.spectrum_analyzer.get_trace()
     except:
@@ -78,7 +93,7 @@ def check_shot(self):
 def average_data(self, i_avg):
 
     ###############################################################################
-    # the following are for display purposes only
+    # the average_data function is for display purposes only
     # it continuously updates the averaged data
     # it does not care about which configuration is set
     ###############################################################################

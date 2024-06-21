@@ -15,6 +15,7 @@ def get_scannable_parameters():
              'offset_laser_Daenerys',
              'he_flow',
              'offset_laser_Hodor',
+             'offset_laser_Daenerys'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -130,29 +131,6 @@ def _scan_microwave_frequency(self, val, scan_values, scan_check = False):
     return
 
 
-########################################################################
-
-def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
-
-    if scan_check:
-
-        # check if the scan range is within the limits
-
-        return limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
-    
-    else:
-
-        # add specific code for parameter change here, including any necessary wait times
-        
-        frequency = self.offset_laser_Daenerys + val/1.0e6
-
-        set_single_laser('Daenerys', frequency, do_switch = True, wait_time = self.relock_wait_time)
-
-        return 1
-
-    return
-
-
 ###############################################################################
 
 def _scan_he_flow(self, val, scan_values, scan_check = False):
@@ -172,6 +150,10 @@ def _scan_he_flow(self, val, scan_values, scan_check = False):
 
     return
 
+
+
+########################################################################
+# Laser Scan Functions
 ########################################################################
 
 def _scan_offset_laser_Hodor(self, val, scan_values, scan_check = False):
@@ -189,6 +171,29 @@ def _scan_offset_laser_Hodor(self, val, scan_values, scan_check = False):
         frequency = self.offset_laser_Hodor + val/1.0e6
 
         set_single_laser('Hodor', frequency, do_switch = True, wait_time = self.relock_wait_time)
+
+        return 1
+
+    return
+
+
+########################################################################
+
+def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        frequency = self.offset_laser_Daenerys + val/1.0e6
+
+        set_single_laser('Daenerys', frequency, do_switch = True, wait_time = self.relock_wait_time)
 
         return 1
 

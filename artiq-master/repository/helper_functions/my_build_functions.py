@@ -60,11 +60,11 @@ def load_variables(self):
     # Base parameters all sequences have in common
     ###########################################################
 
-    self.config_dict = []
-    self.wavemeter_frequencies = []
-    self.EOM_frequency = 0.0 #None
-    self.comb_frep     = None
-    self.beat_node_fft = None
+    self.config_dict            = []
+    self.wavemeter_frequencies  = []
+    self.EOM_frequency          = 0.0
+    self.comb_frep              = None
+    self.beat_node_fft          = None
 
     return
 
@@ -143,7 +143,7 @@ def load_parameters(self):
     my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz', min=15.0, max = 20.0e3, scale=1,ndecimals=3,step=1))
     my_setattr(self, 'microwave_power',     NumberValue(default =   -50,unit='dB', min=-100.0, max=10.0, scale=1,ndecimals=1,step=1))
     
-    # offset of laseself, rs
+    # offset of lasers
     my_setattr(self, 'scanning_laser',EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Daenerys'))
     my_setattr(self, 'offset_laser_Davos',NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
     my_setattr(self, 'offset_laser_Hodor',NumberValue(default=391.016005,unit='THz',scale=1,ndecimals=6,step=.000001))
