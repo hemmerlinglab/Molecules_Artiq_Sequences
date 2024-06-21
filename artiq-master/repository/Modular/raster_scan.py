@@ -46,8 +46,8 @@ class Raster_Scan(EnvExperiment):
 
         self.setpoint_count = len(self.scan_x_interval) * len(self.scan_y_interval)
 
-        target_img_incell = [[0] * len(self.scan_y_interval)] * len(self.scan_x_interval) 
-        self.set_dataset('target_img_incell',(np.array(target_img_incell)),broadcast=True)
+        target_img_incell = [[0.0] * len(self.scan_y_interval)] * len(self.scan_x_interval) 
+        self.set_dataset('target_img_incell', (np.array(target_img_incell)), broadcast=True)
 
         (mesh_X, mesh_Y) = np.meshgrid(self.scan_x_interval, self.scan_y_interval)
         mesh_X = mesh_X.flatten()

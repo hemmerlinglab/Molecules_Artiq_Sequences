@@ -8,7 +8,7 @@ import time
 from base_sequences           import fire_and_read
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
-#from scan_functions          import scan_parameter
+from scan_functions          import scan_parameter
 from my_instrument_functions import move_yag_mirror
 
 ###################################################################################

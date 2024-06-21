@@ -173,6 +173,7 @@ def load_parameters(self, raster_scan = False):
         my_setattr(self, 'min_scan_value', NumberValue(default=1,unit='',scale=1,ndecimals=3,step=.001))
         my_setattr(self, 'max_scan_value', NumberValue(default=2,unit='',scale=1,ndecimals=3,step=.001))
         my_setattr(self, 'setpoint_count', NumberValue(default=2,unit='steps to scan',scale=1,ndecimals=0,step=1, min = 1))
+
         my_setattr(self, 'scanning_parameter', EnumerationValue(['dummy'], default = 'dummy'))
 
         # x
