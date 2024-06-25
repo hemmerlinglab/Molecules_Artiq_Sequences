@@ -15,7 +15,6 @@ def get_scannable_parameters():
              'offset_laser_Daenerys',
              'he_flow',
              'offset_laser_Hodor',
-             'offset_laser_Daenerys'
             ]
 
     return SCANNABLE_PARAMETERS
