@@ -240,7 +240,7 @@ def my_run_no_yag(self):
                        # Fires yag and reads voltages
                        #######################################
                        
-                       #fire_and_read(self)
+                       fire_and_read(self)
     
                        #######################################
                        # Readout data and process it
@@ -252,7 +252,7 @@ def my_run_no_yag(self):
                        # Check if shot is ok and repeat if not
                        #######################################
     
-                       repead_shot = False
+                       repeat_shot = False
                        if repeat_shot == False:
                            
                            # upon success add data to dataset
