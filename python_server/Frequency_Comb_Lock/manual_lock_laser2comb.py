@@ -47,7 +47,6 @@ def RP():
     driver = FFT(client)
 
     driver.set_input_channel(1)
-    #driver.set_output(conv2bit(0))
 
     return driver
 
@@ -117,7 +116,7 @@ def get_wavemeter_readings():
 
 ################################################################################
 
-def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0.0):
+def lock_laser(rp, pid, setpoint, gains = [1e-3, 5e-2, 0.0], no_of_steps = None, sign = +1, last_output = 0.0):
 
     print()
     
@@ -127,11 +126,16 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
     # set pid setpoint
     pid.setpoint = setpoint
 
-    pid.Kp = sign * pid.Kp
-    pid.Ki = sign * pid.Ki
-    pid.Kd = sign * pid.Kd
+    if sign > 0.0:
+        pid.Kp = gains[0]
+        pid.Ki = gains[1]
+        pid.Kd = gains[2]
+    else:
+        pid.Kp = -gains[0]
+        pid.Ki = -gains[1]
+        pid.Kd = -gains[2]
 
-    #pid.set_auto_mode(True, last_output = last_output)
+    pid.set_auto_mode(True, last_output = last_output)
 
     wlm_1 = get_wavemeter_readings()
     
@@ -156,17 +160,19 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
 
         else:
             #pid.auto_mode = False
-            output = 0
+            #output = 0
+            pass
     
         rp.set_output(conv2bit(output))
     
-        print("set: {0:.2f} MHz; act: {1:.2f} MHz; lvl: {3:.2f}; out: {2:.2f}".format(pid.setpoint, curr_freq, output, lvl), end = '\r')
+        wlm_2 = get_wavemeter_readings()
+        
+        print("set: {0:.2f} MHz; act: {1:.2f} MHz; lvl: {3:.2f}; out: {2:.2f};  wavemeter: {4:.6f} THz".format(pid.setpoint, curr_freq, output, lvl, wlm_2), end = '\r')
 
         k += 1
 
-    wlm_2 = get_wavemeter_readings()
 
-    #pid.auto_mode = False
+    pid.auto_mode = False
     
     print()
 
@@ -181,17 +187,23 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
 # Main
 ####################################################
 
+print()
+
 factor = 1.0 
 
-kp =  1e-3
+kp = 1e-3
 ki = 5e-2
 kd = 0.0
 
 sign = -1
 
-no_of_steps = 1000
+no_of_steps = 100
 
 rp  = RP()
+
+
+#wa_2 = get_wavemeter_readings()
+
 
 
 pid = PID(kp, ki, kd)
@@ -201,69 +213,66 @@ pid.sample_time = 0.1e-3
 
 pid.output_limits = (-1, 1)
 
+lock_freq = 27.0
 
-
-two_freq = [23, 42]
-
-
-(wb_1, wa_1, pid_out1, act1) = lock_laser(rp, pid, two_freq[0], no_of_steps = no_of_steps, sign = sign)
-
-print('before: {0:.6f} after: {1:.6f}'.format(wb_1, wa_1))
-
-(wb_2, wa_2, pid_out2, act2) = lock_laser(rp, pid, two_freq[1], no_of_steps = no_of_steps, sign = sign, last_output = pid_out1[-1])
-
-print('before: {0:.6f} after: {1:.6f}'.format(wb_2, wa_2))
-
-
-beat_node_shift = two_freq[1] - two_freq[0]
-wavemeter_shift = (wa_2 - wa_1)*1e12/1e6
-
-
-
-print()
-print('Frequency lock:        {0} -> {1} MHz, diff: {2} MHz'.format(two_freq[0], two_freq[1], beat_node_shift))
-print('Wavemeter reading:     {0:.6f} -> {1:.6f} THz = diff: {2:.0f} MHz'.format(wa_1, wa_2, wavemeter_shift))
-print('Wavemeter reading * 2: {0:.6f} -> {1:.6f} THz = diff: {2:.0f} MHz'.format(wa_1 * 2, wa_2 * 2, 2*wavemeter_shift))
-
-print()
-print('If both values are positive, that means the beat node is on the right (higher frequency) side of a comb tooth.')
-print()
-
+delta = 10.0
 
 vrep = 200e6
 
 
+
+
+
+(w1, w_rough, pid_out1, act1) = lock_laser(rp, pid, lock_freq, sign = sign, no_of_steps = no_of_steps)
+
+print()
+
 # wavemeter and beat node move in the same direction
 # beat node is at the higher frequency side of a comb tooth
-if (np.sign(wavemeter_shift) == np.sign(beat_node_shift)):
+n_tooth = np.floor( factor * w_rough * 1e12 / vrep )
 
-    n_tooth = np.floor( factor * wa_2*1e12 / vrep )
-
-    true_frequency = n_tooth * vrep + two_freq[1] * 1e6
-
-else:
-
-    n_tooth = np.ceil( factor * wa_2*1e12 / vrep )
-
-    true_frequency = n_tooth * vrep - two_freq[1] * 1e6
-
-
+true_frequency = n_tooth * vrep + lock_freq * 1e6
 
 
 print('Comb tooth: {0:.0f}'.format(n_tooth))
 
-print()
-print('True frequency locked @ {2:.0f} MHz\n    (IR):    {0:.6f} THz\n    (Green): {1:.6f} THz'.format(true_frequency/1e12, true_frequency/1e12 * 2.0, two_freq[1]))
 
 print()
-print('Wavemeter status: \n Current value: (IR):  {0:.6f} THz\n True value:    (IR):  {1:.6f} THz\n Difference: {2:.0f} MHz'.format(wa_2, true_frequency/1e12, (true_frequency/1e12 - wa_2)*1e12/1e6))
+print('Wavemeter status lock @ {3:.0f} MHz: \n Current value: (IR):  {0:.6f} THz\n True value:    (IR):  {1:.6f} THz\n Difference: {2:.0f} MHz\n\n Calibration value (Green): {4:.6f}'.format( \
+    w_rough, 
+    true_frequency/1e12, 
+    (true_frequency/1e12 - w_rough)*1e12/1e6, 
+    lock_freq,
+    2 * true_frequency/1e12
+    ))
 
 
 
 
 # keep laser locked
 
-(w1, w2, pid_out3, act3) = lock_laser(rp, pid, two_freq[1], sign = sign, last_output = pid_out2[-1])
+(w1, w2, pid_out3, act3) = lock_laser(rp, pid, lock_freq + delta, sign = sign, no_of_steps = no_of_steps, last_output = pid_out1[-1])
+
+
+
+true_frequency_delta = n_tooth * vrep + (lock_freq + delta) * 1e6
+
+
+print()
+print('Wavemeter status lock @ {3:.0f} MHz: \n Current value: (IR):  {0:.6f} THz\n True value:    (IR):  {1:.6f} THz\n Difference: {2:.0f} MHz\n\n Calibration value (Green): {4:.6f}\n\n Calibration value + 12 MHz (Green): {5:.6f}'.format( \
+    w2, 
+    true_frequency_delta/1e12, 
+    (true_frequency_delta/1e12 - w2)*1e12/1e6, 
+    lock_freq + delta,
+    2 * true_frequency_delta/1e12,
+    2 * true_frequency_delta/1e12 + 2*6.0e6/1e12
+    ))
+
+
+
+(w1, w2, pid_out3, act3) = lock_laser(rp, pid, lock_freq + delta, sign = sign, last_output = pid_out3[-1])
+
+
 
 
 
@@ -275,11 +284,13 @@ print('Wavemeter status: \n Current value: (IR):  {0:.6f} THz\n True value:    (
 
 pid_out = []
 pid_out.extend(pid_out1)
-pid_out.extend(pid_out2)
+#pid_out.extend(pid_out2)
+pid_out.extend(pid_out3)
 
 acts = []
 acts.extend(act1)
-acts.extend(act2)
+#acts.extend(act2)
+acts.extend(act3)
 
 rp.set_output(conv2bit(0))
 
@@ -287,6 +298,8 @@ rp.set_output(conv2bit(0))
 plt.figure()
 plt.subplot(2,1,1)
 plt.plot(pid_out, label = 'pid out')
+
+plt.axvline(len(pid_out1), color = 'r', ls = '--')
 
 plt.legend()
 

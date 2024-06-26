@@ -5,7 +5,7 @@ import time
 
 
 # core sequence
-from base_sequences           import fire_and_read
+from base_sequences           import fire_and_read, no_fire_and_read
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
 from scan_functions          import scan_parameter
@@ -240,7 +240,7 @@ def my_run_no_yag(self):
                        # Fires yag and reads voltages
                        #######################################
                        
-                       fire_and_read(self)
+                       no_fire_and_read(self)
     
                        #######################################
                        # Readout data and process it
