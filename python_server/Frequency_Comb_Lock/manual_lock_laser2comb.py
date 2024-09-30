@@ -165,12 +165,13 @@ def lock_laser(rp, pid, setpoint, gains = [1e-3, 5e-2, 0.0], no_of_steps = None,
     
         rp.set_output(conv2bit(output))
     
-        wlm_2 = get_wavemeter_readings()
+        wlm_2 = 0.0 #get_wavemeter_readings()
         
         print("set: {0:.2f} MHz; act: {1:.2f} MHz; lvl: {3:.2f}; out: {2:.2f};  wavemeter: {4:.6f} THz".format(pid.setpoint, curr_freq, output, lvl, wlm_2), end = '\r')
 
         k += 1
 
+    wlm_2 = get_wavemeter_readings()
 
     pid.auto_mode = False
     
@@ -191,13 +192,13 @@ print()
 
 factor = 1.0 
 
-kp = 1e-3
-ki = 5e-2
+kp = 5e-2
+ki = 1e-1
 kd = 0.0
 
 sign = -1
 
-no_of_steps = 100
+no_of_steps = 1000
 
 rp  = RP()
 

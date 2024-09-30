@@ -155,7 +155,7 @@ def load_parameters(self, raster_scan = False):
     ##############################
     
     # number of averages
-    my_setattr(self, 'no_of_averages',  NumberValue(default=10,unit='averages',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'no_of_averages',  NumberValue(default=3,unit='averages',scale=1,ndecimals=0,step=1))
 
     if not raster_scan:
         # get all parameters

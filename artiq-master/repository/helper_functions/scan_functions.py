@@ -14,6 +14,7 @@ def get_scannable_parameters():
              'microwave_frequency',
              'offset_laser_Daenerys',
              'he_flow',
+             'repetition_time',
              'offset_laser_Hodor',
             ]
 
@@ -170,6 +171,28 @@ def _scan_he_flow(self, val, scan_values, scan_check = False):
         return
 
     return
+
+
+########################################################################
+
+def _scan_repetition_time(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [0.1, 100.0])
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+
+        self.repetition_time = val
+
+        return 1
+
+    return
+
 
 
 
