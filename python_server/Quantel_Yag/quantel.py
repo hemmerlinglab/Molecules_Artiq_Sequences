@@ -27,6 +27,8 @@ class Quantel_Yag(RS232_Instrument):
         # init instrument
         RS232_Instrument.__init__(self, self.opts['device'])
 
+        self.laser_init()
+
         return
 
     def info(self):
@@ -129,7 +131,7 @@ class Quantel_Yag(RS232_Instrument):
     def set_ene(self, x):
 
         x = max(7.0, x)
-        x = min(20.0, x)
+        x = min(23.0, x)
 
         self.query('>ene{0:.0f}'.format(x * 10.0))
 
@@ -138,7 +140,7 @@ class Quantel_Yag(RS232_Instrument):
     def set_vmo(self, x):
 
         x = max(500.0, x)
-        x = min(1150.0, x)
+        x = min(1250.0, x)
 
         self.query('>vmo{0:.0f}'.format(x))
 
@@ -153,6 +155,16 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
+    def set_vos(self, x):
+
+        x = max(0.0, x)
+        x = min(100.0, x)
+
+        self.query('>vos{0:.0f}'.format(x))
+
+        return
+
+
     def set(self, ene = 12.0, f_rep = 1.0, q_delay = 140):
 
         self.set_ene(ene)
@@ -163,7 +175,7 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
-    def on(self):
+    def qswitch_on(self):
        
         # open shutter
         self.open_shutter()
@@ -174,7 +186,7 @@ class Quantel_Yag(RS232_Instrument):
         
         return
 
-    def off(self):
+    def qswitch_off(self):
         
         print('Deactivating q-switch')
         # switch on q-switch
@@ -209,16 +221,69 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
+    def set_flashlamp_mode(self, mode = 'int'):
+
+        if mode == 'int':
+
+            print('Setting flashlamp to internal trigger')
+            self.query('>lpm0')
+
+        elif mode == 'ext':
+
+            print('Setting flashlamp to external trigger')
+            self.query('>lpm1')
+
+        return
+
+    def set_qswitch_mode(self, mode = 'int'):
+
+        if mode == 'int':
+
+            print('Setting q-switch to internal trigger')
+            self.query('>qsm0')
+
+        elif mode == 'ext':
+
+            print('Setting q-switch to external trigger')
+            self.query('>qsm2')
+
+        return
+
+    def set_trigger_mode(self, mode = 'int'):
+
+        self.set_flashlamp_mode(mode = mode)
+        self.set_qswitch_mode(mode = mode)
+
+        return
+
+    def laser_init(self):
+
+        # offset voltage
+        self.set_vis(0)
+
+        # calibration factor
+        self.set_vos(100)
+
+
+        self.close_shutter()
+        
+        self.diag()
+
+        return
+
+    def set_low_power(self):
+
+        # offset voltage
+        self.set_qdelay(190)
+
+        return
+
 
 ############################################################
 
 if __name__ == '__main__':
 
     instr = Quantel_Yag()
-
-    instr.diag()
-    
-    instr.close_shutter()
 
     instr.test_safety_interlocks()
 
@@ -232,7 +297,7 @@ if __name__ == '__main__':
 
     instr.close()
 
-    asd
+    #asd
 
     instr.diag()
         

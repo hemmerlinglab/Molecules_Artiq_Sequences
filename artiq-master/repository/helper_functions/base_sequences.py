@@ -123,7 +123,8 @@ def fire_and_read(self):
 
                 delay(150*us)
                 self.ttl4.pulse(15*us) # trigger flash lamp
-                delay(135*us) # wait optimal time (see Minilite manual)
+                #delay(135*us) # wait optimal time (see Minilite manual)
+                delay(140*us) # wait optimal time (for Quantel)
                 self.ttl6.pulse(15*us) # trigger q-switch, <--- YAG FIRES ON (60ns after) THIS RISING EDGE
                 delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd

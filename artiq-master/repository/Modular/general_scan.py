@@ -13,7 +13,7 @@ from my_analyze_functions import my_analyze
 from my_run_functions     import my_run
 
 
-
+from my_build_functions   import my_setattr
 
 ###################################################################################
 # Experiment
@@ -26,7 +26,8 @@ class General_Scan(EnvExperiment):
 
     def build(self):
 
-        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb'])
+        #my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb'])
+        my_build(self, which_instruments = ['frequency_comb'])
         self.sequence_filename = os.path.abspath(__file__)
 
         return
@@ -36,6 +37,7 @@ class General_Scan(EnvExperiment):
     
     def prepare(self):
 
+        print('test')
         self.configurations = [0]
         
         self.configuration_descriptions = ['Laser on']

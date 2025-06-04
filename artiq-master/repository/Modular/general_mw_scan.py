@@ -12,7 +12,7 @@ from my_prepare_functions import my_prepare
 from my_analyze_functions import my_analyze
 from my_run_functions     import my_run
 
-
+from microwave_windfreak import Microwave
 
 
 ###################################################################################
@@ -27,6 +27,7 @@ class General_MW_Scan(EnvExperiment):
     def build(self):
 
         my_build(self, which_instruments = ['microwave'])
+        #my_build(self, which_instruments = [])
         self.sequence_filename = os.path.abspath(__file__)
 
         return

@@ -16,6 +16,8 @@ def get_scannable_parameters():
              'he_flow',
              'repetition_time',
              'offset_laser_Hodor',
+             'offset_laser_Davos',
+
             ]
 
     return SCANNABLE_PARAMETERS
@@ -238,6 +240,27 @@ def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
         frequency = self.offset_laser_Daenerys + val/1.0e6
 
         set_single_laser('Daenerys', frequency, do_switch = True, wait_time = self.relock_wait_time)
+
+        return 1
+
+    return
+######################################################################################################
+
+def _scan_offset_laser_Davos(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        frequency = self.offset_laser_Davos + val/1.0e6
+
+        set_single_laser('Davos', frequency, do_switch = True, wait_time = self.relock_wait_time)
 
         return 1
 
