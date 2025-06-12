@@ -5,6 +5,7 @@ import numpy as np
 import socket
 import sys
 import os
+import time
 
 from koheron import connect
 from fft import FFT
@@ -40,6 +41,18 @@ rp  = RP()
 
 print('Setting output of RP to 0.0V')
 rp.set_output(conv2bit(0.0))
+
+print('Starting ramp')
+
+v_arr = np.linspace(-1,1,100)
+
+while True:
+
+    for k in range(len(v_arr)):
+
+        rp.set_output(conv2bit(v_arr[k]))
+
+        time.sleep(0.1)
 
 
 

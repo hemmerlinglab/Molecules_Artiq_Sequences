@@ -53,6 +53,8 @@ def RP():
 
 
 
+################################################################################
+
 def get_curr_frequency(driver):
 
     # gets the current frequency peak from the FPGA FFT and extracts the frequency value
@@ -63,11 +65,7 @@ def get_curr_frequency(driver):
     psd = psd[IND_LIM_RANGE]
 
     ind = np.where(psd == np.max(psd))[0][0]
-
-    #plt.plot(FREQ_RANGE, np.log10(psd))
-    #plt.plot(FREQ_RANGE[IND_LIM_RANGE], np.log10(psd))
-    #plt.show()
-
+    
     curr_freq = FREQ_RANGE[IND_LIM_RANGE][ind]
 
 
@@ -141,28 +139,39 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
         total_steps = no_of_steps
 
     k = 0
+    
+    pid.auto_mode = True
+    
     while k < total_steps:
     
-        pid.auto_mode = True
-        
-        (curr_freq, lvl) = get_curr_frequency(rp)
-    
-        if (curr_freq > 5) and (curr_freq < 60) and (lvl > -15.0):
-            #pid.auto_mode = True
-            output = pid(curr_freq)
-    
-            pid_out.append(output)
-            act.append(curr_freq)
+        # read out power spectral density from RP
+        psd = rp.read_psd()
 
-        else:
-            #pid.auto_mode = False
-            output = 0
+        psd = psd[IND_LIM_RANGE]
+
+        ind = np.where(psd == np.max(psd))[0][0]
     
+        curr_freq = FREQ_RANGE[IND_LIM_RANGE][ind]
+
+        lvl = np.log10(psd[ind])
+
+
+
+        output = pid(curr_freq)
+    
+        pid_out.append(output)
+        act.append(curr_freq)
+
+
         rp.set_output(conv2bit(output))
-    
+
+
         print("set: {0:.2f} MHz; act: {1:.2f} MHz; lvl: {3:.2f}; out: {2:.2f}".format(pid.setpoint, curr_freq, output, lvl), end = '\r')
 
         k += 1
+    
+        #if k == 10:
+        #    print(get_wavemeter_readings())
 
     wlm_2 = get_wavemeter_readings()
 
@@ -174,6 +183,32 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
     return (wlm_1, wlm_2, pid_out, act)
 
 
+################################################################################
+
+def dry_run(rp):
+    
+    pid_out = []
+    act     = []
+
+    for k in range(50):
+
+        # read out power spectral density from RP
+        psd = rp.read_psd()
+
+        psd = psd[IND_LIM_RANGE]
+
+        ind = np.where(psd == np.max(psd))[0][0]
+    
+        curr_freq = FREQ_RANGE[IND_LIM_RANGE][ind]
+
+        lvl = np.log10(psd[ind])
+
+        pid_out.append(0.0)
+
+        act.append(curr_freq)
+
+
+    return (pid_out, act)
 
 
 
@@ -183,24 +218,22 @@ def lock_laser(rp, pid, setpoint, no_of_steps = None, sign = +1, last_output = 0
 
 rp  = RP()
 
-print('Setting output of RP to 0.0V')
-rp.set_output(conv2bit(0.0))
-
 
 factor = 1.0 
 
-kp =  1e-3
-ki = 5e-2
+kp = 1e-2
+ki = 5e-1
 kd = 0.0
 
 sign = -1
 
-no_of_steps = 1000
+no_of_steps = 20000
 
 
 
 pid = PID(kp, ki, kd)
 
+pid.auto_mode = False
 
 pid.sample_time = 0.1e-3
 
@@ -208,70 +241,25 @@ pid.output_limits = (-1, 1)
 
 
 
-two_freq = [23, 42]
+freq = 23
 
 
-(wb_1, wa_1, pid_out1, act1) = lock_laser(rp, pid, two_freq[0], no_of_steps = no_of_steps, sign = sign)
+print('Setting output of RP to 0.0V')
+rp.set_output(conv2bit(0.0))
+
+(pid_dry1, act_dry1) = dry_run(rp)
+
+(wb_1, wa_1, pid_out1, act1) = lock_laser(rp, pid, freq, no_of_steps = no_of_steps, sign = sign)
 
 print('before: {0:.6f} after: {1:.6f}'.format(wb_1, wa_1))
 
-(wb_2, wa_2, pid_out2, act2) = lock_laser(rp, pid, two_freq[1], no_of_steps = no_of_steps, sign = sign, last_output = pid_out1[-1])
+pid.auto_mode = False
 
-print('before: {0:.6f} after: {1:.6f}'.format(wb_2, wa_2))
-
-
-beat_node_shift = two_freq[1] - two_freq[0]
-wavemeter_shift = (wa_2 - wa_1)*1e12/1e6
+(pid_dry2, act_dry2) = dry_run(rp)
 
 
-
-print()
-print('Frequency lock:        {0} -> {1} MHz, diff: {2} MHz'.format(two_freq[0], two_freq[1], beat_node_shift))
-print('Wavemeter reading:     {0:.6f} -> {1:.6f} THz = diff: {2:.0f} MHz'.format(wa_1, wa_2, wavemeter_shift))
-print('Wavemeter reading * 2: {0:.6f} -> {1:.6f} THz = diff: {2:.0f} MHz'.format(wa_1 * 2, wa_2 * 2, 2*wavemeter_shift))
-
-print()
-print('If both values are positive, that means the beat node is on the right (higher frequency) side of a comb tooth.')
-print()
-
-
-vrep = 200e6
-
-
-# wavemeter and beat node move in the same direction
-# beat node is at the higher frequency side of a comb tooth
-if (np.sign(wavemeter_shift) == np.sign(beat_node_shift)):
-
-    n_tooth = np.floor( factor * wa_2*1e12 / vrep )
-
-    true_frequency = n_tooth * vrep + two_freq[1] * 1e6
-
-else:
-
-    n_tooth = np.ceil( factor * wa_2*1e12 / vrep )
-
-    true_frequency = n_tooth * vrep - two_freq[1] * 1e6
-
-
-
-
-print('Comb tooth: {0:.0f}'.format(n_tooth))
-
-print()
-print('True frequency locked @ {2:.0f} MHz\n    (IR):    {0:.6f} THz\n    (Green): {1:.6f} THz'.format(true_frequency/1e12, true_frequency/1e12 * 2.0, two_freq[1]))
-
-print()
-print('Wavemeter status: \n Current value: (IR):  {0:.6f} THz\n True value:    (IR):  {1:.6f} THz\n Difference: {2:.0f} MHz'.format(wa_2, true_frequency/1e12, (true_frequency/1e12 - wa_2)*1e12/1e6))
-
-
-
-
-# keep laser locked
-
-(w1, w2, pid_out3, act3) = lock_laser(rp, pid, two_freq[1], sign = sign, last_output = pid_out2[-1])
-
-
-
+print('Setting output of RP to 0.0V')
+rp.set_output(conv2bit(0.0))
 
 
 #################################################
@@ -279,12 +267,14 @@ print('Wavemeter status: \n Current value: (IR):  {0:.6f} THz\n True value:    (
 #################################################
 
 pid_out = []
+pid_out.extend(pid_dry1)
 pid_out.extend(pid_out1)
-pid_out.extend(pid_out2)
+pid_out.extend(pid_dry2)
 
 acts = []
+acts.extend(act_dry1)
 acts.extend(act1)
-acts.extend(act2)
+acts.extend(act_dry2)
 
 rp.set_output(conv2bit(0))
 
@@ -297,7 +287,7 @@ plt.legend()
 
 plt.subplot(2,1,2)
 plt.plot(acts, label = 'act freq')
-plt.ylim(20, 50)
+plt.ylim(20, 30)
 
 plt.legend()
 
