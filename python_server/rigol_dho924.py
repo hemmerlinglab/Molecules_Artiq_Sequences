@@ -60,12 +60,29 @@ if __name__ == "__main__":
 
     s.get_id()
 
+    d = s.get_trace(4)
+
+    #print(np.mean(d))
+    #asd
+
+    #plt.plot(d)
+
+    #plt.show()
+
+    #d.close()
+
+    #asd
+
     d0 = s.get_trace(1)
     d1 = s.get_trace(2)
+    #d2 = s.get_trace(3)
+    d3 = s.get_trace(4)
 
     time.sleep(1)
     plt.plot(d0/max(d0))
     plt.plot(d1/max(d1))
+    #plt.plot(d2/max(d2))
+    plt.plot(d3)
     plt.show()
 
     s.close()

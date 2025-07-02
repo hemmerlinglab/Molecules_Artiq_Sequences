@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 from base_instruments import base_visa_instrument
