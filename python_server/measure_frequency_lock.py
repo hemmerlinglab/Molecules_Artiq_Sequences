@@ -56,21 +56,20 @@ if __name__ == "__main__":
 
     spec.set_freq([5e6, 80e6])
 
-    fspec = open('freq_spec.txt', 'w')
-    ferr = open('freq_err.txt', 'w')
-    fwm = open('freq_wm.txt', 'w')
+    fspec = open('freq_spec.dat', 'w')
+    ferr = open('freq_err.dat', 'w')
+    fwm = open('freq_wm.dat', 'w')
 
     fspec.close()
     ferr.close()
     fwm.close()
 
-    fspec = open('freq_spec.txt', 'a')
-    ferr = open('freq_err.txt', 'a')
-    fwm = open('freq_wm.txt', 'a')
+    fspec = open('freq_spec.dat', 'a')
+    ferr = open('freq_err.dat', 'a')
+    fwm = open('freq_wm.dat', 'a')
 
-    for n in range(1000):
+    for n in range(500):
         
-        print(n)
 
         wm = get_wavemeter_readings()
 
@@ -88,6 +87,7 @@ if __name__ == "__main__":
 
         time.sleep(0.1)
 
+        print("{0} {1}".format(n, wm))
         
     fspec.close()
     ferr.close()

@@ -1,3 +1,4 @@
+*.dat
 *.pyc
 *.hd5
 artiq-master/results
