@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 
 
 
-spec = np.genfromtxt('freq_spec.txt', delimiter = ',')
+spec = np.genfromtxt('freq_spec.dat', delimiter = ',')
 
-err = np.genfromtxt('freq_err.txt', delimiter = ',')
+err = np.genfromtxt('freq_err.dat', delimiter = ',')
 
-wm = np.genfromtxt('freq_wm.txt', delimiter = ',')
+wm = np.genfromtxt('freq_wm.dat', delimiter = ',')
 
 nu = np.mean(wm)
 

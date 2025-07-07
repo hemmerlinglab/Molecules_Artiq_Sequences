@@ -54,7 +54,7 @@ if __name__ == "__main__":
     scope = Rigol_DHO924()
     spec  = Rigol_RSA3030()
 
-    spec.set_freq([5e6, 80e6])
+    spec.set_freq([5e6, 120e6])
 
     fspec = open('freq_spec.dat', 'w')
     ferr = open('freq_err.dat', 'w')
