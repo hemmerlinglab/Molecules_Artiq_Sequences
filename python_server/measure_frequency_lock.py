@@ -68,7 +68,7 @@ if __name__ == "__main__":
     ferr = open('freq_err.dat', 'a')
     fwm = open('freq_wm.dat', 'a')
 
-    for n in range(500):
+    for n in range(25000):
         
 
         wm = get_wavemeter_readings()

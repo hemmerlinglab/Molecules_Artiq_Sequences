@@ -14,19 +14,34 @@ wm = np.genfromtxt('freq_wm.dat', delimiter = ',')
 
 nu = np.mean(wm)
 
-plt.figure()
 
-plt.subplot(3,1,1)
 
 freq_scale = spec[0, :]
 spec2D = spec[1::2, :]
 
+print(np.min(np.min(spec2D)))
+#spec2D = (spec2D - np.min(np.min(spec2D)))
+
+
 n_exp = range(spec2D.shape[0])
+
+
+
+plt.figure()
+
+plt.plot(spec2D[0, :])
+
+plt.figure()
+
+plt.subplot(3,1,1)
 
 plt.pcolor(freq_scale / 1e6, n_exp, spec2D)
 
+plt.clim(-50, -15)
+
 plt.xlabel('Beat Node (MHz)')
 plt.ylabel('Time')
+
 
 plt.subplot(3,1,2)
 
