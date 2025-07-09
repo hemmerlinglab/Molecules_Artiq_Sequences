@@ -59,17 +59,18 @@ if __name__ == "__main__":
     fspec = open('freq_spec.dat', 'w')
     ferr = open('freq_err.dat', 'w')
     fwm = open('freq_wm.dat', 'w')
+    ffast = open('freq_fast.dat', 'w')
 
     fspec.close()
     ferr.close()
     fwm.close()
 
-    fspec = open('freq_spec.dat', 'a')
-    ferr = open('freq_err.dat', 'a')
-    fwm = open('freq_wm.dat', 'a')
-
     for n in range(25000):
-        
+
+        fspec = open('freq_spec.dat', 'a')
+        ferr = open('freq_err.dat', 'a')
+        fwm = open('freq_wm.dat', 'a')
+        ffast = open('freq_fast.dat', 'a')
 
         wm = get_wavemeter_readings()
 
@@ -78,20 +79,24 @@ if __name__ == "__main__":
         y = s[:, 1]
 
         err = scope.get_trace(4)
+        fast = scope.get_trace(3)
 
         np.savetxt(fspec, [x], delimiter=',')
         np.savetxt(fspec, [y], delimiter=',')
         
         np.savetxt(fwm, [wm], delimiter=',')
-        np.savetxt(ferr, [err], delimiter=',')
+        np.savetxt(ferr, [np.mean(err)], delimiter=',')
+        
+        np.savetxt(ffast, [np.mean(fast)], delimiter=',')
 
-        time.sleep(0.1)
+        time.sleep(5.0)
 
         print("{0} {1}".format(n, wm))
         
-    fspec.close()
-    ferr.close()
-    fwm.close()
+        fspec.close()
+        ferr.close()
+        fwm.close()
+        ffast.close()
 
     scope.close()
     spec.close()
