@@ -23,8 +23,6 @@ class myspecXYPlot(pyqtgraph.PlotWidget):
         if x is None:
             x = np.arange(len(y1))
         
-        y2 = np.array(np.array(y2))
-        print(y2)
         self.clear()
         #self.plot(x, y, pen=None, symbol="x")
         #self.plot(x, y, pen='r', symbol="o")#pen=None, symbol="x")

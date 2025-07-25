@@ -17,7 +17,6 @@ def get_scannable_parameters():
              'repetition_time',
              'offset_laser_Hodor',
              'offset_laser_Davos',
-
             ]
 
     return SCANNABLE_PARAMETERS

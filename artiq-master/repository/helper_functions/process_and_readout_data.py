@@ -85,6 +85,21 @@ def check_shot(self):
             print('No spectroscopy')
             os.system('mpg321 -quiet ~/klaxon.mp3')
 
+    # check if laser is locked by comparing wavemeter frequency with setpoint
+
+    if self.wavemeter_lock_check:
+
+        # Hodor
+        if self.which_scanning_laser == 2:
+            
+            # 375.02 THz + (275.3 MHz)/1e6 THz
+            hlp_frequency = self.offset_laser_Hodor + self.current_setpoint/1.0e6
+        
+            # Transform to MHz, difference should not be larger than 20 MHz
+            if (self.wavemeter_frequencies - hlp_frequency)*1e12/1e6 > 20.0:            
+                repeat_shot = True
+
+
     return repeat_shot
 
 

@@ -273,10 +273,49 @@ class Quantel_Yag(RS232_Instrument):
 
     def set_low_power(self):
 
-        # offset voltage
-        self.set_qdelay(190)
+        self.standby()
+
+        self.close_shutter()
+
+        self.set_vmo(900)
+
+        self.set_qdelay(250)
+        
+        self.set_trigger_mode('int')
+
+        self.fast_warm_up()
+
+        self.qswitch_on()
+
+        self.open_shutter()
 
         return
+
+    def set_high_power(self):
+
+        print('Switching to high power')
+
+        self.qswitch_off()
+
+        self.close_shutter()
+        
+        self.standby()
+
+        self.set_trigger_mode('ext')
+
+        self.fast_warm_up()
+
+        self.qswitch_on()
+
+        # offset voltage
+        self.set_vmo(1050)
+
+        self.set_qdelay(140)
+
+        print('Shutter still closed')
+
+        return
+
 
 
 ############################################################
