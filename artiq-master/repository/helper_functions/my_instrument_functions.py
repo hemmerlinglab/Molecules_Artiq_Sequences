@@ -196,9 +196,21 @@ def get_wavemeter_readings():
 
     sock.connect(server_address)
 
+    ## 'request' gets only one frequency
+    #try:    
+    #    # Request data
+    #    message = 'request'
+    #    #print('sending "%s"' % message)
+    #    sock.sendall(message.encode())
+
+    #    len_msg = int(sock.recv(2).decode())
+
+    #    data = sock.recv(len_msg)
+    
+    # 'request' gets only one frequency
     try:    
         # Request data
-        message = 'request'
+        message = 'reqch28'
         #print('sending "%s"' % message)
         sock.sendall(message.encode())
 
