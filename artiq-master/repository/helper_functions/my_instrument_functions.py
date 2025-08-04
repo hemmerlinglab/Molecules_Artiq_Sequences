@@ -23,6 +23,7 @@ def load_instruments(self):
  
     # Load all instruments specified when calling the base_build
     for instr in self.which_instruments:
+
         if instr == 'EOM':
             self.EOM_function_generator = Rigol_DSG821()
 

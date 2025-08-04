@@ -5,15 +5,22 @@ class Microwave():
 
     def __init__(self):
 
-        self.device = SynthHD('/dev/Windfreak')
+        try:
+               
+            self.device = SynthHD('/dev/Windfreak')
 
-        self.device.init()
+            self.device.init()
 
-        # set device to external frequency reference
-        self.device.reference_mode      = 'external'
-        self.device.reference_frequency = 10.0e6
+            # set device to external frequency reference
+            self.device.reference_mode      = 'external'
+            self.device.reference_frequency = 10.0e6
 
-        self.off()
+            self.off()
+
+        except:
+            print("Can't connect to Windfreak device ... initializing dummy instrument")
+
+            self.dev = None
 
         return
 

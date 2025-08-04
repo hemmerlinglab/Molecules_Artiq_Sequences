@@ -99,7 +99,7 @@ def run_dist_server(opts, wlm, q, sock):
 
 
                 # send data back to Artiq
-                freq_msg = "{0:.6f},{1:.6f}".format(freq_2, freq_8)
+                freq_msg = "{0},{1}".format(freq_2, freq_8)
 
                 msg = str(freq_msg).encode()
 
