@@ -115,7 +115,7 @@ def run_dist_server(opts, wlm, q, sock):
                 connection.sendall(msg)
 
                 # back to channel 2
-                switch_fiber_channel(opts, 2, wait_time = 3)
+                switch_fiber_channel(opts, 2, wait_time = 0.1)
 
 
             # Calibration of the wavemeter is initiated
