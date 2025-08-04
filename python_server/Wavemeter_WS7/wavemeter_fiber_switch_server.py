@@ -86,14 +86,19 @@ def run_dist_server(opts, wlm, q, sock):
                 #time.sleep(1)
                 switch_fiber_channel(opts, 2, wait_time = 1)
 
-                freq_2 = q.get()
+                #freq_2 = q.get()
+                freq_2 = wlm.frequency 
+                freq_2 = "{0:10.6f}".format(freq_2)
 
                 # receive comb freq   
                 wlm.SetExposure(25)              
                 #time.sleep(1)
                 switch_fiber_channel(opts, 8, wait_time = 1)
 
-                freq_8 = q.get()
+                #freq_8 = q.get()
+                freq_8 = wlm.frequency #q.get()
+                freq_8 = "{0:10.6f}".format(freq_2)
+
 
 
                 # send data back to Artiq
