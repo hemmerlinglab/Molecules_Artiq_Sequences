@@ -97,7 +97,7 @@ def run_dist_server(opts, wlm, q, sock):
 
                 #freq_8 = q.get()
                 freq_8 = wlm.frequency #q.get()
-                freq_8 = "{0:10.6f}".format(freq_2)
+                freq_8 = "{0:10.6f}".format(freq_8)
 
 
 
