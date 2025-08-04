@@ -79,6 +79,43 @@ def run_dist_server(opts, wlm, q, sock):
                 connection.sendall(msg)
 
             # Calibration of the wavemeter is initiated
+            elif request == 'reqch28':
+                
+                # receive tisa freq
+                switch_fiber_channel(opts, 2, wait_time = 3)
+    
+                wlm.SetExposure(100)
+                time.sleep(1)
+
+                freq_2 = q.get()
+
+                # receive comb freq
+                switch_fiber_channel(opts, 8, wait_time = 3)
+    
+                wlm.SetExposure(100)              
+                time.sleep(1)
+
+                freq_8 = q.get()
+
+
+                # send data back to Artiq
+                freq_msg = "{0:.6f},{1:.6f}".join(freq_2, freq_8)
+
+                msg = str(freq_msg).encode()
+
+                len_msg = "{0:2d}".format(len(msg))
+                
+                # send the amount of data first
+                connection.sendall(len_msg.encode())
+
+                # send the data
+                connection.sendall(msg)
+
+                # back to channel 2
+                switch_fiber_channel(opts, 2, wait_time = 3)
+
+
+            # Calibration of the wavemeter is initiated
             elif request == 'henecal':
                 
                 # receive hene freq
