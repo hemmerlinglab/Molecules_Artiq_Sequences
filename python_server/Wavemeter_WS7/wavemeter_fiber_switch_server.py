@@ -81,19 +81,17 @@ def run_dist_server(opts, wlm, q, sock):
             # Calibration of the wavemeter is initiated
             elif request == 'reqch28':
                 
-                # receive tisa freq
-                switch_fiber_channel(opts, 2, wait_time = 3)
-    
+                # receive tisa freq    
                 wlm.SetExposure(100)
-                time.sleep(1)
+                #time.sleep(1)
+                switch_fiber_channel(opts, 2, wait_time = 1)
 
                 freq_2 = q.get()
 
-                # receive comb freq
-                switch_fiber_channel(opts, 8, wait_time = 3)
-    
+                # receive comb freq   
                 wlm.SetExposure(25)              
-                time.sleep(1)
+                #time.sleep(1)
+                switch_fiber_channel(opts, 8, wait_time = 1)
 
                 freq_8 = q.get()
 
