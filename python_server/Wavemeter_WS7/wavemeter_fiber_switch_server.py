@@ -270,9 +270,9 @@ opts = {
     'fiber_server_port' : 65000,
     'wavemeter_server_ip' : '192.168.42.20',
     'dist_sockets' : [
-        {
-            'port' : 62500
-        },
+        #{
+        #    'port' : 62500
+        #},
         {
             'port' : 62200
         }
