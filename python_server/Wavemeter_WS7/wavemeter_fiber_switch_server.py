@@ -92,7 +92,7 @@ def run_dist_server(opts, wlm, q, sock):
                 # receive comb freq
                 switch_fiber_channel(opts, 8, wait_time = 3)
     
-                wlm.SetExposure(100)              
+                wlm.SetExposure(25)              
                 time.sleep(1)
 
                 freq_8 = q.get()
