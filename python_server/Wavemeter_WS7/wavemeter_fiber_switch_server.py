@@ -84,7 +84,7 @@ def run_dist_server(opts, wlm, q, sock):
                 # receive tisa freq    
                 wlm.SetExposure(100)
                 #time.sleep(1)
-                switch_fiber_channel(opts, 2, wait_time = 1)
+                switch_fiber_channel(opts, 2, wait_time = 0.25)
 
                 #freq_2 = q.get()
                 freq_2 = wlm.frequency 
@@ -93,7 +93,7 @@ def run_dist_server(opts, wlm, q, sock):
                 # receive comb freq   
                 wlm.SetExposure(25)              
                 #time.sleep(1)
-                switch_fiber_channel(opts, 8, wait_time = 1)
+                switch_fiber_channel(opts, 8, wait_time = 0.25)
 
                 #freq_8 = q.get()
                 freq_8 = wlm.frequency #q.get()

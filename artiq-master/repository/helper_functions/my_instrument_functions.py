@@ -227,7 +227,7 @@ def get_wavemeter_readings():
     freqs = data.decode().split(',')
 
     freqs = [ float(x) for x in freqs ]
-    print(freqs)
+    #print(freqs)
 
     #print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
     
