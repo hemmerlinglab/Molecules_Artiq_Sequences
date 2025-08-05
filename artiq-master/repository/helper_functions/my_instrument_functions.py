@@ -208,7 +208,6 @@ def get_wavemeter_readings():
 
     #    data = sock.recv(len_msg)
 
-    print('asd')
     # 'request' gets only one frequency
     try:    
         # Request data
@@ -222,8 +221,6 @@ def get_wavemeter_readings():
 
     finally:
         sock.close()
-
-    print('done')
 
     # return a list of freqs
     # currently only one frequency is returned
