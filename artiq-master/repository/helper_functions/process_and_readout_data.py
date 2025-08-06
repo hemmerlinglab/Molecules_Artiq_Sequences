@@ -29,8 +29,11 @@ def readout_data(self):
 
     # save initial Moglabs frequency at first shot
     if self.scan_index == 0:
-        self.wavemeter_moglabs_frequency = self.wavemeter_frequencies[1]
-        print(self.wavemeter_frequencies)
+        
+        self.wavemeter_moglabs_frequency = 282.891282
+        
+        #self.wavemeter_moglabs_frequency = self.wavemeter_frequencies[1]
+        #print(self.wavemeter_frequencies)
 
     ###############################
     # Read repetition rate of comb
@@ -95,7 +98,7 @@ def check_shot(self):
 
         # check if comb is still in lock
 
-        if (self.wavemeter_frequencies[1] - self.wavemeter_moglabs_frequency) * 1e12/1e6 > 10.0:
+        if (self.wavemeter_frequencies[1] - self.wavemeter_moglabs_frequency) * 1e12/1e6 > 20.0:
 
             repeat_shot = True
 
