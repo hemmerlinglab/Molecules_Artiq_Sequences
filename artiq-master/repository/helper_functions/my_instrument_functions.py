@@ -280,4 +280,31 @@ def set_single_laser(which_laser, frequency, do_switch = False, wait_time = None
     return
 
 
+#######################################################################################################
+
+def convMHz2sp(val_MHz):
+
+    # this function converts the setpoint value in MHz to a voltage for the cavity ramp
+    # the voltage is encoded in a 15-bit signed integer
+
+    sp = 2**14 * (val_MHz < 0) + 15.16 * val_MHz
+
+    sp = max(min(sp, 2**15 - 1), 0.0)
+
+    return sp
+
+
+def set_cavity_ramp_sp(val_MHz):
+
+    #sshpass -p root ssh root@192.168.42.53 -t '/opt/redpitaya/bin/monitor 0x40310104 0x333'
+
+    sp = convMHz2sp(val_MHz)
+
+    cmd = "sshpass -p root ssh root@192.168.42.53 -t '/opt/redpitaya/bin/monitor 0x40310104' {0:.0f}".format(sp)
+
+    os.system(cmd)
+
+    return
+
+
 

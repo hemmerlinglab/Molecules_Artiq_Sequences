@@ -27,6 +27,10 @@ def readout_data(self):
 
     self.wavemeter_frequencies = get_wavemeter_readings()
 
+    # save initial Moglabs frequency at first shot
+    if self.scan_index == 0:
+        self.wavemeter_moglabs_frequency = self.wavemeter_frequencies[1]
+        print(self.wavemeter_frequencies)
 
     ###############################
     # Read repetition rate of comb
@@ -89,15 +93,24 @@ def check_shot(self):
 
     if self.wavemeter_lock_check:
 
-        # Hodor
-        if self.which_scanning_laser == 2:
-            
-            # 375.02 THz + (275.3 MHz)/1e6 THz
-            hlp_frequency = self.offset_laser_Hodor + self.current_setpoint/1.0e6
-        
-            # Transform to MHz, difference should not be larger than 20 MHz
-            if (self.wavemeter_frequencies - hlp_frequency)*1e12/1e6 > 20.0:            
-                repeat_shot = True
+        # check if comb is still in lock
+
+        if (self.wavemeter_frequencies[1] - self.wavemeter_moglabs_frequency) * 1e12/1e6 > 10.0:
+
+            repeat_shot = True
+
+            print('Moglabs laser offlock')
+            os.system('mpg321 -quiet ~/klaxon.mp3')
+
+        ## Hodor
+        #if self.which_scanning_laser == 2:
+        #    
+        #    # 375.02 THz + (275.3 MHz)/1e6 THz
+        #    hlp_frequency = self.offset_laser_Hodor + self.current_setpoint/1.0e6
+        #
+        #    # Transform to MHz, difference should not be larger than 20 MHz
+        #    if (self.wavemeter_frequencies - hlp_frequency)*1e12/1e6 > 20.0:            
+        #        repeat_shot = True
 
 
     return repeat_shot

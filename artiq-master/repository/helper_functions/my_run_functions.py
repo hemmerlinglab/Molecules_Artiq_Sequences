@@ -23,9 +23,12 @@ def my_run(self):
         ###########################################################
         # Loop over set points
         ###########################################################
-    
+        
+
         for my_ind in range(len(self.scan_values)):
     
+            self.scan_index = my_ind
+
             self.scheduler.pause()
     
             # set the value of the new parameter

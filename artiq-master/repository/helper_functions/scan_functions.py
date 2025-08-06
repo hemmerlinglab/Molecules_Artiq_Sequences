@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from my_instrument_functions import set_single_laser,set_helium_flow
+from my_instrument_functions import set_single_laser, set_helium_flow, set_cavity_ramp_sp
 
 ########################################################################
 
@@ -17,6 +17,7 @@ def get_scannable_parameters():
              'repetition_time',
              'offset_laser_Hodor',
              'offset_laser_Davos',
+             'cavity_ramp'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -39,8 +40,11 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     else:
         # reset the value to the one in the parameter listing
         print('Resetting scanning parameter ...')
-        if not self.scanning_parameter == 'dummy':
+        if not self.scanning_parameter == 'dummy' and not self.scanning_parameter == 'cavity_ramp':
             val = eval('self.' + self.scanning_parameter)
+        elif self.scanning_parameter == 'cavity_ramp':
+            eval('_scan_cavity_ramp(self, 0, self.scan_values, scan_check = scan_check)')
+            val = 0.0
         else:
             val = 0.0
 
@@ -243,6 +247,8 @@ def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
         return 1
 
     return
+
+
 ######################################################################################################
 
 def _scan_offset_laser_Davos(self, val, scan_values, scan_check = False):
@@ -264,6 +270,28 @@ def _scan_offset_laser_Davos(self, val, scan_values, scan_check = False):
         return 1
 
     return
+
+
+######################################################################################################
+
+def _scan_cavity_ramp(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return limit_check(self.scanning_parameter, scan_values, [-500.0, 500.0]) # in MHz
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        set_cavity_ramp_sp(val)
+
+        return 1
+
+    return
+
 
 
 
