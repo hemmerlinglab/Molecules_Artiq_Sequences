@@ -185,7 +185,7 @@ def move_yag_mirror(xpos, ypos, wait_time = None):
 
 #######################################################################################################
 
-def get_wavemeter_readings():
+def get_wavemeter_readings(mode = 'wavemeter_lock'):
 
     # reads out laser frequencies from wavemeter
 
@@ -197,39 +197,46 @@ def get_wavemeter_readings():
 
     sock.connect(server_address)
 
-    ## 'request' gets only one frequency
-    #try:    
-    #    # Request data
-    #    message = 'request'
-    #    #print('sending "%s"' % message)
-    #    sock.sendall(message.encode())
+    if mode == 'wavemeter_lock':
+        # 'request' gets only one frequency
+        try:    
+            # Request data
+            message = 'request'
+            #print('sending "%s"' % message)
+            sock.sendall(message.encode())
 
-    #    len_msg = int(sock.recv(2).decode())
+            len_msg = int(sock.recv(2).decode())
 
-    #    data = sock.recv(len_msg)
+            data = sock.recv(len_msg)
 
-    # 'request' gets only one frequency
-    try:    
-        # Request data
-        message = 'reqch28'
-        #print('sending "%s"' % message)
-        sock.sendall(message.encode())
+        finally:
+            sock.close()
 
-        len_msg = int(sock.recv(2).decode())
+        # return a list of freqs
+        # currently only one frequency is returned
+        freqs = [float(data.decode())]
 
-        data = sock.recv(len_msg)
+    else:
+        # 'request' gets only one frequency
+        try:    
+            # Request data
+            message = 'reqch28'
+            #print('sending "%s"' % message)
+            sock.sendall(message.encode())
 
-    finally:
-        sock.close()
+            len_msg = int(sock.recv(2).decode())
 
-    # return a list of freqs
-    # currently only one frequency is returned
-    freqs = data.decode().split(',')
+            data = sock.recv(len_msg)
 
-    freqs = [ float(x) for x in freqs ]
-    #print(freqs)
+        finally:
+            sock.close()
 
-    #print('Getting laser frequencies ... {0:.6f} THz'.format(freqs))
+        # return a list of freqs
+        # currently only one frequency is returned
+        freqs = data.decode().split(',')
+
+        freqs = [ float(x) for x in freqs ]
+
     
     return freqs
 

@@ -25,7 +25,7 @@ def readout_data(self):
     # Read laser frequencies
     ###############################
 
-    self.wavemeter_frequencies = get_wavemeter_readings()
+    self.wavemeter_frequencies = get_wavemeter_readings(mode = self.wavemeter_mode)
 
     # save initial Moglabs frequency at first shot
     if self.scan_index == 0:

@@ -37,7 +37,6 @@ class General_Scan(EnvExperiment):
     
     def prepare(self):
 
-        print('test')
         self.configurations = [0]
         
         self.configuration_descriptions = ['Laser on']

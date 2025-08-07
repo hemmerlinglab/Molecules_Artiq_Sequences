@@ -112,6 +112,8 @@ def my_run_raster(self):
         for nx, xpos in enumerate(self.scan_x_interval): 
            for ny, ypos in enumerate(self.scan_y_interval): 
     
+            self.scan_index = 0
+            
             self.scheduler.pause()
     
             # set the value of the new parameter
@@ -204,6 +206,8 @@ def my_run_no_yag(self):
     
         for my_ind in range(len(self.scan_values)):
     
+            self.scan_index = my_ind
+            
             self.scheduler.pause()
     
             # set the value of the new parameter

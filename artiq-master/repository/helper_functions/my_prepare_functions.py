@@ -97,7 +97,12 @@ def prepare_datasets(self):
 
     ## set the slow / no slow configuration starting point
     #self.current_configuration = 0
-    
+   
+    if self.scanning_parameter == 'cavity_ramp':
+        self.wavemeter_mode = 'cavity_lock'
+    else:
+        self.wavemeter_mode = 'wavemeter_lock'
+
     return
 
 
