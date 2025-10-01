@@ -140,6 +140,14 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'uniblitz_on',         BooleanValue(default=False))
     my_setattr(self, 'wavemeter_lock_check',BooleanValue(default=False))
     
+    
+    my_setattr(self, 'randomize_scan',           BooleanValue(default=False))
+    
+    
+    ####################################################################
+    # Laser and Microwave Frequencies
+    ####################################################################
+
     # Microwave
     my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz', min=15.0, max = 20.0e3, scale=1,ndecimals=3,step=1))
     my_setattr(self, 'microwave_power',     NumberValue(default =   -50,unit='dB', min=-100.0, max=10.0, scale=1,ndecimals=1,step=1))

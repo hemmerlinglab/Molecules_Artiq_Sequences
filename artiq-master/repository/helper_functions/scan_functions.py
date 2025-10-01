@@ -166,7 +166,7 @@ def _scan_he_flow(self, val, scan_values, scan_check = False):
 
         # check if the scan range is within the limits
 
-        return limit_check(self.scanning_parameter, scan_values, [0, 15]) # 0 sccm to 15 sccm
+        return limit_check(self.scanning_parameter, scan_values, [0, 25]) # 0 sccm to 20 sccm
     
     else:
 

@@ -35,6 +35,11 @@ def prepare_datasets(self):
 
     # Scan interval
     self.scan_values = np.linspace(self.min_scan_value, self.max_scan_value, self.setpoint_count)
+    
+    # randomly permute the scan array
+    if self.randomize_scan:
+        self.scan_values = np.random.permutation(self.scan_values)
+
 
     # Check scan range
     self.scan_ok = scan_parameter(self, 0, scan_check = True)
