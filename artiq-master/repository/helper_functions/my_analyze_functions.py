@@ -55,6 +55,10 @@ def save_all_data(self):
         # transform into numpy arrays
         arr = np.array(self.get_dataset(hlp['var']))
        
+        if hlp['var'] == "transfer_lock_trace":
+
+            arr = arr.reshape(arr.shape[1] * arr.shape[0], arr.shape[2])
+
         if (len(arr.shape) == 3) and (arr.shape[2] == 2):
 
             # needs to flatten 3D array

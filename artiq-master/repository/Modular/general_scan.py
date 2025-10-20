@@ -26,7 +26,7 @@ class General_Scan(EnvExperiment):
 
     def build(self):
 
-        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb'])
+        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb', 'scope_transfer_cavity'])
         #my_build(self, which_instruments = ['frequency_comb'])
         self.sequence_filename = os.path.abspath(__file__)
 

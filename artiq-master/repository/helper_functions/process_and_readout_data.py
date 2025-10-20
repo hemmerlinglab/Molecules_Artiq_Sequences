@@ -25,7 +25,11 @@ def readout_data(self):
     # Read laser frequencies
     ###############################
 
-    self.wavemeter_frequencies = get_wavemeter_readings(mode = self.wavemeter_mode)
+    try:
+        self.wavemeter_frequencies = get_wavemeter_readings(mode = self.wavemeter_mode)
+    except:
+        self.wavemeter_frequencies = 0.0
+
 
     # save initial Moglabs frequency at first shot
     if self.scan_index == 0:
@@ -60,9 +64,9 @@ def readout_data(self):
     #################################################
 
     try:
-        self.transfer_lock_trace = s.read_all_channels(channels = [1, 2, 3, 4])
+        self.transfer_lock_trace = self.scope_transfer_cavity.read_all_channels()
     except:
-        self.transfer_lock_trace = np.transpose(np.vstack([ [0] * 999, [0] * 999, [0] * 999, [0] * 999, [0] * 999 ] ))
+        self.transfer_lock_trace = np.array( 5 * [999 * [0]] )
 
 
     return
@@ -248,17 +252,17 @@ def update_data_sets(self, counter, n):
     
     if (self.current_configuration == 0) or (len(self.configurations) == 1):
         # this updates the gui for every shot
-        self.mutate_dataset('set_points',       counter, self.current_setpoint)
-        self.mutate_dataset('act_freqs',        counter, self.wavemeter_frequencies)
+        self.mutate_dataset('set_points',          counter, self.current_setpoint)
+        self.mutate_dataset('act_freqs',           counter, self.wavemeter_frequencies)
 
-        self.mutate_dataset('in_cell_spectrum', n,       self.smp_data_avg['absorption'])
-        self.mutate_dataset('pmt_spectrum',     n,       self.smp_data_avg['pmt'])    
+        self.mutate_dataset('in_cell_spectrum',    n,       self.smp_data_avg['absorption'])
+        self.mutate_dataset('pmt_spectrum',        n,       self.smp_data_avg['pmt'])    
   
-        self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
-        self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
-        self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
+        self.mutate_dataset('beat_node_fft',       counter, self.beat_node_fft)
+        self.mutate_dataset('frequency_comb_frep', counter, self.comb_frep)
+        self.mutate_dataset('EOM_frequency',       counter, self.EOM_frequency)
         
-        self.mutate_dataset('transfer_lock_trace',        counter,  self.transfer_lock_trace)
+        self.mutate_dataset('transfer_lock_trace', counter, self.transfer_lock_trace)
 
     ###########################################################
     # Save time traces in correct configuration data array
