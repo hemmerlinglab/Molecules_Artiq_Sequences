@@ -4,7 +4,7 @@ import time
 from base_instruments import base_visa_instrument
 
 
-# Rigol Spectrum Analyzer
+# Rigol Scope DHO924
 
 class Rigol_DHO924(base_visa_instrument):
  
@@ -13,6 +13,11 @@ class Rigol_DHO924(base_visa_instrument):
         # call constructor of parent class
         super().__init__(IP)
 
+        #print('Clearing event register')
+        self.write('*CLS')
+
+        #self.get_id()
+        
         return
 
     def get_id(self):
@@ -23,27 +28,62 @@ class Rigol_DHO924(base_visa_instrument):
         
         return
 
-    def get_trace(self, ch):
+    def init_scope_for_exp(self, channels = [1]):
 
-        self.write(':WAV:SOURCE CHAN{0}'.format(ch))
+        self.write(':WAVEFORM:MODE NORMAL')
+        self.write(':WAVEFORM:FORMAT ASCII')
+        self.write(':WAVEFORM:POINTS 1000')
         
-        self.write(':WAV:FORMAT ASCII')
+        self.write(':ACQ:MDEPTH 100k')
 
-        d = self.query(':WAV:DATA?')
+        # switch on/off channels
+        for ch in [1, 2, 3, 4]:
 
-        data = [float(x) for x in d.split(',')]
+            if ch in channels:
+                self.write('CHANNEL{0}:DISPLAY ON'.format(ch))
+            else:
+                self.write('CHANNEL{0}:DISPLAY OFF'.format(ch))
 
-        return np.array(data)
+        # get x scale
 
-    def set_freq(self, freq_interval):
-        # freq_interval = [40.0, 500.0]
+        self.x_inc    = float(self.query(':WAVEFORM:XINC?'))
+        self.x_offset = float(self.query(':WAVEFORM:XORIGIN?'))
+        
 
-        self.write('*OPC')
+        return
 
-        self.write(':SENSE:FREQ:START {0:.6f}'.format(freq_interval[0]))
-        self.write(':SENSE:FREQ:STOP {0:.6f}'.format(freq_interval[1]))
+    def read_all_channels(self, channels = [1]):
 
-        self.wait_finished()
+        traces = {}
+
+        # take a single trigger
+        self.write(':SINGLE')
+
+        # wait for trigger to finish
+        self.write('*WAI')
+        
+        for ch in channels:
+            
+            # activate channel
+            self.write(':WAV:SOURCE CHAN{0}'.format(ch))
+
+            waveform_str = self.query(':WAV:DATA?')
+            
+            traces[ch] = np.array([float(val) for val in waveform_str.strip().split(',')])
+
+        # saves the common time array using the first channel
+        t = (np.arange(len(traces[channels[0]])) * self.x_inc) + self.x_offset
+        
+        return (t, traces)
+
+    def plot_traces(self, t, traces):
+
+        plt.figure()
+        
+        for k in traces.keys():
+            plt.plot(t, traces[k], label = k)
+
+        plt.legend()
 
         return
 
@@ -58,34 +98,20 @@ if __name__ == "__main__":
 
     s = Rigol_DHO924()
 
-    s.get_id()
+    #s.get_id()
 
-    d = s.get_trace(4)
+    ch = [1, 2, 3, 4]
 
-    #print(np.mean(d))
-    #asd
+    s.init_scope_for_exp(channels = ch)
 
-    #plt.plot(d)
+    (t, traces) = s.read_all_channels(channels = ch)
 
-    #plt.show()
+    s.plot_traces(t, traces)
 
-    #d.close()
+    print(len(t))
 
-    #asd
-
-    d0 = s.get_trace(1)
-    d1 = s.get_trace(2)
-    #d2 = s.get_trace(3)
-    d3 = s.get_trace(4)
-
-    time.sleep(1)
-    plt.plot(d0/max(d0))
-    plt.plot(d1/max(d1))
-    #plt.plot(d2/max(d2))
-    plt.plot(d3)
     plt.show()
 
     s.close()
-
 
 
