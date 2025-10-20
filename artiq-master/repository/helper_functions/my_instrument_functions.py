@@ -12,6 +12,7 @@ sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_serve
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server/Windfreak")
 
 from rigol               import Rigol_RSA3030, Rigol_DSG821
+from rigol_dho924        import Rigol_DHO924                  # scope of transfer cavity
 from frequency_comb      import DFC
 from microwave_windfreak import Microwave
 
@@ -37,6 +38,11 @@ def load_instruments(self):
             self.spectrum_analyzer      = Rigol_RSA3030()
 
             self.spectrum_analyzer.set_freq([2e6, 205e6])
+
+        if instr == 'scope_transfer_cavity':
+            self.scope_transfer_cavity  = Rigol_DHO924()
+            
+            self.scope_transfer_cavity.init_scope_for_exp(channels = [1, 2, 3, 4])
 
     return
 
@@ -99,6 +105,9 @@ def close_instruments(self):
 
         if instr == 'spectrum_analyzer':
             self.spectrum_analyzer.close()
+
+        if instr == 'scope_transfer_cavity':
+            self.scope_transfer_cavity.close()
 
     return
 

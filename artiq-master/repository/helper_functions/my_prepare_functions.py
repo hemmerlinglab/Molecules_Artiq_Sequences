@@ -95,6 +95,9 @@ def prepare_datasets(self):
     self.set_dataset('frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('EOM_frequency',        ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('beat_node_fft',        ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
+    
+    # datasets for transfer cavity scope
+    self.set_dataset('transfer_lock_trace',   ([np.zeros([999, 5])] * self.no_of_averages * self.setpoint_count), broadcast=True)
 
     # spectrum datasets    
     self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
@@ -126,6 +129,7 @@ def prepare_saving_configuration(self, data_to_save = None):
                          {'var' : 'frequency_comb_frep',    'name' : 'Repetition frequency of comb'},
                          {'var' : 'EOM_frequency',          'name' : 'EOM_frequency'},
                          {'var' : 'beat_node_fft',          'name' : 'FFT of beat node with comb'},
+                         {'var' : 'transfer_lock_trace',    'name' : 'Scope traces of the transfer lock'},
                          ]
 
     else:

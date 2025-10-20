@@ -54,6 +54,17 @@ def readout_data(self):
     except:
         self.beat_node_fft = np.transpose(np.vstack([ [0] * 801, [0] * 801 ] ))
 
+
+    #################################################
+    # read scope traces of the transfer lock cavity
+    #################################################
+
+    try:
+        self.transfer_lock_trace = s.read_all_channels(channels = [1, 2, 3, 4])
+    except:
+        self.transfer_lock_trace = np.transpose(np.vstack([ [0] * 999, [0] * 999, [0] * 999, [0] * 999, [0] * 999 ] ))
+
+
     return
 
 
@@ -246,6 +257,8 @@ def update_data_sets(self, counter, n):
         self.mutate_dataset('beat_node_fft',        counter,  self.beat_node_fft)
         self.mutate_dataset('frequency_comb_frep',  counter,  self.comb_frep)
         self.mutate_dataset('EOM_frequency',        counter,  self.EOM_frequency)
+        
+        self.mutate_dataset('transfer_lock_trace',        counter,  self.transfer_lock_trace)
 
     ###########################################################
     # Save time traces in correct configuration data array

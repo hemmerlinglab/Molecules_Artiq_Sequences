@@ -52,7 +52,7 @@ class Rigol_DHO924(base_visa_instrument):
 
         return
 
-    def read_all_channels(self, channels = [1]):
+    def read_channels(self, channels = [1]):
 
         traces = {}
 
@@ -76,11 +76,23 @@ class Rigol_DHO924(base_visa_instrument):
         
         return (t, traces)
 
+    def read_all_channels(self):
+
+        (t, traces) = self.read_channels(channels = [1, 2, 3, 4])
+
+        data = [t]
+        data.append(traces[1])
+        data.append(traces[2])
+        data.append(traces[3])
+        data.append(traces[4])
+
+        return np.array(data)
+
     def plot_traces(self, t, traces):
 
         plt.figure()
         
-        for k in traces.keys():
+        for k in range(traces.shape[0]):
             plt.plot(t, traces[k], label = k)
 
         plt.legend()
@@ -104,11 +116,11 @@ if __name__ == "__main__":
 
     s.init_scope_for_exp(channels = ch)
 
-    (t, traces) = s.read_all_channels(channels = ch)
+    d = s.read_all_channels()
 
-    s.plot_traces(t, traces)
+    print(d.shape)
 
-    print(len(t))
+    s.plot_traces(d[0, :], d[1:, :])
 
     plt.show()
 

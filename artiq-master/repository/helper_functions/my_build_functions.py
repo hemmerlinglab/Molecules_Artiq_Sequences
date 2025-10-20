@@ -65,6 +65,7 @@ def load_variables(self):
     self.EOM_frequency          = 0.0
     self.comb_frep              = None
     self.beat_node_fft          = None
+    self.transfer_lock_trace    = None
 
     return
 
