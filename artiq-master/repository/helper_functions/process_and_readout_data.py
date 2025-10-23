@@ -28,8 +28,7 @@ def readout_data(self):
     try:
         self.wavemeter_frequencies = get_wavemeter_readings(mode = self.wavemeter_mode)
     except:
-        self.wavemeter_frequencies = 0.0
-
+        self.wavemeter_frequencies = [0.0, 0.0]
 
     # save initial Moglabs frequency at first shot
     if self.scan_index == 0:
@@ -64,9 +63,14 @@ def readout_data(self):
     #################################################
 
     try:
-        self.transfer_lock_trace = self.scope_transfer_cavity.read_all_channels()
+        hlp = self.scope_transfer_cavity.read_all_channels()
+
+        self.transfer_lock_traces = hlp[1:, :]
+        self.transfer_lock_times  = hlp[0, :]
+
     except:
-        self.transfer_lock_trace = np.array( 5 * [999 * [0]] )
+        self.transfer_lock_traces = np.array( 4 * [999 * [0]] )
+        self.transfer_lock_times  = np.zeros(999)
 
 
     return
@@ -262,7 +266,8 @@ def update_data_sets(self, counter, n):
         self.mutate_dataset('frequency_comb_frep', counter, self.comb_frep)
         self.mutate_dataset('EOM_frequency',       counter, self.EOM_frequency)
         
-        self.mutate_dataset('transfer_lock_trace', counter, self.transfer_lock_trace)
+        self.mutate_dataset('transfer_lock_traces', counter, self.transfer_lock_traces)
+        self.mutate_dataset('transfer_lock_times',  counter, self.transfer_lock_times)
 
     ###########################################################
     # Save time traces in correct configuration data array
