@@ -1,8 +1,6 @@
 from quantel import Quantel_Yag
 
 
-
-
 q = Quantel_Yag()
 
 

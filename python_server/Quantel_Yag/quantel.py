@@ -112,6 +112,8 @@ class Quantel_Yag(RS232_Instrument):
 
     def set_qdelay(self, q_delay):
 
+        # Q-switch delay is optimal for highest power output at 140 us
+
         q_delay = max(100.0, q_delay)
         q_delay = min(999.0, q_delay)
 
@@ -256,21 +258,6 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
-    def laser_init(self):
-
-        # offset voltage
-        self.set_vis(0)
-
-        # calibration factor
-        self.set_vos(100)
-
-
-        self.close_shutter()
-        
-        self.diag()
-
-        return
-
     def set_low_power(self):
 
         self.standby()
@@ -291,7 +278,7 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
-    def set_high_power(self):
+    def set_high_power(self, vmo = 1000, qdelay = 140):
 
         print('Switching to high power')
 
@@ -308,13 +295,59 @@ class Quantel_Yag(RS232_Instrument):
         self.qswitch_on()
 
         # offset voltage
-        self.set_vmo(1050)
+        self.set_vmo(vmo)
 
-        self.set_qdelay(140)
+        self.set_qdelay(qdelay)
 
-        print('Shutter still closed')
+        #self.close_shutter()
+        
+        self.diag()
+
+        print('Shutter closed')
 
         return
+
+    def laser_init(self):
+
+        # offset voltage
+        self.set_vis(0)
+
+        # calibration factor
+        self.set_vos(100)
+
+        return
+
+
+    def startup_laser(self, vmo = 1000):
+
+        self.laser_init()
+
+        self.set_high_power(vmo = vmo)
+        
+        self.close_shutter()
+        
+        self.diag()
+
+        print('Shutter closed')
+
+        return
+
+    def run_laser(self, vmo = 1000):
+
+        self.set_vmo(vmo)
+        
+        self.open_shutter()
+
+        self.qswitch_on()
+        
+        self.diag()
+        
+        print('Shutter open. Laser ready to fire.')
+
+        return
+
+
+
 
 
 
