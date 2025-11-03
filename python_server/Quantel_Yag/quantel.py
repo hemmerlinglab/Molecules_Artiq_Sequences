@@ -101,12 +101,14 @@ class Quantel_Yag(RS232_Instrument):
 
         # switch on auto fire for the flashlamp
         self.query('>a')
-
+        
         return
 
     def fast_warm_up(self):
 
         self.flashlamp_autofire()
+        
+        self.diag()
 
         return
 
@@ -185,7 +187,9 @@ class Quantel_Yag(RS232_Instrument):
         print('Activating q-switch')
         # switch on q-switch
         self.query('>pq')
-        
+
+        self.diag()
+
         return
 
     def qswitch_off(self):
@@ -197,6 +201,8 @@ class Quantel_Yag(RS232_Instrument):
         # close shutter
         self.close_shutter()
        
+        self.diag()
+
         return
 
     def standby(self):
@@ -206,6 +212,8 @@ class Quantel_Yag(RS232_Instrument):
         self.query('>s')
         
         self.close_shutter()
+
+        self.diag()
 
         return
 
@@ -235,6 +243,8 @@ class Quantel_Yag(RS232_Instrument):
             print('Setting flashlamp to external trigger')
             self.query('>lpm1')
 
+        self.diag()
+
         return
 
     def set_qswitch_mode(self, mode = 'int'):
@@ -256,6 +266,8 @@ class Quantel_Yag(RS232_Instrument):
         self.set_flashlamp_mode(mode = mode)
         self.set_qswitch_mode(mode = mode)
 
+        self.diag()
+
         return
 
     def set_low_power(self):
@@ -275,6 +287,8 @@ class Quantel_Yag(RS232_Instrument):
         self.qswitch_on()
 
         self.open_shutter()
+
+        self.diag()
 
         return
 
@@ -313,7 +327,7 @@ class Quantel_Yag(RS232_Instrument):
         self.set_vis(0)
 
         # calibration factor
-        self.set_vos(100)
+        self.set_vos(100)        
 
         return
 
