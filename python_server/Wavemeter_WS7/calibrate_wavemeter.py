@@ -102,44 +102,106 @@ def get_comb_tooth(freq_beat_node, v_wavemeter):
 
 def show_status(wm1, wm2, v_true, v_bn, n):
 
+    # difference of true frequency and wavemeter reading of Moglabs
+    delta = v_true - wm2
     
     print('''
 TiSaph:                         {0:.6f} THz
 
 Moglabs (wavemeter):            {1:.6f} THz
 Moglabs (true):                 {2:.6f} THz
--------------------------------------------
+----------------------------------------------
 Difference (true - wavemeter):  {3:.1f} MHz
 
 beat node frequency {4:.1f} MHz
 comb tooth n = {5:.0f}
-'''.format(wm1/1e12, wm2/1e12, v_true/1e12, (v_true - wm2)/1e6, v_bn/1e6, n))
+'''.format(wm1/1e12, wm2/1e12, v_true/1e12, delta/1e6, v_bn/1e6, n))
     
+    return delta
+
+
+###########################################
+# Calibrate wavemeter
+###########################################
+
+def calibrate_wavemeter(v):
+
+    print('Calibrating wavemeter to ... {0:.6f} THz'.format(v/1e12))
+
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Connect the socket to the port where the server is listening
+    server_address = ('192.168.42.20', 62200)
+
+    sock.connect(server_address)
+
+    try:    
+        # Request data
+        message = 'henecal'
+ 
+        sock.sendall(message.encode())
+
+        calibration_str = '{0:0.6f}'.format(v/1e12)
+
+        sock.sendall(calibration_str.encode())
+
+    finally:
+        sock.close()
+
     return
 
 
 
 
+###########################################
+# Calculate true hodor frequency
+###########################################
+
+def calculate_true_hodor_frequency(wm_freq, v_moglabs_true, delta):
+
+    calibration_freq = wm_freq + (wm_freq / v_moglabs_true) * delta
+
+    return calibration_freq
+
 ##########################################################################
 
-# get wavemeter readings
-(wm_tisaph, wm_moglabs) = read_wavemeter_channels()
+def run_calibration(offset = 0.0):
 
-# get beatnode frequency
-freq_beat_node = read_beatnode()
+    print('Using offset ... {0} MHz'.format(offset))
 
-# calculate comb tooth
-(v_moglabs, n_comb) = get_comb_tooth(freq_beat_node, wm_moglabs)
+    # get wavemeter readings
+    (wm_tisaph, wm_moglabs) = read_wavemeter_channels()
+    
+    # get beatnode frequency
+    freq_beat_node = read_beatnode()
+    
+    # calculate comb tooth
+    (v_moglabs, n_comb) = get_comb_tooth(freq_beat_node, wm_moglabs)
+    
+    # show status and get offset of wavemeter from Moglabs measurements
+    delta = show_status(wm_tisaph, wm_moglabs, v_moglabs, freq_beat_node, n_comb)
+    
+    # determine shift of tisaph frequency
+    v_true_tisaph = calculate_true_hodor_frequency(wm_tisaph, v_moglabs, delta)
+    
+    # calibrate wavemeter using Hodor
+    calibrate_wavemeter(v_true_tisaph + offset * 1e6)
+    
+    # recheck status
+    (f_wm_tisaph, f_wm_moglabs) = read_wavemeter_channels()
+    
+    f_delta = show_status(f_wm_tisaph, f_wm_moglabs, v_moglabs, freq_beat_node, n_comb)   
 
-# show status
-show_status(wm_tisaph, wm_moglabs, v_moglabs, freq_beat_node, n_comb)
+    return (f_wm_tisaph, f_wm_moglabs)
 
 
 
 
+if __name__ == '__main__':
 
+   run_calibration()
 
-plt.show()
 
 
 
