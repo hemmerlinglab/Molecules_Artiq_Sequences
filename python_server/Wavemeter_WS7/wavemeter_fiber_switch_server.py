@@ -123,7 +123,7 @@ def run_dist_server(opts, wlm, q, sock):
                 
                 # receive hene freq
                 hene_freq = float(connection.recv(10).decode())
-                chan_hene = 4
+                chan_hene = 2
 
                 switch_fiber_channel(opts, chan_hene, wait_time = 3)
     
