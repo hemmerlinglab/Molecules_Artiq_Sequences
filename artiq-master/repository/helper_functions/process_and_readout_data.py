@@ -151,27 +151,23 @@ def average_data(self, i_avg):
     # offset subtraction for absorption
     offset_points = 20
 
-    hlp1 = self.smp_data[self.smp_data_sets['ch0']]
-    hlp2 = self.smp_data[self.smp_data_sets['ch5']]
-
-    ## subtract the offset
-
-    # subtract offset from the endpoints
-    #hlp1 = hlp1 - np.mean(hlp1[:-offset_points])
-    #hlp2 = hlp2 - np.mean(hlp2[:-offset_points])
+    hlp_absorption = self.smp_data[self.smp_data_sets['ch0']]
+    hlp_pmt        = self.smp_data[self.smp_data_sets['ch2']]
 
     # subtract offset from the beginning
-    hlp1 = hlp1 - np.mean(hlp1[0:offset_points])
-    hlp2 = hlp2 - np.mean(hlp2[0:offset_points])
+    hlp_absorption = hlp_absorption - np.mean(hlp_absorption[0:offset_points])
+    hlp_pmt        = hlp_pmt        - np.mean(hlp_pmt[0:offset_points])
 
 
     if i_avg == 0:
         
         # calculate the absorption - absorption reference
-        self.ch0_avg = hlp1 - hlp2
+        self.ch0_avg = hlp_absorption
+        self.ch2_avg = hlp_pmt
 
+        #self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
         self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
-        self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
+        #self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
         self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
         self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
         self.ch5_avg = self.smp_data[self.smp_data_sets['ch5']]
@@ -181,10 +177,12 @@ def average_data(self, i_avg):
         #self.ch5_avg = self.ch0_avg
         
     else:
-        self.ch0_avg = (self.ch0_avg * (i_avg) + (hlp1 - hlp2) ) / (i_avg+1.0)
-
+        self.ch0_avg = (self.ch0_avg * (i_avg) + (hlp_absorption) ) / (i_avg+1.0)
+        self.ch2_avg = (self.ch2_avg * (i_avg) + (hlp_pmt) ) / (i_avg+1.0)
+        
+        #self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
         self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
-        self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
+        #self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
         self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
         self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
         self.ch5_avg = (self.ch5_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch5']]) / (i_avg+1.0)
