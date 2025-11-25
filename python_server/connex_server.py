@@ -39,8 +39,10 @@ def run_connex_server(sock, cx, cy):
 
               vals = data.decode().split('/')
               if len(vals)==2:
-                x = np.float(vals[0])
-                y = np.float(vals[1])
+                x = float(vals[0])
+                y= float(vals[1])
+                #x = np.float(vals[0])
+                #y = np.float(vals[1])
                 print('Moving mirrors to ... ' + str(x) + '/' + str(y))
                 # moving to absolute positions
                 cx.query(1,'PA', str(x))

@@ -10,7 +10,7 @@ from base_functions import *
 ###################################
 
 opts = {
-        'arduino_com_ports' : {0 : 'COM14', 1 : 'COM6'},
+        'arduino_com_ports' : {0 : 'COM4', 1 : 'COM7'},
         'wavemeter_server_ip' : '192.168.42.20',
         'wavemeter_server_port' : 62500,
         'setpoint_server_ip' : '192.168.42.20',

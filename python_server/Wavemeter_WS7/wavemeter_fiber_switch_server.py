@@ -18,7 +18,7 @@ def init_distribution_servers(opts):
     # create conex objects
     wlm = WavelengthMeter()
 
-    fib = Fiber('COM1')
+    fib = Fiber('COM3')
 
     # init wavemeter servers
     dist_sockets = []

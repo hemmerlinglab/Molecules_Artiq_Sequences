@@ -17,13 +17,23 @@ import socket
 
 from functools import partial
 
-from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
-if is_pyqt5():
-    from matplotlib.backends.backend_qt5agg import (
+#from matplotlib.backends.backend_qt5agg import (
+
+from matplotlib.backends.qt_compat import QtCore, QtWidgets
+
+#, is_pyqt5
+
+from matplotlib.backends.backend_qt5agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-else:
-    from matplotlib.backends.backend_qt4agg import (
-        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+
+#if is_pyqt5():
+#    from matplotlib.backends.backend_qtcairo import (
+#        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+#else:
+#    from matplotlib.backends.backend_qtcairo import (
+#        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+
+
 from matplotlib.figure import Figure
 
 from base_functions import switch_fiber_channel
@@ -75,7 +85,8 @@ class App(QWidget):
                 'lasers' : [
                 {'id' : 'Davos', 'init_freq' : '363.7690844', 'channel' : 1, 'step_size' : '10'},
 		  #{'id' : 'Hodor', 'init_freq' : '391.016', 'channel' : 2, 'step_size' : '10'},
-                     {'id' : 'Hodor', 'init_freq' : '389.484407', 'channel' : 2, 'step_size' : '100'},
+                     #{'id' : 'Hodor', 'init_freq' : '389.484407', 'channel' : 2, 'step_size' : '100'},
+                     {'id' : 'Hodor', 'init_freq' : '375.763266', 'channel' : 2, 'step_size' : '100'},
 		  {'id' : 'Daenerys', 'init_freq' : '286.582833', 'channel' : 3, 'step_size' : '10'},
                     #{'id' : '390', 'init_freq' : '766.81766', 'channel' : 6, 'step_size' : '10'},
                    # {'id' : '1046', 'init_freq' : '286.584358', 'channel' : 8, 'step_size' : '10'}

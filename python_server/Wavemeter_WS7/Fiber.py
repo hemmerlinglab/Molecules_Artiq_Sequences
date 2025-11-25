@@ -112,7 +112,7 @@ class Fiber():
 
 def testing():
     print('BEGIN FIBER SWITCHER TEST\n')
-    fiber_port = 'COM1'
+    fiber_port = 'COM3'
     fib1 = Fiber(fiber_port)
     running = True
     print('Ready for commands')
@@ -143,7 +143,7 @@ def testing():
 
 if __name__ == '__main__':
     #testing()
-    fib1 = Fiber('COM1')
+    fib1 = Fiber('COM3')
     wlm1 = wlm.WavelengthMeter()
     time.sleep(2)
     fib1.setchan(3)

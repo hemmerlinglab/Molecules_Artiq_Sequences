@@ -261,6 +261,7 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
                 
                  print()
                  print('New setpoint ... ' + str(setpoints))
+                 print([pid_arr[c](act_values) for c in pid_arr.keys()])
 
     
         except queue.Empty:            
@@ -308,7 +309,7 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
 def init_all(opts):
 
     print('Init ...')
-    ser = init_arduinos(com_ports = opts['arduino_com_ports'])
+    ser = init_arduinos(com_ports = opts['arduino_com_ports'], init_output = True)
     
     sock = setup_setpoint_server(opts)
     
