@@ -27,7 +27,7 @@ plt.plot(x, tisaph - np.mean(tisaph))
 
 plt.subplot(2,1,2)
 
-plt.plot(x, ml/tisaph)
+plt.plot(x, ml/tisaph, 'o')
 
 r = np.mean(ml/tisaph)
 
@@ -35,7 +35,7 @@ plt.ylim(r - 1e-7, r + 1e-7)
 
 print('{0:2f}'.format(r))
 
-
+plt.axhline(r, ls = '--', color = 'r')
 
 plt.show()
 
