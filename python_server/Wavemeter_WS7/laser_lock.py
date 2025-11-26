@@ -138,7 +138,7 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
             if switch_channel == 1:
                 
                 # set current PID on hold
-                pid_arr[current_channel].set_auto_mode(False) #, last_output = last_output[current_channel])
+                pid_arr[current_channel].set_auto_mode(False)
 
                 # switch to new fiber channel
                 switch_fiber_channel(opts, chan, wait_time = wait_time/1000.0)
@@ -170,28 +170,18 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
             if (setpoints[c] > 0) and (pid_arr[c].auto_mode == True):
 
                 pid_arr[c].setpoint = float(setpoints[c]) 
-                act_values = get_frequencies(opts)
+                act_values          = get_frequencies(opts)
 
-                #if c == 6:
-                #    print("{0}, {1}, {2}".format(act_values, pid_arr[c].setpoint, control))
-
-                last_output[c] = pid_arr[c](act_values)
+                last_output[c]      = pid_arr[c](act_values)
     
                 # send control voltage to Arduino of laser
                 send_arduino_control(ser[opts['pids'][c]['arduino_no']], last_output[c], opts['pids'][c]['DAC_chan'], max_output = opts['pids'][c]['DAC_max_output'])
    
-
-                #print("Output: {0} Act_values: {1} Set_point: {2}".format(last_output[c], act_values, setpoints[c]))
-                #print(opts['pids'][c]['arduino_no'])
-                #print(ser)
-                #print(act_values)
-                #print(last_output[c])
-
-            #else:
             elif (setpoints[c] <= 0) and (pid_arr[c].auto_mode == True):
                 last_output[c] = 0.0
-
-            #print(new_setpoint)
+            
+            else:
+                pass
 
     return
 
@@ -233,13 +223,13 @@ def init_all(opts):
 ###################################
 
 opts = {
-        'arduino_com_ports' : {0 : 'COM4', 1 : 'COM7'},
-        'wavemeter_server_ip' : '192.168.42.20',
+        'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
+        'wavemeter_server_ip'   : '192.168.42.20',
         'wavemeter_server_port' : 62500,
-        'setpoint_server_ip' : '192.168.42.20',
-        'setpoint_server_port' : 63700,
-        'fiber_server_ip' : '192.168.42.20',
-        'fiber_server_port' : 65000,
+        'setpoint_server_ip'    : '192.168.42.20',
+        'setpoint_server_port'  : 63700,
+        'fiber_server_ip'       : '192.168.42.20',
+        'fiber_server_port'     : 65000,
         'pids' : {
             1 : {'laser' : 391, 'wavemeter_channel' : 1, 'Kp' : -10, 'Ki' : -5000, 'arduino_no' : 0, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0},
             2 : {'laser' : 398, 'wavemeter_channel' : 2, 'Kp' : -5, 'Ki' : -5000, 'arduino_no' : 0, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
