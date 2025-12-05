@@ -155,7 +155,7 @@ def calibrate_wavemeter(v):
 
 
 ###########################################
-# Calculate true hodor frequency
+# Calculate true Hodor frequency
 ###########################################
 
 def calculate_true_hodor_frequency(wm_freq, v_moglabs_true, delta):
