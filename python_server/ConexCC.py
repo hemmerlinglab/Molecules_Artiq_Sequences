@@ -393,8 +393,8 @@ class ComTestGui(QWidget):
 
 
 def init_for_target_mapping(vel = 0.3):
-	c1 = ConexCC('COM12')
-	c2 = ConexCC('COM7')
+	c1 = ConexCC('COM5')
+	c2 = ConexCC('COM6')
 	
 	# set the velocities to 0.3 since we are only moving to specific points
 	c1.query(1,'VA', str(vel))
