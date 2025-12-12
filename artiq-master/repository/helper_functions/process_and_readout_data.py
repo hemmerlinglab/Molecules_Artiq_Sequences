@@ -222,6 +222,8 @@ def average_data(self, i_avg):
     channel = 'absorption'
     self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
 
+    channel = 'sat_spec'
+    self.smp_data_avg[channel] = np.mean(self.ch7_avg)
 
     return
 
@@ -259,6 +261,7 @@ def update_data_sets(self, counter, n):
 
         self.mutate_dataset('in_cell_spectrum',    n,       self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',        n,       self.smp_data_avg['pmt'])    
+        self.mutate_dataset('sat_spectrum',        n,       self.smp_data_avg['sat_spec'])    
   
         self.mutate_dataset('beat_node_fft',       counter, self.beat_node_fft)
         self.mutate_dataset('frequency_comb_frep', counter, self.comb_frep)

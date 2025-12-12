@@ -53,7 +53,7 @@ def prepare_datasets(self):
             'ch4' : 'davos_pickup',    # Davos blue pickup
             'ch5' : 'yag_sync',        # Yag sync
             'ch6' : 'daenerys_pickup', # Daenerys pickup
-            'ch7' : 'in_cell_ref'      # in-cell ref
+            'ch7' : 'sat_spec'         # Saturation spectroscopy
             }
 
     self.time_interval = np.linspace(0,(self.time_step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
@@ -103,6 +103,7 @@ def prepare_datasets(self):
     # spectrum datasets    
     self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
     self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
+    self.set_dataset('sat_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
     ## set the slow / no slow configuration starting point
     #self.current_configuration = 0

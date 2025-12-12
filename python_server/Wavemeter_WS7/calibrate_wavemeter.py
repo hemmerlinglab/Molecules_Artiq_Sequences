@@ -182,7 +182,9 @@ def run_calibration(offset = 0.0):
     # show status and get offset of wavemeter from Moglabs measurements
     delta = show_status(wm_tisaph, wm_moglabs, v_moglabs, freq_beat_node, n_comb)
     
-    # determine shift of tisaph frequency
+    # determine shift of tisaph frequency 
+    # v_true_tisaph in Hz
+    # delta in Hz
     v_true_tisaph = calculate_true_hodor_frequency(wm_tisaph, v_moglabs, delta)
     
     # calibrate wavemeter using Hodor
@@ -200,7 +202,10 @@ def run_calibration(offset = 0.0):
 
 if __name__ == '__main__':
 
-   run_calibration()
+    print('Calibrating wavemeter ...')
+    #run_calibration(offset = 0.0)
+
+    calibrate_wavemeter(375.764157e12 - 150.67e6)
 
 
 

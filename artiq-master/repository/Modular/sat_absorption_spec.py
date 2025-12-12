@@ -19,14 +19,14 @@ from my_run_functions     import my_run_no_yag
 # Experiment
 ###################################################################################
 
-class Wavemeter_Comb_Comparison(EnvExperiment):
+class Sat_Absorption_Spectroscopy(EnvExperiment):
 
 
     ##############################################################
 
     def build(self):
 
-        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb', 'scope_transfer_cavity'])
+        my_build(self, which_instruments = [])
         self.sequence_filename = os.path.abspath(__file__)
 
         return
