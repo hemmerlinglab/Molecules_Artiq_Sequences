@@ -45,12 +45,18 @@ def my_setattr(self, arg, val, scannable = True):
     # define the attribute
     self.setattr_argument(arg, val)
 
-    # add each attribute to the config dictionary
+    # add each attribute to the config array of dictionaries
     if hasattr(val, 'unit'):
+        
         exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'unit' : '" + str(val.unit) + "', 'scannable' : " + str(scannable) + "})")
+
     else:
+        
         exec("self.config_dict.append({'par' : arg, 'val' : self." + arg + ", 'scannable' : " + str(scannable) + "})")
 
+    self.config_dict_no[arg] = len(self.config_dict) - 1
+
+    return
 
 #######################################################################################################
 
@@ -61,6 +67,7 @@ def load_variables(self):
     ###########################################################
 
     self.config_dict            = []
+    self.config_dict_no         = {}
     self.wavemeter_frequencies  = []
     self.EOM_frequency          = 0.0
     self.comb_frep              = None

@@ -37,6 +37,12 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     if not reset_value:
         val = self.scan_values[my_ind]        
         self.current_setpoint = val
+
+        if my_ind >= 1:
+            self.previous_setpoint = self.scan_values[my_ind - 1]
+        else:
+            self.previous_setpoint = self.scan_values[0]
+
     else:
         # reset the value to the one in the parameter listing
         print('Resetting scanning parameter ...')
@@ -219,7 +225,14 @@ def _scan_offset_laser_Hodor(self, val, scan_values, scan_check = False):
         
         frequency = self.offset_laser_Hodor + val/1.0e6
 
-        set_single_laser('Hodor', frequency, do_switch = True, wait_time = self.relock_wait_time)
+        # if jump is more than 100 MHz
+        if abs(self.previous_setpoint - self.current_setpoint) > 50.0:
+            hlp_wait_time = 3000.0
+            print('Waiting for large jump in laser frequency ...')
+        else:
+            hlp_wait_time = self.relock_wait_time
+
+        set_single_laser('Hodor', frequency, do_switch = True, wait_time = hlp_wait_time)
 
         return 1
 
@@ -265,7 +278,14 @@ def _scan_offset_laser_Davos(self, val, scan_values, scan_check = False):
         
         frequency = self.offset_laser_Davos + val/1.0e6
 
-        set_single_laser('Davos', frequency, do_switch = True, wait_time = self.relock_wait_time)
+        # if jump is more than 100 MHz
+        if abs(self.previous_setpoint - self.current_setpoint) > 50.0:
+            hlp_wait_time = 3000.0
+            print('Waiting for large jump in laser frequency ...')
+        else:
+            hlp_wait_time = self.relock_wait_time
+
+        set_single_laser('Davos', frequency, do_switch = True, wait_time = hlp_wait_time)
 
         return 1
 

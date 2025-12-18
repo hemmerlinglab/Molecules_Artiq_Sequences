@@ -13,13 +13,20 @@ from my_analyze_functions import my_analyze
 from my_run_functions     import my_run_no_yag
 
 
-
-
 ###################################################################################
 # Experiment
 ###################################################################################
 
-class Sat_Absorption_Spectroscopy(EnvExperiment):
+class Rubidium_SAS_Spectroscopy(EnvExperiment):
+
+
+    def update_config(self, par, val):
+
+        ind_config = self.config_dict_no[par]
+
+        self.config_dict[ind_config]['val'] = val
+
+        return
 
 
     ##############################################################
@@ -28,6 +35,29 @@ class Sat_Absorption_Spectroscopy(EnvExperiment):
 
         my_build(self, which_instruments = [])
         self.sequence_filename = os.path.abspath(__file__)
+       
+        # override parameters
+        self.scanning_parameter = 'offset_laser_Davos'
+        self.update_config('scanning_parameter', 'offset_laser_Davos')
+
+        self.scanning_laser = 'Davos'
+        self.update_config('scanning_laser', 'Davos')
+ 
+        self.offset_laser_Davos = 384.227990
+        self.update_config('offset_laser_Davos', 384.227990)
+        
+        self.which_scanning_laser = 1
+
+        self.setpoint_count = 160
+        self.update_config('setpoint_count', 160)
+
+        self.no_of_averages = 2
+        self.update_config('no_of_averages', 2)
+
+        self.he_flow = 0.0
+        self.update_config('he_flow', 0.0)
+
+
 
         return
 
@@ -40,8 +70,27 @@ class Sat_Absorption_Spectroscopy(EnvExperiment):
         
         self.configuration_descriptions = ['Laser on']
 
+    
+        # override some attributes
+        
+        #self.scanning_parameter = 'offset_laser_Davos'
+        #self.scanning_laser     = 'Davos'
+        #self.which_scanning_laser  = 1
+        #
+        #self.offset_laser_Davos = 384.22799
+       
+        #self.no_of_averages = 1
+        #self.setpoint_count = 80
+        #self.setpoint_count = 8
+        
         my_prepare(self)
-                
+        
+        self.scan_values = np.linspace(-100, 300, 80)
+
+        self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
+ 
+        self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
+
         return
 
     

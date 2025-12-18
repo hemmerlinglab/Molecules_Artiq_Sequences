@@ -66,12 +66,17 @@ def run_wavemeter_check():
     delta = show_status(0, wm_moglabs, v_moglabs, freq_beat_node, n_comb)
 
     print('-'*60)
-    print('Scaled wavemeter offset for different ranges:')
+    print('Scaled wavemeter offset for different ranges from Moglabs wavelength:')
     print()
 
     for k in np.arange(400, 1000, 100):
         nu = 299792458/(k*1e-9)
         print('{0} nm: {1:.0f} MHz'.format( k, nu/wm_moglabs * delta/1e6 ))
+    
+    k = 780
+    nu = 299792458/(k*1e-9)
+    print('-'*60)
+    print('{0} nm: {1:.0f} MHz (for Rb)'.format( k, nu/wm_moglabs * delta/1e6 ))
     
     print('-'*60)
     print()
