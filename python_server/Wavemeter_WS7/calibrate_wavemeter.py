@@ -68,6 +68,7 @@ def read_beatnode():
 
     # cut indices between 60 and 80 MHz
     ind = np.where( (f > 60e6) & (f < 90e6))[0]
+    #ind = np.where( (f > 50e6) & (f < 70e6))[0]
 
     ind_c = min(ind) + np.where( s[ind] == max(s[ind]) )[0][0]
 
@@ -124,10 +125,16 @@ def get_filename():
 
 def show_status(wm1, wm2, v_true, v_bn, n):
 
+    my_filename = get_filename()
+
     # difference of true frequency and wavemeter reading of Moglabs
     delta = v_true - wm2
     
     my_str = '''
+************************************************
+File: {6}
+************************************************
+
 TiSaph:                         {0:.6f} THz
 
 Moglabs (wavemeter):            {1:.6f} THz
@@ -137,13 +144,13 @@ Difference (true - wavemeter):  {3:.1f} MHz
 
 beat node frequency {4:.1f} MHz
 comb tooth n = {5:.0f}
-'''.format(wm1/1e12, wm2/1e12, v_true/1e12, delta/1e6, v_bn/1e6, n)
+'''.format(wm1/1e12, wm2/1e12, v_true/1e12, delta/1e6, v_bn/1e6, n, my_filename)
     
     print(my_str)
 
     # save string
 
-    f = open(get_filename(), 'w')
+    f = open(my_filename, 'w')
     f.write(my_str)
     f.close()
 

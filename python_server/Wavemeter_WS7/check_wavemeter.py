@@ -88,7 +88,11 @@ def run_wavemeter_check():
 
 if __name__ == '__main__':
 
+   print('YOU HAVE TO SWITCH TO CHANNEL 8')
+
    run_wavemeter_check()
+   
+   print('YOU HAVE TO SWITCH BACK TO WHATEVER CHANNEL YOU USED BEFORE')
 
 
 
