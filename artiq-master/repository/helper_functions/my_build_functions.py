@@ -91,6 +91,8 @@ def load_attributes(self):
     self.setattr_device('ttl7') # uniblitz shutter control
     
     self.setattr_device('ttl11') # cavity scan
+    
+    self.setattr_device('ttl13') #relay test
 
     self.setattr_device('sampler0') # adc voltage sampler
     self.setattr_device('sampler1') # adc voltage sampler
