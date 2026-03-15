@@ -1,5 +1,7 @@
 import numpy as np
 
+from atom_lines import get_transition_freq
+
 #####################################################################
 
 def get_Rb85_calibration_transitions(add_crossover_transitions = True):
@@ -11,10 +13,10 @@ def get_Rb85_calibration_transitions(add_crossover_transitions = True):
 
     # hyperfine transitions
     freqs_arr = [
-            calculate_transition(atom, Ji, Jf, 2, 3),
-            calculate_transition(atom, Ji, Jf, 2, 3),
-            calculate_transition(atom, Ji, Jf, 3, 2),
-            calculate_transition(atom, Ji, Jf, 3, 3)
+            get_transition_freq(atom, Ji, Jf, 2, 3),
+            get_transition_freq(atom, Ji, Jf, 2, 3),
+            get_transition_freq(atom, Ji, Jf, 3, 2),
+            get_transition_freq(atom, Ji, Jf, 3, 3)
             ]
 
     if add_crossover_transitions:
@@ -24,7 +26,7 @@ def get_Rb85_calibration_transitions(add_crossover_transitions = True):
              (freqs_arr[2]+freqs_arr[3])/2.0,     
             ])
 
-    return np.array(freqs_arr)
+    return np.sort(np.array(freqs_arr))
 
 
 #####################################################################
