@@ -70,20 +70,9 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
         
         self.configuration_descriptions = ['Laser on']
 
-    
-        # override some attributes
-        
-        #self.scanning_parameter = 'offset_laser_Davos'
-        #self.scanning_laser     = 'Davos'
-        #self.which_scanning_laser  = 1
-        #
-        #self.offset_laser_Davos = 384.22799
-       
-        #self.no_of_averages = 1
-        #self.setpoint_count = 80
-        #self.setpoint_count = 8
-        
         my_prepare(self)
+        
+        # override some attributes
         
         self.scan_values = np.linspace(-100, 300, 80)
 
