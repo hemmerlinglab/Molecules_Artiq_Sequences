@@ -14,7 +14,7 @@ def get_Rb85_calibration_transitions(add_crossover_transitions = True):
     # hyperfine transitions
     freqs_arr = [
             get_transition_freq(atom, Ji, Jf, 2, 3),
-            get_transition_freq(atom, Ji, Jf, 2, 3),
+            get_transition_freq(atom, Ji, Jf, 3, 4),
             get_transition_freq(atom, Ji, Jf, 3, 2),
             get_transition_freq(atom, Ji, Jf, 3, 3)
             ]
