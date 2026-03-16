@@ -75,3 +75,44 @@ def get_transition_freq(atom, Ji, Jf, Fi, Ff):
     return freq_abs
 
 
+#####################################################################
+
+def get_Rb_transitions():
+
+    atom = 'Rb87'
+
+    Ji = 'S1/2'
+    Jf = 'P3/2'
+
+    freqs_arr = [
+            get_transition_freq(atom, Ji, Jf, 2, 3),
+            get_transition_freq(atom, Ji, Jf, 2, 2),
+            ]
+
+    # add cross-over transitions
+    freqs_arr.extend([
+             (freqs_arr[0]+freqs_arr[1])/2.0,     
+           ])
+
+    atom = 'Rb85'
+
+    Ji = 'S1/2'
+    Jf = 'P3/2'
+
+    freqs_arr.extend([get_transition_freq(atom, Ji, Jf, 3, 4)])
+    freqs_arr.extend([get_transition_freq(atom, Ji, Jf, 3, 3)])
+
+   
+
+    vs = np.sort(freqs_arr)
+
+    aom = 85e6
+
+    for v in vs:
+        print('{0:.6f}'.format( (v + aom) / 1e12 ))
+
+
+    return 
+
+
+
