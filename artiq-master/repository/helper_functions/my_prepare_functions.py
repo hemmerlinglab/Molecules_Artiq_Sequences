@@ -9,18 +9,24 @@ from configparser import ConfigParser
 
 from scan_functions          import scan_parameter
 from my_instrument_functions import prepare_initial_instruments
-from base_sequences          import reset_core
+from base_sequences          import reset_core,  relay
 
 
 #######################################################################################################
 
 def my_prepare(self, data_to_save = None):
+    #send 5V to input on relay  
+    # self.ttl13.on()
+
 
     # prepare datasets
     prepare_datasets(self)
     
     # sets all instruments and parameters before the scan
     prepare_initial_instruments(self)
+
+    #turn relay on
+    relay(self, status = True)
     
     # prepare config file
     prepare_saving_configuration(self, data_to_save = data_to_save)

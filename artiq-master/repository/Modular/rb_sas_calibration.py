@@ -38,26 +38,35 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
        
         # override parameters
         self.scanning_parameter = 'offset_laser_Davos'
+        #self.scanning_parameter = 'offset_laser_Hodor'
+
         self.update_config('scanning_parameter', 'offset_laser_Davos')
+        #self.update_config('scanning_parameter', 'offset_laser_Hodor')
 
         self.scanning_laser = 'Davos'
+        #self.scanning_laser = 'Hodor'
+
         self.update_config('scanning_laser', 'Davos')
- 
+        #self.update_config('scanning_laser', 'Hodor')
+
         self.offset_laser_Davos = 384.227990
+        #self.offset_laser_Hodor = 384.227990
+
         self.update_config('offset_laser_Davos', 384.227990)
-        
-        self.which_scanning_laser = 1
+        #self.update_config('offset_laser_Hodor', 384.227990)
+
+        self.which_scanning_laser = 2
 
         self.setpoint_count = 160
-        self.update_config('setpoint_count', 160)
+        #self.setpoint_count = 5
+        self.update_config('setpoint_count', self.setpoint_count)
 
         self.no_of_averages = 2
-        self.update_config('no_of_averages', 2)
+        self.update_config('no_of_averages', self.no_of_averages)
 
         self.he_flow = 0.0
-        self.update_config('he_flow', 0.0)
-
-
+        self.update_config('he_flow', self.he_flow)
+        # self.setattr_device('ttl13') #relay test
 
         return
 
@@ -67,28 +76,19 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
     def prepare(self):
 
         self.configurations = [0]
-        
+
         self.configuration_descriptions = ['Laser on']
 
-    
         # override some attributes
-        
-        #self.scanning_parameter = 'offset_laser_Davos'
-        #self.scanning_laser     = 'Davos'
-        #self.which_scanning_laser  = 1
-        #
-        #self.offset_laser_Davos = 384.22799
-       
-        #self.no_of_averages = 1
-        #self.setpoint_count = 80
-        #self.setpoint_count = 8
-        
+
         my_prepare(self)
-        
-        self.scan_values = np.linspace(-100, 300, 80)
+
+        self.scan_values = np.linspace(-300, 2000, self.setpoint_count)
+        #print(self.scan_values)
 
         self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
- 
+        #print(self.scan_values)
+
         self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
 
         return

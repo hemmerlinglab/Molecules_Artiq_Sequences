@@ -197,9 +197,9 @@ def my_run_no_yag(self):
 
     # check if scan parameter range and scan function is ok
     if self.scan_ok:
-        
+
         counter = 0
-    
+
         ###########################################################
         # Loop over set points
         ###########################################################
