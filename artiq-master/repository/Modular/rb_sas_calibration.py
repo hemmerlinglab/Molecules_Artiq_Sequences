@@ -61,7 +61,7 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
         #self.setpoint_count = 5
         self.update_config('setpoint_count', self.setpoint_count)
 
-        self.no_of_averages = 2
+        self.no_of_averages = 1
         self.update_config('no_of_averages', self.no_of_averages)
 
         self.he_flow = 0.0
@@ -79,23 +79,13 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         self.configuration_descriptions = ['Laser on']
 
-<<<<<<< HEAD
         # override some attributes
 
         my_prepare(self)
 
-        self.scan_values = np.linspace(-300, 2000, self.setpoint_count)
-        #print(self.scan_values)
-=======
-        my_prepare(self)
-        
-        # override some attributes
-        
         self.scan_values = np.linspace(-100, 300, 80)
->>>>>>> refs/remotes/origin/master
 
         self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
-        #print(self.scan_values)
 
         self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
 
