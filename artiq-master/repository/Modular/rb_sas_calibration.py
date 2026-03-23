@@ -79,12 +79,20 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         self.configuration_descriptions = ['Laser on']
 
+<<<<<<< HEAD
         # override some attributes
 
         my_prepare(self)
 
         self.scan_values = np.linspace(-300, 2000, self.setpoint_count)
         #print(self.scan_values)
+=======
+        my_prepare(self)
+        
+        # override some attributes
+        
+        self.scan_values = np.linspace(-100, 300, 80)
+>>>>>>> refs/remotes/origin/master
 
         self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
         #print(self.scan_values)
