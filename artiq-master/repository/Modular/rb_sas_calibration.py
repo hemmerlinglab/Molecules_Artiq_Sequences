@@ -58,11 +58,10 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
         self.which_scanning_laser = 2
 
         self.setpoint_count = 160
-        #self.setpoint_count = 5
         self.update_config('setpoint_count', self.setpoint_count)
 
-        self.no_of_averages = 1
-        self.update_config('no_of_averages', self.no_of_averages)
+        #self.no_of_averages = 2
+        #self.update_config('no_of_averages', self.no_of_averages)
 
         self.he_flow = 0.0
         self.update_config('he_flow', self.he_flow)
