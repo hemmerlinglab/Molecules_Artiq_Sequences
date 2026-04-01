@@ -212,6 +212,11 @@ def my_run_no_yag(self):
     
             # set the value of the new parameter
             scan_parameter(self, my_ind)
+ 
+            # if first scan point, add delay to let laser settle
+            if my_ind == 0:
+                print('Waiting for laser to settle ... 5 seconds')
+                time.sleep(5)
     
             ###########################################################
             # Loop over averages for each set point

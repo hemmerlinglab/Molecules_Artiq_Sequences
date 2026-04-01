@@ -67,7 +67,7 @@ def scan_parameter(self, my_ind, scan_check = False, reset_value = False):
     ###############################################
 
     if (self.scanning_parameter in get_scannable_parameters()) or (self.scanning_parameter == 'dummy'):
-
+       
         return eval('_scan_' + self.scanning_parameter + '(self, val, self.scan_values, scan_check = scan_check)')
 
     else:

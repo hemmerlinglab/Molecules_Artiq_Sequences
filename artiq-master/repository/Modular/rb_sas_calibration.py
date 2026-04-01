@@ -57,7 +57,7 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         self.which_scanning_laser = 2
 
-        self.setpoint_count = 160
+        self.setpoint_count = 100 + 80
         self.update_config('setpoint_count', self.setpoint_count)
 
         #self.no_of_averages = 2
@@ -82,7 +82,7 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         my_prepare(self)
 
-        self.scan_values = np.linspace(-100, 300, 80)
+        self.scan_values = np.linspace(-100, 300, 100)
 
         self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
 
