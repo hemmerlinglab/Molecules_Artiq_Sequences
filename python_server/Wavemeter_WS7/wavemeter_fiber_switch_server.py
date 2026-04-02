@@ -41,12 +41,8 @@ def init_distribution_servers(opts):
     # init wavemeter
     wlm = WavelengthMeter()
 
-<<<<<<< HEAD
-    fib = Fiber('COM8')
-=======
     # init fiber switcher
     fib = Fiber(opts['fiber_switch_com_port'])
->>>>>>> 0a8cf42065c32cf7825eb5cba1d399b97185ee5e
 
     # init wavemeter servers
     dist_sockets = []
