@@ -263,9 +263,9 @@ def run_fiber_switcher_server(opts, sock, fib, wlm):
 
 opts = {
     'fiber_switcher_com_port'   : 'COM8',
-    'fiber_server_ip'     : '192.168.42.20',
-    'fiber_server_port'   : 65000,
-    'wavemeter_server_ip' : '192.168.42.20',
+    'fiber_server_ip'           : '192.168.42.20',
+    'fiber_server_port'         : 65000,
+    'wavemeter_server_ip'       : '192.168.42.20',
     'dist_sockets' : [ # these are for the wavemeter distribution servers
         {
             'port' : 62500
@@ -275,7 +275,7 @@ opts = {
         }
         ],
     'wavemeter_channel_exposures' : {
-            1 : 100,
+            1 : 25,
             2 : 25,
             3 : 100, # Daenerys IR
             4 : 100, # HeNe channel
