@@ -42,7 +42,7 @@ def init_distribution_servers(opts):
     wlm = WavelengthMeter()
 
     # init fiber switcher
-    fib = Fiber(opts['fiber_switch_com_port'])
+    fib = Fiber(opts['fiber_switcher_com_port'])
 
     # init wavemeter servers
     dist_sockets = []
@@ -178,30 +178,29 @@ def run_dist_server(opts, wlm, q, sock):
 
 def run_wavemeter_readout_server(q, wlm, fib):
 
-    # this server continuously reads out the current wavemeter frequency and adds it to the queue
-    
-	chans = [0]
-	act_values = [0] * len(chans)
-
-	try_trig = wlm.Trigger(3)
-
-	new_freq = wlm.frequency
-
-	while True:
-	    for l in range(len(chans)):
-                wlm.Trigger(0)
-                				
-                try_trig = wlm.Trigger(3)
-
-                # obtains the actual frequency value
-                new_freq = wlm.frequency               
-                
-                act_values[l] = "{0:10.6f}".format(new_freq)
-
-                for k in range(len(q)):
-                    q[k].put(act_values)
-                
-    return
+   # this server continuously reads out the current wavemeter frequency and adds it to the queue
+   
+   chans = [0]
+   act_values = [0] * len(chans)
+   
+   try_trig = wlm.Trigger(3)
+   
+   new_freq = wlm.frequency
+   
+   while True:
+       for l in range(len(chans)):
+               wlm.Trigger(0)
+               				
+               try_trig = wlm.Trigger(3)
+   
+               # obtains the actual frequency value
+               new_freq = wlm.frequency               
+               
+               act_values[l] = "{0:10.6f}".format(new_freq)
+   
+               for k in range(len(q)):
+                   q[k].put(act_values)
+   return
 
 
 #############################
@@ -216,21 +215,8 @@ def run_fiber_switcher_server(opts, sock, fib, wlm):
     previous_channel  = 1
     current_channel   = 1
 
-<<<<<<< HEAD
-    channel_exposures = {
-            1 : 25,
-            2 : 25,
-            3 : 100, # Daenerys IR
-            4 : 100, # HeNe channel
-            5 : 450,
-            6 : 450,
-		    7 : 10,  # Daenerys Green
-			8 : 25
-    }
-=======
     channel_exposures = opts['wavemeter_channel_exposures']
     
->>>>>>> 0a8cf42065c32cf7825eb5cba1d399b97185ee5e
 
     while True:
         # Wait for a connection
