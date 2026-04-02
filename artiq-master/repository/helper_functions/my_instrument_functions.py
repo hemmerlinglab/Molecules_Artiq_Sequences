@@ -51,6 +51,9 @@ def load_instruments(self):
 
 def prepare_initial_instruments(self):
 
+    # #Relay 5V to input
+    # self.ttl13.on()
+
     # set initial helium flow
     set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
 
@@ -108,6 +111,9 @@ def close_instruments(self):
 
         if instr == 'scope_transfer_cavity':
             self.scope_transfer_cavity.close()
+
+    #Remove 5V from input(switch back to scope)
+    # self.ttl13.off()
 
     return
 

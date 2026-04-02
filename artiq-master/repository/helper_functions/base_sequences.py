@@ -77,7 +77,8 @@ def set_zotino_voltage(self, channel, voltage):
 def fire_and_read(self):
 
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
-        self.sampler0.init() # initializes sampler device
+        self.sampler0.init()       # initializes sampler device
+        # self.ttl13.on()            # trigger the relay
         
         # Set Channel Gain
         for i in range(8):
@@ -184,7 +185,7 @@ def no_fire_and_read(self):
         # Set Channel Gain
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
-
+        #send 5V to relay input(C-NC connects)
         delay(500*us)
 
         # Data Variable Initialization
@@ -271,6 +272,15 @@ def no_fire_and_read(self):
         self.set_dataset('ch7', (data7), broadcast = True)
 
         return
+########################################################################
+@kernel
+def relay(self, status):
+    self.core.break_realtime()
+    if status:
+        self.ttl13.on()
+    else:
+        self.ttl13.off()
+
 
 
 ##########################################################################

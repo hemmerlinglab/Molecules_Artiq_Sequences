@@ -6,6 +6,7 @@ import numpy as np
 from scan_functions          import reset_scan_parameter
 from my_instrument_functions import reset_instruments, close_instruments
 from my_prepare_functions    import save_config
+from base_sequences import relay
 
 
 #######################################################################################################
@@ -27,6 +28,7 @@ def my_analyze(self):
 
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
+    relay(self, status = False)
 
     ####################################
     # Switch off instruments
@@ -40,8 +42,11 @@ def my_analyze(self):
 
     close_instruments(self)
 
+
+
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
+    
     
     return
 

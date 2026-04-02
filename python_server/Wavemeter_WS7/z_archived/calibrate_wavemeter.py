@@ -3,7 +3,6 @@ import socket
 import sys
 import numpy as np
 import time
-import datetime
 
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
 
@@ -68,7 +67,6 @@ def read_beatnode():
 
     # cut indices between 60 and 80 MHz
     ind = np.where( (f > 60e6) & (f < 90e6))[0]
-    #ind = np.where( (f > 50e6) & (f < 70e6))[0]
 
     ind_c = min(ind) + np.where( s[ind] == max(s[ind]) )[0][0]
 
@@ -98,43 +96,16 @@ def get_comb_tooth(freq_beat_node, v_wavemeter):
     return (v_true, n)
 
 
-def get_filename():
-    
-    my_timestamp = datetime.datetime.today()
-    
-    today = datetime.datetime.today()
-    today = today.strftime('%Y%m%d')
-
-    datafolder = '/home/molecules/software/data/'
- 
-    basefolder = str(today) # 20190618
-
-    # create new folder if doesn't exist yet
-    if not os.path.exists(datafolder + basefolder):
-        os.makedirs(datafolder + basefolder)
-
-    scan_timestamp = str(my_timestamp.strftime('%Y%m%d_%H%M%S'))
-
-    basefilename = datafolder + basefolder + '/calibration_' + scan_timestamp # 20190618_105557
-
-    return basefilename
-
 ###########################################
 # Show status
 ###########################################
 
 def show_status(wm1, wm2, v_true, v_bn, n):
 
-    my_filename = get_filename()
-
     # difference of true frequency and wavemeter reading of Moglabs
     delta = v_true - wm2
     
-    my_str = '''
-************************************************
-File: {6}
-************************************************
-
+    print('''
 TiSaph:                         {0:.6f} THz
 
 Moglabs (wavemeter):            {1:.6f} THz
@@ -144,17 +115,8 @@ Difference (true - wavemeter):  {3:.1f} MHz
 
 beat node frequency {4:.1f} MHz
 comb tooth n = {5:.0f}
-'''.format(wm1/1e12, wm2/1e12, v_true/1e12, delta/1e6, v_bn/1e6, n, my_filename)
+'''.format(wm1/1e12, wm2/1e12, v_true/1e12, delta/1e6, v_bn/1e6, n))
     
-    print(my_str)
-
-    # save string
-
-    f = open(my_filename, 'w')
-    f.write(my_str)
-    f.close()
-
-
     return delta
 
 
@@ -193,7 +155,7 @@ def calibrate_wavemeter(v):
 
 
 ###########################################
-# Calculate true Hodor frequency
+# Calculate true hodor frequency
 ###########################################
 
 def calculate_true_hodor_frequency(wm_freq, v_moglabs_true, delta):
@@ -220,9 +182,7 @@ def run_calibration(offset = 0.0):
     # show status and get offset of wavemeter from Moglabs measurements
     delta = show_status(wm_tisaph, wm_moglabs, v_moglabs, freq_beat_node, n_comb)
     
-    # determine shift of tisaph frequency 
-    # v_true_tisaph in Hz
-    # delta in Hz
+    # determine shift of tisaph frequency
     v_true_tisaph = calculate_true_hodor_frequency(wm_tisaph, v_moglabs, delta)
     
     # calibrate wavemeter using Hodor
@@ -240,10 +200,7 @@ def run_calibration(offset = 0.0):
 
 if __name__ == '__main__':
 
-    print('Calibrating wavemeter ...')
-    #run_calibration(offset = 0.0)
-
-    calibrate_wavemeter(375.764157e12 - 150.67e6)
+   run_calibration()
 
 
 

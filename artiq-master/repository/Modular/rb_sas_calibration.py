@@ -13,21 +13,59 @@ from my_analyze_functions import my_analyze
 from my_run_functions     import my_run_no_yag
 
 
-
-
 ###################################################################################
 # Experiment
 ###################################################################################
 
-class Wavemeter_Comb_Comparison(EnvExperiment):
+class Rubidium_SAS_Spectroscopy(EnvExperiment):
+
+
+    def update_config(self, par, val):
+
+        ind_config = self.config_dict_no[par]
+
+        self.config_dict[ind_config]['val'] = val
+
+        return
 
 
     ##############################################################
 
     def build(self):
 
-        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb', 'scope_transfer_cavity'])
+        my_build(self, which_instruments = [])
         self.sequence_filename = os.path.abspath(__file__)
+       
+        # override parameters
+        self.scanning_parameter = 'offset_laser_Davos'
+        #self.scanning_parameter = 'offset_laser_Hodor'
+
+        self.update_config('scanning_parameter', 'offset_laser_Davos')
+        #self.update_config('scanning_parameter', 'offset_laser_Hodor')
+
+        self.scanning_laser = 'Davos'
+        #self.scanning_laser = 'Hodor'
+
+        self.update_config('scanning_laser', 'Davos')
+        #self.update_config('scanning_laser', 'Hodor')
+
+        self.offset_laser_Davos = 384.227990
+        #self.offset_laser_Hodor = 384.227990
+
+        self.update_config('offset_laser_Davos', 384.227990)
+        #self.update_config('offset_laser_Hodor', 384.227990)
+
+        self.which_scanning_laser = 2
+
+        self.setpoint_count = 100 + 80
+        self.update_config('setpoint_count', self.setpoint_count)
+
+        #self.no_of_averages = 2
+        #self.update_config('no_of_averages', self.no_of_averages)
+
+        self.he_flow = 0.0
+        self.update_config('he_flow', self.he_flow)
+        # self.setattr_device('ttl13') #relay test
 
         return
 
@@ -37,11 +75,19 @@ class Wavemeter_Comb_Comparison(EnvExperiment):
     def prepare(self):
 
         self.configurations = [0]
-        
+
         self.configuration_descriptions = ['Laser on']
 
+        # override some attributes
+
         my_prepare(self)
-                
+
+        self.scan_values = np.linspace(-100, 300, 100)
+
+        self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
+
+        self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
+
         return
 
     
