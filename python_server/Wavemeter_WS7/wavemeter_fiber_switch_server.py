@@ -18,7 +18,7 @@ def init_distribution_servers(opts):
     # create conex objects
     wlm = WavelengthMeter()
 
-    fib = Fiber('COM3')
+    fib = Fiber('COM8')
 
     # init wavemeter servers
     dist_sockets = []
@@ -208,7 +208,7 @@ def run_fiber_switcher_server(sock, fib, wlm):
     current_channel = 1
 
     channel_exposures = {
-            1 : 100,
+            1 : 25,
             2 : 25,
             3 : 100, # Daenerys IR
             4 : 100, # HeNe channel

@@ -6,6 +6,15 @@ import threading
 import queue
 import numpy as np
 
+from wlm import *
+
+wlm = WavelengthMeter()
+
+def z_new_get_frequencies(opts):
+    try_trig = wlm.Trigger(3)
+    new_freq = wlm.frequency
+    output = "{0:10.6f}".format(new_freq)
+    return float(output)
 
 def get_frequencies(opts):
 
@@ -90,7 +99,7 @@ def send_arduino_control(ser, control, channel, max_output = 4095.0):
     mystr = '{:05d}'.format(ard_mess).encode('utf-8')
     ser.write(mystr) # converts from unicode to bytes        
 
-    #print(mystr)
+    #print(control)
 
     return
 
@@ -271,6 +280,8 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
 		
         # loop over all channels
         for c in pid_arr.keys():
+
+            #print(c)
     
             # run PID
             if (setpoints[c] > 0) and (pid_arr[c].auto_mode == True):
@@ -278,6 +289,7 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
                 pid_arr[c].setpoint = float(setpoints[c]) 
                 act_values = get_frequencies(opts)
 
+                
                 #if c == 6:
                 #    print("{0}, {1}, {2}".format(act_values, pid_arr[c].setpoint, control))
 
@@ -286,6 +298,9 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
                 # send control voltage to Arduino of laser
                 send_arduino_control(ser[opts['pids'][c]['arduino_no']], last_output[c], opts['pids'][c]['DAC_chan'], max_output = opts['pids'][c]['DAC_max_output'])
    
+                #if setpoints[c] > 388:
+                #    print('{0}, {1:.2f}, {2:.6f}'.format(c, last_output[c], act_values))
+
 
                 #print("Output: {0} Act_values: {1} Set_point: {2}".format(last_output[c], act_values, setpoints[c]))
                 #print(opts['pids'][c]['arduino_no'])
