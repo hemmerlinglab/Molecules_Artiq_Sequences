@@ -9,6 +9,7 @@ from simple_pid import PID
 from arduino_control import *
 from network_tools   import *
 
+from wavemeter_fiber_switch_server import switch_fiber_channel
 
 #####################################################################
 # Query current wavemeter frequency
@@ -222,31 +223,32 @@ def init_all(opts):
 # Main
 ###################################
 
-opts = {
-        'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
-        'wavemeter_server_ip'   : '192.168.42.20',
-        'wavemeter_server_port' : 62500,
-        'setpoint_server_ip'    : '192.168.42.20',
-        'setpoint_server_port'  : 63700,
-        'fiber_server_ip'       : '192.168.42.20',
-        'fiber_server_port'     : 65000,
-        'pids' : {
-            1 : {'laser' : 391,  'wavemeter_channel' : 1, 'Kp' : -10, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0},
-            2 : {'laser' : 398,  'wavemeter_channel' : 2, 'Kp' :  -5, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
-			#3 : {'laser' : 1046, 'wavemeter_channel' : 3, 'Kp' : -10, 'Ki' : -100000, 'arduino_no' : 1, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
-            #8 : {'laser' : 1046, 'wavemeter_channel' : 8, 'Kp' :  10, 'Ki' :  100000, 'arduino_no' : 1, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0}
-            },
-        'fiber_switcher_init_channel' : 2
-        }
-   
-
-
-init_all(opts)
-
-
-# keep deamons running
-while True:
-    pass
+if __name__ == '__main__':
+    opts = {
+            'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
+            'wavemeter_server_ip'   : '192.168.42.20',
+            'wavemeter_server_port' : 62500,
+            'setpoint_server_ip'    : '192.168.42.20',
+            'setpoint_server_port'  : 63700,
+            'fiber_server_ip'       : '192.168.42.20',
+            'fiber_server_port'     : 65000,
+            'pids' : {
+                1 : {'laser' : 391,  'wavemeter_channel' : 1, 'Kp' : -10, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0},
+                2 : {'laser' : 398,  'wavemeter_channel' : 2, 'Kp' :  -5, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
+    			#3 : {'laser' : 1046, 'wavemeter_channel' : 3, 'Kp' : -10, 'Ki' : -100000, 'arduino_no' : 1, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
+                #8 : {'laser' : 1046, 'wavemeter_channel' : 8, 'Kp' :  10, 'Ki' :  100000, 'arduino_no' : 1, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0}
+                },
+            'fiber_switcher_init_channel' : 2
+            }
+       
+    
+    
+    init_all(opts)
+    
+    
+    # keep deamons running
+    while True:
+        pass
 
 
 

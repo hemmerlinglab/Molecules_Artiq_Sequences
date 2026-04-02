@@ -45,9 +45,9 @@ def connect_and_send_socket(ip, port, msg):
 
     # Connects to a socket and send a msg
 
-    sock = create_socket(ipm, port, type = 'connect')
+    sock = create_socket(ip, port, type = 'connect')
 
-    sock.sendall(message.encode())
+    sock.sendall(msg.encode())
   
     return sock
 

@@ -6,14 +6,14 @@ import numpy as np
 # Arduino Control Functions
 ###################################################################
 
-def init_arduinos(com_ports, zero_init_output = False):
+def init_arduinos(com_ports, init_output = False):
 
     ser_connections = {}
     for port in com_ports.keys():
 
         serial_port = com_ports[port] 
 
-        baud_rate = 9600 
+        baud_rate = 115200 
 
         try:
             ser = serial.Serial(serial_port, baud_rate, 
@@ -32,7 +32,7 @@ def init_arduinos(com_ports, zero_init_output = False):
                                 stopbits=serial.STOPBITS_ONE, 
                                 timeout=1)
     
-        if zero_init_output:
+        if init_output:
             send_arduino_control(ser, 0.0, 1)
             send_arduino_control(ser, 0.0, 2)
     

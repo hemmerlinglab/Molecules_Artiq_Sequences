@@ -261,71 +261,72 @@ def run_fiber_switcher_server(opts, sock, fib, wlm):
 # Main
 ###############################################################################
 
-opts = {
-    'fiber_switcher_com_port'   : 'COM8',
-    'fiber_server_ip'           : '192.168.42.20',
-    'fiber_server_port'         : 65000,
-    'wavemeter_server_ip'       : '192.168.42.20',
-    'dist_sockets' : [ # these are for the wavemeter distribution servers
-        {
-            'port' : 62500
-        },
-        {
-            'port' : 62200
+if __name__ == '__main__':
+    opts = {
+        'fiber_switcher_com_port'   : 'COM8',
+        'fiber_server_ip'           : '192.168.42.20',
+        'fiber_server_port'         : 65000,
+        'wavemeter_server_ip'       : '192.168.42.20',
+        'dist_sockets' : [ # these are for the wavemeter distribution servers
+            {
+                'port' : 62500
+            },
+            {
+                'port' : 62200
+            }
+            ],
+        'wavemeter_channel_exposures' : {
+                1 : 25,
+                2 : 25,
+                3 : 100, # Daenerys IR
+                4 : 100, # HeNe channel
+                5 : 450,
+                6 : 450,
+    		    7 : 10,  # Daenerys Green
+    			8 : 25
         }
-        ],
-    'wavemeter_channel_exposures' : {
-            1 : 25,
-            2 : 25,
-            3 : 100, # Daenerys IR
-            4 : 100, # HeNe channel
-            5 : 450,
-            6 : 450,
-		    7 : 10,  # Daenerys Green
-			8 : 25
     }
-}
-
-
-
-
-
-
-#########################
-# Init server and sockets
-#########################
-
-(wlm, dist_sockets, sock_fiber, fib) = init_distribution_servers(opts)
-
-
-# Run the wavemeter distribution servers in a thread
-
-q_arr = []
-for n in range(len(opts['dist_sockets'])):
-
-    q_arr.append(queue.Queue())
-
-    # distribution server 
-    dist_server_thread = threading.Thread(target=run_dist_server, args=(opts, wlm, q_arr[n], dist_sockets[n],), daemon = True)
-    dist_server_thread.start()
-
-
-#current_channel = queue.Queue()
-
-# Run the fiber switcher server in a thread
-
-fiber_switcher_thread = threading.Thread(target=run_fiber_switcher_server, args=(opts, sock_fiber, fib, wlm,), daemon = True)
-fiber_switcher_thread.start()
-
-
-# Run the wavemeter readout server in a thread
-
-readout_thread = threading.Thread(target=run_wavemeter_readout_server, args=(q_arr, wlm, fib,), daemon = True)
-readout_thread.start()
-
-
-while True:
-    pass
+    
+    
+    
+    
+    
+    
+    #########################
+    # Init server and sockets
+    #########################
+    
+    (wlm, dist_sockets, sock_fiber, fib) = init_distribution_servers(opts)
+    
+    
+    # Run the wavemeter distribution servers in a thread
+    
+    q_arr = []
+    for n in range(len(opts['dist_sockets'])):
+    
+        q_arr.append(queue.Queue())
+    
+        # distribution server 
+        dist_server_thread = threading.Thread(target=run_dist_server, args=(opts, wlm, q_arr[n], dist_sockets[n],), daemon = True)
+        dist_server_thread.start()
+    
+    
+    #current_channel = queue.Queue()
+    
+    # Run the fiber switcher server in a thread
+    
+    fiber_switcher_thread = threading.Thread(target=run_fiber_switcher_server, args=(opts, sock_fiber, fib, wlm,), daemon = True)
+    fiber_switcher_thread.start()
+    
+    
+    # Run the wavemeter readout server in a thread
+    
+    readout_thread = threading.Thread(target=run_wavemeter_readout_server, args=(q_arr, wlm, fib,), daemon = True)
+    readout_thread.start()
+    
+    
+    while True:
+        pass
 	
 	
 
