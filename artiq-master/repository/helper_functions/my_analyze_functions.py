@@ -1,13 +1,16 @@
 from artiq.experiment import *
 
 import os
+import sys
 import numpy as np
+
+sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server/Quantel_Yag")
 
 from scan_functions          import reset_scan_parameter
 from my_instrument_functions import reset_instruments, close_instruments
 from my_prepare_functions    import save_config
-from base_sequences import relay
-
+from base_sequences          import relay
+from quantel                 import Quantel_Yag
 
 #######################################################################################################
 
@@ -24,8 +27,13 @@ def my_analyze(self):
     self.config_dict.append({'par' : 'Status', 'val' : True, 'cmt' : 'Run finished.'})
     save_config(self.basefilename, self.config_dict)
 
+    # add scan to scan_list
     add_scan_to_list(self)
 
+    # save Yag status
+    save_yag_status(self)
+
+    # finish scan
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
     relay(self, status = False)
@@ -96,6 +104,7 @@ def save_all_data(self):
 
     return
 
+
 #######################################################################################################
 
 def add_scan_to_list(self):
@@ -106,6 +115,22 @@ def add_scan_to_list(self):
     f_hlp.close()
 
     return
-        
 
+
+#######################################################################################################
+
+def save_yag_status(self):
+        
+    path = '/home/molecules/software/Molecules_Artiq_Sequences/python_server/Quantel_Yag/quantel.py' 
+
+    os.system('python {0} {1}'.format(path, self.basefilename + '_yag_status'))
+
+    #yag = Quantel_Yag()
+
+    #yag.log(self.basefilename + '_yag_status')
+
+    #yag.close()
+
+    return
+ 
 

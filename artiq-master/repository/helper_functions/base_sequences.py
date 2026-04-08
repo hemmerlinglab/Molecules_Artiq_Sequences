@@ -273,6 +273,7 @@ def no_fire_and_read(self):
 
         return
 ########################################################################
+
 @kernel
 def relay(self, status):
     self.core.break_realtime()
@@ -280,7 +281,6 @@ def relay(self, status):
         self.ttl13.on()
     else:
         self.ttl13.off()
-
 
 
 ##########################################################################
