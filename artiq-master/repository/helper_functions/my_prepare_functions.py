@@ -58,7 +58,8 @@ def prepare_datasets(self):
             'ch2' : 'pmt',             # pmt
             'ch3' : 'hodor_pickup',    # Hodor blue pickup
             'ch4' : 'davos_pickup',    # Davos blue pickup
-            'ch5' : 'yag_sync',        # Yag sync
+            #'ch5' : 'yag_sync',        # Yag sync
+            'ch5' : 'int_chamber_pickup',        # photodiode of intermittent chamber
             'ch6' : 'daenerys_pickup', # Daenerys pickup
             'ch7' : 'sat_spec'         # Saturation spectroscopy
             }
