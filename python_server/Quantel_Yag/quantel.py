@@ -1,4 +1,5 @@
 import serial
+import sys
 import os
 import datetime
 import time
@@ -27,7 +28,7 @@ class Quantel_Yag(RS232_Instrument):
         # init instrument
         RS232_Instrument.__init__(self, self.opts['device'])
 
-        self.laser_init()
+        #self.laser_init()
 
         return
 
@@ -38,6 +39,49 @@ class Quantel_Yag(RS232_Instrument):
     def get_par(self, par):
 
         return self.query('>{0}'.format(par))
+
+    def log(self, filename):
+
+        pars = ['cg',
+                'p', # pump
+                'wor',
+                #'if',
+                'vis',
+                'vos', # calibration factor, % of vmo setting
+                'vmo',
+                'v',
+                'va',
+                #'vt',
+                'd',
+                'e',
+                'ene',
+                'f',
+                'w',
+                'c',
+                'cap',
+                'lpm',
+                'qsm',
+                'qsf',
+                'qsp',
+                'qof',
+                'cq',
+                'r', # shutter
+                ]
+
+        status = {}
+        for k in pars:
+            status[k] = self.get_par(k)
+
+        # output
+        my_str = ''
+        for k in status.keys():
+            my_str += '{0:5} : {1}\n'.format(k, status[k])
+
+        f = open(filename, 'w')
+        f.write(my_str)
+        f.close()
+
+        return
 
     def diag(self):
 
@@ -73,14 +117,25 @@ class Quantel_Yag(RS232_Instrument):
 
         # print output
         print()
+
+        print('*' * 30)
         print('Quantel status')
         print('*' * 30)
         for k in status.keys():
             print('{0:5} : {1}'.format(k, status[k]))
         print('*' * 30)
+        print('Power status')
+        print('*' * 30)
+        
+        for k in ['wor','vmo','f','r']:
+            print('{0:5} : {1}'.format(k, status[k]))
+
+        print('*' * 30)
         print()
 
         return
+        return
+
 
     def test_safety_interlocks(self):
 
@@ -105,6 +160,8 @@ class Quantel_Yag(RS232_Instrument):
         return
 
     def fast_warm_up(self):
+
+        self.laser_init()
 
         self.flashlamp_autofire()
         
@@ -360,7 +417,17 @@ class Quantel_Yag(RS232_Instrument):
 
         return
 
+    def help(self):
 
+        print('''
+To start laser execute the following functions:
+
+    q.fast_warm_up()
+
+    q.startup_laser(vmo = 1235)
+''')
+
+        return
 
 
 
@@ -371,48 +438,57 @@ if __name__ == '__main__':
 
     instr = Quantel_Yag()
 
-    instr.test_safety_interlocks()
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+    else:
+        filename = 'test.log'
 
-    instr.flashlamp_autofire()
-
-    #for k in range(30):
-    #    instr.open_shutter()
-    #    time.sleep(1)
-    #    instr.close_shutter()
-    #    time.sleep(1)
+    instr.log(filename)
 
     instr.close()
 
-    #asd
+    #instr.test_safety_interlocks()
 
-    instr.diag()
-        
-    instr.fast_warm_up()
+    #instr.flashlamp_autofire()
 
-    instr.diag()
+    ##for k in range(30):
+    ##    instr.open_shutter()
+    ##    time.sleep(1)
+    ##    instr.close_shutter()
+    ##    time.sleep(1)
 
-    instr.set(ene = 12.5, f_rep = 30.0, q_delay = 140)
+    #instr.close()
 
-    instr.set_vmo(1150)
+    ##asd
+
+    #instr.diag()
+    #    
+    #instr.fast_warm_up()
+
+    #instr.diag()
+
+    #instr.set(ene = 12.5, f_rep = 30.0, q_delay = 140)
+
+    #instr.set_vmo(1150)
    
-    #instr.set(ene = 12.5, f_rep = 1.0, q_delay = 140)
-    
-    instr.on()
+    ##instr.set(ene = 12.5, f_rep = 1.0, q_delay = 140)
+    #
+    #instr.on()
 
-    instr.set_vis(0)
-    instr.set_vis(100)
+    #instr.set_vis(0)
+    #instr.set_vis(100)
  
-    instr.diag()
-    
-    time.sleep(3)
+    #instr.diag()
+    #
+    #time.sleep(3)
 
-    instr.off()
-    
-    instr.standby()
-    
-    instr.diag()
+    #instr.off()
+    #
+    #instr.standby()
+    #
+    #instr.diag()
 
-    instr.close()
+    #instr.close()
 
 
 
