@@ -8,33 +8,9 @@ from simple_pid import PID
 
 from arduino_control import *
 from network_tools   import *
+from wlm             import *
 
 from wavemeter_fiber_switch_server import switch_fiber_channel
-
-#####################################################################
-# Query current wavemeter frequency
-#####################################################################
-
-def get_frequencies(opts):
-
-    # connects to wavemeter distribution server and receives current frequency
-    try:
-        # send request
-        sock = connect_and_send_socket(opts['wavemeter_server_ip'], opts['wavemeter_server_port'], 'request')
-
-        # receive response
-        len_msg = int(sock.recv(2).decode())
-
-        data = sock.recv(len_msg)
-        
-        output = float(data.decode())
-
-    finally:
-        sock.close()
-
-    return output
-
-# replace this directly with get frequency from WLM?
 
 #############################################################
 # Server to receive new setpoint
@@ -114,7 +90,7 @@ def init_pid(opts):
 # Run the PIDs
 #################
 
-def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
+def run_pid(q_arr, ser, wlm, pid_arr, current_channel, init_setpoints, opts):
 
     # q_arr : setpoints
     # pid_arr : pids
@@ -172,7 +148,25 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
             if (setpoints[c] > 0) and (pid_arr[c].auto_mode == True):
 
                 pid_arr[c].setpoint = float(setpoints[c]) 
-                act_values          = get_frequencies(opts)
+                
+                ############################################################
+                # get current frequency from wavemeter
+                ############################################################
+                
+                #act_values          = get_frequencies(opts)
+                
+                wlm.Trigger(0)
+               				
+                try_trig = wlm.Trigger(3)
+   
+                # obtains the actual frequency value
+                #new_freq = wlm.frequency               
+               
+                act_values = float(wlm.frequency)
+
+                ############################################################
+                # Send Arduino control voltage
+                ############################################################
 
                 last_output[c]      = pid_arr[c](act_values)
     
@@ -202,6 +196,9 @@ def init_all(opts):
     print('Init PID ...')
     pid_arr, init_setpoints = init_pid(opts)
     
+    print('Init Wavelengthmeter ...')
+    wlm = Wavelengthmeter()
+
     # init fiber switcher
     switch_fiber_channel(opts, opts['fiber_switcher_init_channel'], wait_time = 0)
     
@@ -209,7 +206,7 @@ def init_all(opts):
     q_arr = queue.Queue()
     
     # start PID thread
-    pid_thread = threading.Thread(target=run_pid, args=(q_arr, ser, pid_arr, opts['fiber_switcher_init_channel'], init_setpoints, opts), daemon = True)
+    pid_thread = threading.Thread(target=run_pid, args=(q_arr, ser, wlm, pid_arr, opts['fiber_switcher_init_channel'], init_setpoints, opts), daemon = True)
     pid_thread.start()
     
     # start setpoint servers
@@ -225,10 +222,9 @@ def init_all(opts):
 ###################################
 
 if __name__ == '__main__':
+    
     opts = {
             'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
-            'wavemeter_server_ip'   : '192.168.42.20',
-            'wavemeter_server_port' : 62500,
             'setpoint_server_ip'    : '192.168.42.20',
             'setpoint_server_port'  : 63700,
             'fiber_server_ip'       : '192.168.42.20',
