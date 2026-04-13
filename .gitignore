@@ -7,3 +7,6 @@ artiq-master/last_rid.pyon
 *.pickle
 *.py~
 *.py.un~
+
+*.swp
+
