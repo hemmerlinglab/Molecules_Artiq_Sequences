@@ -11,6 +11,10 @@ from wlm import *
 from arduino_control import *
 
 
+#from line_profiler import profile
+
+
+
 wlm = WavelengthMeter()
 
 def z_new_get_frequencies(opts):
@@ -30,17 +34,11 @@ def get_frequencies(opts):
 
     try:
         # Send data
-        message = 'request'
-        #print('sending "%s"' % message)
-        sock.sendall(message.encode())
+        sock.sendall('request'.encode())
 
-        len_msg = int(sock.recv(2).decode())
-
-        data = sock.recv(len_msg)
+        data = sock.recv( int(sock.recv(2).decode()) )
         
-        data = data.decode()
-        
-        output = float(data)
+        output = float(data.decode())
 
     finally:
         #print('closing socket')
@@ -175,7 +173,6 @@ def init_pid(opts):
 
 
 
-
 def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
 
     # q_arr : setpoints
@@ -236,9 +233,12 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
             # run PID
             if (setpoints[c] > 0) and (pid_arr[c].auto_mode == True):
 
-                pid_arr[c].setpoint = float(setpoints[c]) 
-                act_values = get_frequencies(opts)
 
+                pid_arr[c].setpoint = float(setpoints[c]) 
+                
+                #t1 = time.time()
+                act_values = get_frequencies(opts) # slowest part
+                #print("{0:.2f}".format(time.time() - t1))
 
                 last_output[c] = pid_arr[c](act_values)
     
@@ -249,7 +249,6 @@ def run_pid(q_arr, ser, pid_arr, current_channel, init_setpoints, opts):
 
             elif (setpoints[c] <= 0) and (pid_arr[c].auto_mode == True):
                 last_output[c] = 0.0
-
 
     return
 
