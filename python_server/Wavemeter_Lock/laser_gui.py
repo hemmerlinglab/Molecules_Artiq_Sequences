@@ -70,8 +70,8 @@ class App(QWidget):
                 'fiber_server_ip' : '192.168.42.20',
                 'fiber_server_port' : 65000,
                 'lasers' : [
-                {'id' : 'Davos',    'init_freq' : '363.769084', 'channel' : 1, 'step_size' : '100'},
-                {'id' : 'Hodor',    'init_freq' : '375.763266', 'channel' : 2, 'step_size' : '100'},
+                {'id' : 'Davos',    'init_freq' : '384.228000', 'channel' : 1, 'step_size' : '100'},
+                {'id' : 'Hodor',    'init_freq' : '389.484000', 'channel' : 2, 'step_size' : '100'},
 		        {'id' : 'Daenerys', 'init_freq' : '286.582833', 'channel' : 3, 'step_size' : '100'},
                     ]
                 }
