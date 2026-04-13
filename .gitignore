@@ -9,4 +9,4 @@ artiq-master/last_rid.pyon
 *.py.un~
 
 *.swp
-
+.*.swp
