@@ -83,6 +83,8 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
+        self.layout = QVBoxLayout()
+        
         # add fiber switcher
         hbox_fiber_switcher = self.init_switcherUI()
         self.layout.addLayout(hbox_fiber_switcher) 
@@ -117,13 +119,13 @@ class App(QWidget):
             vbox = QVBoxLayout()
             
             hlp = QHBoxLayout()
-            hlp.addWidget(QLabel('Laser: ' + str(laser['id'])))
-            hlp.addWidget(QLabel('Channel: ' + str(laser['channel'])))
-            hlp.addWidget(QLabel('PID on?'))
+            hlp.addWidget(QLabel(str(laser['id'])))
+            #hlp.addWidget(QLabel('Channel: ' + str(laser['channel'])))
+            #hlp.addWidget(QLabel('PID on?'))
             
-            self.laser_pids_status[str(laser['channel'])] = QCheckBox()
+            #self.laser_pids_status[str(laser['channel'])] = QCheckBox()
 
-            hlp.addWidget(self.laser_pids_status[str(laser['channel'])])
+            #hlp.addWidget(self.laser_pids_status[str(laser['channel'])])
 
             vbox.addLayout(hlp)
 
@@ -246,7 +248,7 @@ class App(QWidget):
         #    print(message)
 
         print('Sending new setpoint for channel {1}: {0:.6f}'.format(frequency, channel))
-        self.send_message_via_socket(message, self.laser_server_addr, self.setpoint_server_port)
+        self.send_message_via_socket(message, self.setpoint_server_addr, self.setpoint_server_port)
 
         return
 

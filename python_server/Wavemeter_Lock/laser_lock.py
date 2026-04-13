@@ -53,11 +53,19 @@ def run_setpoint_server(q_arr, sock):
 # PID
 ##################################################################
 
+def get_wavemeter_frequency(wlm):
+               
+    #wlm.Trigger(0)
+   				
+    #try_trig = wlm.Trigger(3)
+
+    return float(wlm.frequency)
+
 #################
 # Init the PIDs
 #################
 
-def init_pid(opts):
+def init_pid(opts, wlm):
 
     # Initialize the PIDs
 
@@ -73,7 +81,7 @@ def init_pid(opts):
     
         switch_fiber_channel(opts, curr_pid['wavemeter_channel'], wait_time = 1) 
 
-        act_values[curr_pid['wavemeter_channel']] = get_frequencies(opts)
+        act_values[curr_pid['wavemeter_channel']] = get_wavemeter_frequency(wlm)
         
         setpoint = act_values[curr_pid['wavemeter_channel']]
 
@@ -89,6 +97,7 @@ def init_pid(opts):
 #################
 # Run the PIDs
 #################
+
 
 def run_pid(q_arr, ser, wlm, pid_arr, current_channel, init_setpoints, opts):
 
@@ -153,16 +162,7 @@ def run_pid(q_arr, ser, wlm, pid_arr, current_channel, init_setpoints, opts):
                 # get current frequency from wavemeter
                 ############################################################
                 
-                #act_values          = get_frequencies(opts)
-                
-                wlm.Trigger(0)
-               				
-                try_trig = wlm.Trigger(3)
-   
-                # obtains the actual frequency value
-                #new_freq = wlm.frequency               
-               
-                act_values = float(wlm.frequency)
+                act_values          = get_wavemeter_frequency(wlm)
 
                 ############################################################
                 # Send Arduino control voltage
@@ -192,13 +192,13 @@ def init_all(opts):
     ser = init_arduinos(com_ports = opts['arduino_com_ports'], zero_init_output = True)
     
     sock_setpoint = bind_socket(opts['setpoint_server_ip'], opts['setpoint_server_port'])
-    
-    print('Init PID ...')
-    pid_arr, init_setpoints = init_pid(opts)
-    
+       
     print('Init Wavelengthmeter ...')
-    wlm = Wavelengthmeter()
+    wlm = WavelengthMeter()
 
+    print('Init PID ...')
+    pid_arr, init_setpoints = init_pid(opts, wlm)
+ 
     # init fiber switcher
     switch_fiber_channel(opts, opts['fiber_switcher_init_channel'], wait_time = 0)
     
@@ -224,14 +224,15 @@ def init_all(opts):
 if __name__ == '__main__':
     
     opts = {
-            'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
+            #'arduino_com_ports'     : {0 : 'COM4', 1 : 'COM7'},
+            'arduino_com_ports'     : {0 : 'COM4'},
             'setpoint_server_ip'    : '192.168.42.20',
             'setpoint_server_port'  : 63700,
             'fiber_server_ip'       : '192.168.42.20',
             'fiber_server_port'     : 65000,
             'pids' : {
-                1 : {'laser' : 391,  'wavemeter_channel' : 1, 'Kp' : -10, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0},
-                2 : {'laser' : 398,  'wavemeter_channel' : 2, 'Kp' :  -5, 'Ki' :   -5000, 'arduino_no' : 0, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
+                1 : {'laser' : 391,  'wavemeter_channel' : 1, 'Kp' : -10, 'Ki' : -5000, 'arduino_no' : 0, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0},
+                2 : {'laser' : 398,  'wavemeter_channel' : 2, 'Kp' :  -10, 'Ki' : -30000, 'arduino_no' : 0, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
     			#3 : {'laser' : 1046, 'wavemeter_channel' : 3, 'Kp' : -10, 'Ki' : -100000, 'arduino_no' : 1, 'DAC_chan' : 2, 'DAC_max_output' : 4095.0},
                 #8 : {'laser' : 1046, 'wavemeter_channel' : 8, 'Kp' :  10, 'Ki' :  100000, 'arduino_no' : 1, 'DAC_chan' : 1, 'DAC_max_output' : 4095.0}
                 },

@@ -6,7 +6,7 @@ import numpy as np
 # Arduino Control Functions
 ###################################################################
 
-def init_arduinos(com_ports, init_output = False):
+def init_arduinos(com_ports, zero_init_output = False):
 
     ser_connections = {}
     for port in com_ports.keys():
@@ -32,7 +32,7 @@ def init_arduinos(com_ports, init_output = False):
                                 stopbits=serial.STOPBITS_ONE, 
                                 timeout=1)
     
-        if init_output:
+        if zero_init_output:
             send_arduino_control(ser, 0.0, 1)
             send_arduino_control(ser, 0.0, 2)
     
@@ -48,9 +48,9 @@ def send_arduino_control(ser, control, channel, max_output = 4095.0):
     #print(control)
     # channel = which arduino DAC channel
 
-    ard_mess =  int(max_output/20.0 * control + max_output/2.0)*10 + channel
-
-    mystr = '{:05d}'.format(ard_mess).encode('utf-8')
+    mystr = '{:05d}'.format(int(max_output/20.0 * control + max_output/2.0)*10 + channel
+).encode('utf-8')
+    
     ser.write(mystr) # converts from unicode to bytes        
 
     return
