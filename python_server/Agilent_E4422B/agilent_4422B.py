@@ -21,6 +21,14 @@ class Agilent_E4422B(base_gpib_instrument):
 
         return
 
+    def get_fm_status(self):
+    
+        fm1_dev   = self.query('FM1:DEV?')
+        fm1_cpl   = self.query('FM1:SOURCE?')
+        fm1_state = self.query('FM1:STATE?')
+
+        return
+
     def get_device_state(self):
 
         print(self.query('AM1:STATE?'))
