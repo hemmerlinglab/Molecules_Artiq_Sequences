@@ -82,9 +82,9 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         my_prepare(self)
 
-        self.scan_values = np.linspace(-100, 300, 100)
+        self.scan_values = np.linspace(-100, 250, 100)
 
-        self.scan_values = np.append(self.scan_values, np.linspace(1150, 1400, 80))
+        self.scan_values = np.append(self.scan_values, np.linspace(1150+60, 1400-25, 80))
 
         self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
 
