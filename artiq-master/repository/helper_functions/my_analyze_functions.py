@@ -31,7 +31,8 @@ def my_analyze(self):
     add_scan_to_list(self)
 
     # save Yag status
-    save_yag_status(self)
+    if self.use_yag:
+        save_yag_status(self)
 
     # finish scan
     print('Scan ' + self.basefilename + ' finished.')

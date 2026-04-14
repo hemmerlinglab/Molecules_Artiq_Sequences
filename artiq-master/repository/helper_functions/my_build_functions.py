@@ -107,6 +107,8 @@ def load_attributes(self):
 
 def load_parameters(self, raster_scan = False):
 
+    self.use_yag = True # standard is true
+
     # number of time steps
     my_setattr(self, 'scope_count',     NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
 

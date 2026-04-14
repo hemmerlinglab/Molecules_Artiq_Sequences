@@ -195,6 +195,8 @@ def my_run_raster(self):
 
 def my_run_no_yag(self):
 
+    self.use_yag = False # no yag in use
+
     # check if scan parameter range and scan function is ok
     if self.scan_ok:
 
