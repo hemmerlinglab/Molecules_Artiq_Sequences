@@ -62,13 +62,17 @@ def readout_data(self):
     # read scope traces of the transfer lock cavity
     #################################################
 
-    try:
-        hlp = self.scope_transfer_cavity.read_all_channels()
+    if 'scope_transfer_cavity' in self.which_instruments:
 
-        self.transfer_lock_traces = hlp[1:, :]
-        self.transfer_lock_times  = hlp[0, :]
+        try:
+            hlp = self.scope_transfer_cavity.read_all_channels()
 
-    except:
+            self.transfer_lock_traces = hlp[1:, :]
+            self.transfer_lock_times  = hlp[0, :]
+        except:
+            self.transfer_lock_traces = np.array( 4 * [999 * [0]] )
+            self.transfer_lock_times  = np.zeros(999)
+    else:
         self.transfer_lock_traces = np.array( 4 * [999 * [0]] )
         self.transfer_lock_times  = np.zeros(999)
 

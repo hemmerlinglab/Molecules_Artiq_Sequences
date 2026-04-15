@@ -189,17 +189,19 @@ def run_wavemeter_readout_server(q, wlm, fib):
    
    while True:
        for l in range(len(chans)):
-               wlm.Trigger(0)
+           # trigger not needed if run in single mode
+           wlm.Trigger(0)
                				
-               try_trig = wlm.Trigger(3)
+           try_trig = wlm.Trigger(3)
    
-               # obtains the actual frequency value
-               new_freq = wlm.frequency               
+           # obtains the actual frequency value
+           new_freq = wlm.frequency               
                
-               act_values[l] = "{0:10.6f}".format(new_freq)
+           act_values[l] = "{0:10.6f}".format(new_freq)
    
-               for k in range(len(q)):
-                   q[k].put(act_values)
+           for k in range(len(q)):
+               q[k].put(act_values)
+
    return
 
 

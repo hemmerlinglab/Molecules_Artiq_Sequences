@@ -15,9 +15,6 @@ from base_sequences          import reset_core,  relay
 #######################################################################################################
 
 def my_prepare(self, data_to_save = None):
-    #send 5V to input on relay  
-    # self.ttl13.on()
-
 
     # prepare datasets
     prepare_datasets(self)
@@ -58,7 +55,6 @@ def prepare_datasets(self):
             'ch2' : 'pmt',             # pmt
             'ch3' : 'hodor_pickup',    # Hodor blue pickup
             'ch4' : 'davos_pickup',    # Davos blue pickup
-            #'ch5' : 'yag_sync',        # Yag sync
             'ch5' : 'int_chamber_pickup',        # photodiode of intermittent chamber
             'ch6' : 'daenerys_pickup', # Daenerys pickup
             'ch7' : 'sat_spec'         # Saturation spectroscopy
@@ -138,10 +134,17 @@ def prepare_saving_configuration(self, data_to_save = None):
                          {'var' : 'times',                  'name' : 'times'},
                          {'var' : 'frequency_comb_frep',    'name' : 'Repetition frequency of comb'},
                          {'var' : 'EOM_frequency',          'name' : 'EOM_frequency'},
-                         {'var' : 'beat_node_fft',          'name' : 'FFT of beat node with comb'},
-                         {'var' : 'transfer_lock_traces',   'name' : 'Scope traces of the transfer lock'},
-                         {'var' : 'transfer_lock_times',    'name' : 'Scope times axis of the transfer lock'},
+                         {'var' : 'beat_node_fft',          'name' : 'FFT of beat node with comb'}
                          ]
+
+        ###################################################################
+        # add saving of scope traces of transfer cavity, if in use
+        ###################################################################
+
+        if 'scope_transfer_cavity' in self.which_instruments:
+    
+            self.data_to_save.append({'var' : 'transfer_lock_traces',   'name' : 'Scope traces of the transfer lock'})
+            self.data_to_save.append({'var' : 'transfer_lock_times',    'name' : 'Scope times axis of the transfer lock'})
 
     else:
         self.data_to_save = data_to_save
@@ -182,8 +185,6 @@ def get_basefilename(self, extension = ''):
     self.today = self.today.strftime('%Y%m%d')
 
     self.datafolder = '/home/molecules/software/data/'
-    #self.setpoint_filename_laser1 = '/home/molecules/skynet/Logs/setpoint.txt'
-    #self.setpoint_filename_laser2 = '/home/molecules/skynet/Logs/setpoint2.txt'
  
     basefolder = str(self.today) # 20190618
     # create new folder if doesn't exist yet
