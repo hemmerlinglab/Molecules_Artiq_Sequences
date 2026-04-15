@@ -104,7 +104,6 @@ def run_dist_server(opts, wlm, q, sock):
                 freq_8 = wlm.frequency 
                 freq_8 = "{0:10.6f}".format(freq_8)
 
-
                 # send data back to Artiq
                 freq_msg = "{0},{1}".format(freq_2, freq_8)
 
@@ -120,7 +119,7 @@ def run_dist_server(opts, wlm, q, sock):
             # Calibration Davos
             ###############################################################
             
-            elif request == 'henecal':
+            elif request == 'calibra':
                 
                 # receive calibration freq
                 calibration_frequency = float(connection.recv(10).decode())
@@ -133,12 +132,39 @@ def run_dist_server(opts, wlm, q, sock):
                 # run calibration
                 wlm.SetExposure(100)
                 time.sleep(1)
+
+                # save old frequency
+                freq_before = "{0:10.6f}".format(wlm.frequency)
+
                 wlm.Calibration(calibration_frequency)
+
+                freq_after = "{0:10.6f}".format(wlm.frequency)
 
                 # switch back to previous channel
                 # wait since the wavemeter server will readout the hene frequency
                 # ideally this readout would be stopped while calibrating
                 switch_fiber_channel(opts, 0, wait_time = 3)
+
+                # save the calibration
+
+                my_timestamp = datetime.datetime.today()
+    
+                today = datetime.datetime.today()
+                today = self.today.strftime('%Y%m%d')
+
+                datafolder = ''
+
+                timestamp = str(my_timestamp.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
+
+                basefilename = '{0}_wavemeter_calibration'.format(timestamp)
+
+                # save file
+                f_hlp = open(basefilename, 'w')
+                f_hlp.write('Calibration of wavemeter {0}'.format(timestamp))
+                f_hlp.write('Before calibration: {0}'.format(freq_before))
+                f_hlp.write('After  calibration: {0}'.format(freq_before))
+                f_hlp.close()
+
 
             ###############################################################
             # Calibration using Daenaerys

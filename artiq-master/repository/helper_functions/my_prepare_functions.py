@@ -201,6 +201,8 @@ def get_basefilename(self, extension = ''):
 
         self.scan_timestamp += '_' + str(extension)
 
+    return
+
 
 #######################################################################################################
 

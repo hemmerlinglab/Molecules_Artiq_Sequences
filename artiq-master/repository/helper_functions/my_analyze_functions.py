@@ -52,7 +52,6 @@ def my_analyze(self):
     close_instruments(self)
 
 
-
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
     
