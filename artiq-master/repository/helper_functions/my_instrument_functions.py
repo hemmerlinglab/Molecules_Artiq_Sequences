@@ -200,6 +200,39 @@ def move_yag_mirror(xpos, ypos, wait_time = None):
 
 #######################################################################################################
 
+def calibrate_wavemeter(freq):
+
+    # calibrates wavemeter
+
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Connect the socket to the port where the server is listening
+    server_address = ('192.168.42.20', 62200)
+
+    sock.connect(server_address)
+
+    # 'request' gets only one frequency
+    try:    
+        # Request data
+        message = 'calibra'
+        #print('sending "%s"' % message)
+        sock.sendall(message.encode())
+
+        message = "{0:.6f}".format(float(freq))
+        
+        sock.sendall(message.encode())
+
+
+    finally:
+        sock.close()
+ 
+    
+    return 
+
+
+#######################################################################################################
+
 def get_wavemeter_readings(mode = 'wavemeter_lock'):
 
     # reads out laser frequencies from wavemeter
