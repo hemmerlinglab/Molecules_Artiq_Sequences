@@ -17,22 +17,6 @@ from network_tools  import *
 
 
 #############################################################
-# Switch Fiber Channel
-#############################################################
-
-def switch_fiber_channel(opts, channel, wait_time = None, manual_switch = False):
-
-    sock = connect_and_send_socket(opts['fiber_server_ip'], opts['fiber_server_port'], str(channel))
-    
-    sock.close()
-
-    if not wait_time == None:
-        time.sleep(wait_time)
-
-    return 
-
-
-#############################################################
 # Init All Servers
 #############################################################
 
@@ -81,13 +65,16 @@ def run_dist_server(opts, wlm, q, sock):
     # after receiving a request, the server sends two messages: one with the length of the response and one with the response
 
     while True:
-        # Wait for a connection
+# Wait for a connection
         connection, client_address = sock.accept()
 
         try:            
             request = connection.recv(7).decode()
 
-            # Frequency of the wavemeter is requested and send back
+            ###############################################################
+            # Reads out current wavemeter frequency
+            ###############################################################
+            
             if request == 'request':
                 freq = q.get()
 
@@ -97,7 +84,10 @@ def run_dist_server(opts, wlm, q, sock):
                 
                 send_msg(connection, msg)
 
-            # Calibration of the wavemeter is initiated
+            ###############################################################
+            # Reads out frequency of two channels (2, 8)
+            ###############################################################
+
             elif request == 'reqch28':
                 
                 # receive tisa freq    
@@ -126,25 +116,34 @@ def run_dist_server(opts, wlm, q, sock):
                 switch_fiber_channel(opts, 2, wait_time = 0.1)
 
 
-            # Calibration of the wavemeter is initiated
+            ###############################################################
+            # Calibration Davos
+            ###############################################################
+            
             elif request == 'henecal':
                 
-                # receive hene freq
-                hene_freq = float(connection.recv(10).decode())
-                chan_hene = 2
+                # receive calibration freq
+                calibration_frequency = float(connection.recv(10).decode())
+                
+                # switch fiber switcher to channel of Davos
+                channel_davos = 2
 
-                switch_fiber_channel(opts, chan_hene, wait_time = 3)
+                switch_fiber_channel(opts, channel_davos, wait_time = 3)
     
+                # run calibration
                 wlm.SetExposure(100)
                 time.sleep(1)
-                wlm.Calibration(hene_freq)
+                wlm.Calibration(calibration_frequency)
 
                 # switch back to previous channel
                 # wait since the wavemeter server will readout the hene frequency
                 # ideally this readout would be stopped while calibrating
                 switch_fiber_channel(opts, 0, wait_time = 3)
 
-            # Calibration of the wavemeter is initiated
+            ###############################################################
+            # Calibration using Daenaerys
+            ###############################################################
+            
             elif request == 'daecali':
                 
                 # receive hene freq
@@ -203,6 +202,21 @@ def run_wavemeter_readout_server(q, wlm, fib):
                q[k].put(act_values)
 
    return
+
+#############################################################
+# Switch Fiber Channel
+#############################################################
+
+def switch_fiber_channel(opts, channel, wait_time = None, manual_switch = False):
+
+    sock = connect_and_send_socket(opts['fiber_server_ip'], opts['fiber_server_port'], str(channel))
+    
+    sock.close()
+
+    if not wait_time == None:
+        time.sleep(wait_time)
+
+    return 
 
 
 #############################
@@ -285,12 +299,7 @@ if __name__ == '__main__':
     			8 : 25
         }
     }
-    
-    
-    
-    
-    
-    
+
     #########################
     # Init server and sockets
     #########################
@@ -309,8 +318,6 @@ if __name__ == '__main__':
         dist_server_thread = threading.Thread(target=run_dist_server, args=(opts, wlm, q_arr[n], dist_sockets[n],), daemon = True)
         dist_server_thread.start()
     
-    
-    #current_channel = queue.Queue()
     
     # Run the fiber switcher server in a thread
     
