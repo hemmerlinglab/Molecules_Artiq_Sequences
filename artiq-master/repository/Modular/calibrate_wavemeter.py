@@ -52,7 +52,7 @@ class Calibrate_Wavemeter(EnvExperiment):
     
     def analyze(self):
 
-        my_analyze(self, reset_instruments = False)
+        my_analyze(self, do_reset_instruments = False)
     
         return
 

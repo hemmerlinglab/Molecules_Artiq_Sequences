@@ -14,7 +14,7 @@ from quantel                 import Quantel_Yag
 
 #######################################################################################################
 
-def my_analyze(self, reset_instruments = True):
+def my_analyze(self, do_reset_instruments = True):
 
     if reset_instruments:
         # reset scan value to setting in parameter
@@ -40,7 +40,7 @@ def my_analyze(self, reset_instruments = True):
     print('Scan finished.')
     relay(self, status = False)
 
-    if reset_instruments:
+    if do_reset_instruments:
         ####################################
         # Switch off instruments
         ####################################
