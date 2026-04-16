@@ -156,7 +156,7 @@ def run_dist_server(opts, wlm, q, sock):
 
                 timestamp = str(my_timestamp.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
-                basefilename = '{0}/{1}_wavemeter_calibration'.format(data_folder, timestamp)
+                basefilename = '{0}/{1}_wavemeter_calibration'.format(datafolder, timestamp)
 
                 # save file
                 f_hlp = open(basefilename, 'w')
