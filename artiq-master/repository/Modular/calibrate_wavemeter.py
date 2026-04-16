@@ -27,6 +27,7 @@ class Calibrate_Wavemeter(EnvExperiment):
     def build(self):
 
         my_build(self, which_instruments = [])
+        
         self.sequence_filename = os.path.abspath(__file__)
 
         return
@@ -42,6 +43,8 @@ class Calibrate_Wavemeter(EnvExperiment):
 
         my_prepare(self, init_instruments = False)
                 
+        self.use_yag = False
+
         return
 
     

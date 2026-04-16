@@ -152,17 +152,17 @@ def run_dist_server(opts, wlm, q, sock):
                 today = datetime.datetime.today()
                 today = today.strftime('%Y%m%d')
 
-                datafolder = ''
+                datafolder = 'c:/Users/hemme/Molecules_Artiq_Sequences/calibrations'
 
                 timestamp = str(my_timestamp.strftime('%Y%m%d_%H%M%S')) # 20190618_105557
 
-                basefilename = '{0}_wavemeter_calibration'.format(timestamp)
+                basefilename = '{0}/{1}_wavemeter_calibration'.format(data_folder, timestamp)
 
                 # save file
                 f_hlp = open(basefilename, 'w')
-                f_hlp.write('Calibration of wavemeter {0}'.format(timestamp))
-                f_hlp.write('Before calibration: {0}'.format(freq_before))
-                f_hlp.write('After  calibration: {0}'.format(freq_before))
+                f_hlp.write('Calibration of wavemeter {0}\n'.format(timestamp))
+                f_hlp.write('Before calibration: {0}\n'.format(freq_before))
+                f_hlp.write('After  calibration: {0}\n'.format(freq_before))
                 f_hlp.close()
 
 
