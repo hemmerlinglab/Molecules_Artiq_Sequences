@@ -125,7 +125,7 @@ def run_dist_server(opts, wlm, q, sock):
                 calibration_frequency = float(connection.recv(10).decode())
                 
                 # switch fiber switcher to channel of Davos
-                channel_davos = 2
+                channel_davos = 1
 
                 switch_fiber_channel(opts, channel_davos, wait_time = 3)
     
