@@ -130,7 +130,7 @@ def run_dist_server(opts, wlm, q, sock):
                 switch_fiber_channel(opts, channel_davos, wait_time = 3)
     
                 # run calibration
-                wlm.SetExposure(100)
+                wlm.SetExposure(30)
                 time.sleep(1)
 
                 # save old frequency
