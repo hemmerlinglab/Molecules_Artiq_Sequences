@@ -150,7 +150,7 @@ def run_dist_server(opts, wlm, q, sock):
                 my_timestamp = datetime.datetime.today()
     
                 today = datetime.datetime.today()
-                today = self.today.strftime('%Y%m%d')
+                today = today.strftime('%Y%m%d')
 
                 datafolder = ''
 
