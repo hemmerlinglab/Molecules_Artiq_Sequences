@@ -41,7 +41,10 @@ class XYPlot(pyqtgraph.PlotWidget):
 
         self.clear()
         
-        line_list = [0, 80, 215, 1251, 1283]
+        aom_freq = 85e6
+        offset_laser_Davos = (384.227849e12 + aom_freq)/1e12 # THz
+        
+        line_list = [0, 56, 134, 268, 1302, 1334, 1394]
         for k in line_list:
             self.addLine(x = k, pen = pyqtgraph.mkPen('r', width=0.5, style=QtCore.Qt.DashLine))
  

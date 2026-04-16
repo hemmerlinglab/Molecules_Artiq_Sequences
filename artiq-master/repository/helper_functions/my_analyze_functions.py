@@ -14,10 +14,11 @@ from quantel                 import Quantel_Yag
 
 #######################################################################################################
 
-def my_analyze(self):
+def my_analyze(self, reset_instruments = True):
 
-    # reset scan value to setting in parameter
-    reset_scan_parameter(self)
+    if reset_instruments:
+        # reset scan value to setting in parameter
+        reset_scan_parameter(self)
 
     # function is run after the experiment, i.e. after run() is called
     print('Saving data ...')
@@ -39,17 +40,18 @@ def my_analyze(self):
     print('Scan finished.')
     relay(self, status = False)
 
-    ####################################
-    # Switch off instruments
-    ####################################
+    if reset_instruments:
+        ####################################
+        # Switch off instruments
+        ####################################
 
-    reset_instruments(self)
+        reset_instruments(self)
 
-    ####################################
-    # Close instruments
-    ####################################
+        ####################################
+        # Close instruments
+        ####################################
 
-    close_instruments(self)
+        close_instruments(self)
 
 
     # Play sound that scan is finished

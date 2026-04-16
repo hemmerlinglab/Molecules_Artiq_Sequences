@@ -14,13 +14,14 @@ from base_sequences          import reset_core,  relay
 
 #######################################################################################################
 
-def my_prepare(self, data_to_save = None):
+def my_prepare(self, data_to_save = None, init_instruments = True):
 
     # prepare datasets
     prepare_datasets(self)
     
     # sets all instruments and parameters before the scan
-    prepare_initial_instruments(self)
+    if init_instruments:
+        prepare_initial_instruments(self)
 
     #turn relay on
     relay(self, status = True)

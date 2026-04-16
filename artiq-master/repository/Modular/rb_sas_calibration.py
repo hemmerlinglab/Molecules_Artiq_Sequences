@@ -38,34 +38,26 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
        
         # override parameters
         self.scanning_parameter = 'offset_laser_Davos'
-        #self.scanning_parameter = 'offset_laser_Hodor'
 
         self.update_config('scanning_parameter', 'offset_laser_Davos')
-        #self.update_config('scanning_parameter', 'offset_laser_Hodor')
 
         self.scanning_laser = 'Davos'
-        #self.scanning_laser = 'Hodor'
 
         self.update_config('scanning_laser', 'Davos')
-        #self.update_config('scanning_laser', 'Hodor')
 
-        self.offset_laser_Davos = 384.227990
-        #self.offset_laser_Hodor = 384.227990
+        # R-87 F=2 -> F'=2
+        aom_freq = 85e6
+        self.offset_laser_Davos = (384.227849e12 + aom_freq)/1e12 # THz
 
-        self.update_config('offset_laser_Davos', 384.227990)
-        #self.update_config('offset_laser_Hodor', 384.227990)
+        self.update_config('offset_laser_Davos', self.offset_laser_Davos)
 
         self.which_scanning_laser = 2
 
-        self.setpoint_count = 100 + 80
+        self.setpoint_count = 100 + 40
         self.update_config('setpoint_count', self.setpoint_count)
-
-        #self.no_of_averages = 2
-        #self.update_config('no_of_averages', self.no_of_averages)
 
         self.he_flow = 0.0
         self.update_config('he_flow', self.he_flow)
-        # self.setattr_device('ttl13') #relay test
 
         return
 
@@ -82,9 +74,9 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         my_prepare(self)
 
-        self.scan_values = np.linspace(-100, 250, 100)
+        self.scan_values = np.linspace(-40, 360, 100)
 
-        self.scan_values = np.append(self.scan_values, np.linspace(1150+60, 1400-25, 80))
+        self.scan_values = np.append(self.scan_values, np.linspace(1260, 1430, 40))
 
         self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
 
