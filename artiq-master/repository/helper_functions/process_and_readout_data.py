@@ -89,9 +89,9 @@ def check_shot(self):
     repeat_shot = False
 
     # check if Yag has fired
-    if self.yag_check and np.max(self.smp_data['fire_check']) < 0.025:
+    if self.yag_check and np.max(self.smp_data['fire_check']) < 0.1:
         repeat_shot = True
-        print('No Yag')
+        print('No Yag val: {0}'.format(np.max(self.smp_data['fire_check'])))
         os.system('mpg321 -quiet ~/klaxon.mp3')
 
     # check if spectroscopy light was there
