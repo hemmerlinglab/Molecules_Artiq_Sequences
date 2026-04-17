@@ -94,26 +94,39 @@ def check_shot(self):
         print('No Yag val: {0}'.format(np.max(self.smp_data['fire_check'])))
         os.system('mpg321 -quiet ~/klaxon.mp3')
 
-    # check if spectroscopy light was there
-    blue_min = splr.adc_mu_to_volt(15)
+    # check if spectroscopy light was there    
+    
+    print(np.mean(self.smp_data['int_chamber_pickup']))
+
+    blue_min = 0.35/ 1200.0 * 600
     if self.blue_check:
-        if self.which_scanning_laser == 1:
-          if np.min(self.smp_data['davos_pickup']) < blue_min:
-                repeat_shot = True
-
-        elif self.which_scanning_laser == 2:
-          if np.min(self.smp_data['hodor_pickup']) < blue_min:
-                repeat_shot = True
-
-        elif self.which_scanning_laser == 3:
-          if np.min(self.smp_data['daenerys_pickup']) < blue_min:
-                repeat_shot = True
-        else:
-            print('Not checking spectroscopy laser')
+        if np.mean(self.smp_data['int_chamber_pickup']) < blue_min:
+           repeat_shot = True
 
         if repeat_shot:
             print('No spectroscopy')
             os.system('mpg321 -quiet ~/klaxon.mp3')
+
+
+    #blue_min = splr.adc_mu_to_volt(15)
+    #if self.blue_check:
+    #    if self.which_scanning_laser == 1:
+    #      if np.min(self.smp_data['davos_pickup']) < blue_min:
+    #            repeat_shot = True
+
+    #    elif self.which_scanning_laser == 2:
+    #      if np.min(self.smp_data['hodor_pickup']) < blue_min:
+    #            repeat_shot = True
+
+    #    elif self.which_scanning_laser == 3:
+    #      if np.min(self.smp_data['daenerys_pickup']) < blue_min:
+    #            repeat_shot = True
+    #    else:
+    #        print('Not checking spectroscopy laser')
+
+    #    if repeat_shot:
+    #        print('No spectroscopy')
+    #        os.system('mpg321 -quiet ~/klaxon.mp3')
 
     # check if laser is locked by comparing wavemeter frequency with setpoint
 
