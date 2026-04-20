@@ -81,7 +81,7 @@ def prepare_initial_instruments(self):
     elif self.scanning_laser == 'Davos':
         hlp_frequency_offset = self.offset_laser_Davos
 
-    set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
+    #set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
 
     # pause to wait till laser settles
     time.sleep(1)
@@ -136,7 +136,7 @@ def reset_instruments(self):
         hlp_frequency_offset = self.offset_laser_Davos
 
     # set laser back to initial point
-    set_single_laser(self.scanning_laser, hlp_frequency_offset, wait_time = self.lock_wait_time)
+    #set_single_laser(self.scanning_laser, hlp_frequency_offset, wait_time = self.lock_wait_time)
 
     # switch off Helium flow
     set_helium_flow(0.0, wait_time = 0.0)

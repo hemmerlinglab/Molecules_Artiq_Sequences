@@ -162,7 +162,7 @@ def run_dist_server(opts, wlm, q, sock):
                 f_hlp = open(basefilename, 'w')
                 f_hlp.write('Calibration of wavemeter {0}\n'.format(timestamp))
                 f_hlp.write('Before calibration: {0}\n'.format(freq_before))
-                f_hlp.write('After  calibration: {0}\n'.format(freq_before))
+                f_hlp.write('After  calibration: {0}\n'.format(freq_after))
                 f_hlp.close()
 
 

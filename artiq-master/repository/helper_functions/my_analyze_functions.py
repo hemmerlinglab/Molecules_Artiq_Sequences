@@ -16,7 +16,7 @@ from quantel                 import Quantel_Yag
 
 def my_analyze(self, do_reset_instruments = True):
 
-    if reset_instruments:
+    if do_reset_instruments:
         # reset scan value to setting in parameter
         reset_scan_parameter(self)
 
