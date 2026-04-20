@@ -232,7 +232,7 @@ def _scan_offset_laser_Hodor(self, val, scan_values, scan_check = False):
         else:
             hlp_wait_time = self.relock_wait_time
 
-        set_single_laser('Hodor', frequency, do_switch = True, wait_time = hlp_wait_time)
+        set_single_laser('Hodor', frequency, do_switch = False, wait_time = hlp_wait_time)
 
         return 1
 
@@ -255,7 +255,7 @@ def _scan_offset_laser_Daenerys(self, val, scan_values, scan_check = False):
         
         frequency = self.offset_laser_Daenerys + val/1.0e6
 
-        set_single_laser('Daenerys', frequency, do_switch = True, wait_time = self.relock_wait_time)
+        set_single_laser('Daenerys', frequency, do_switch = False, wait_time = self.relock_wait_time)
 
         return 1
 
@@ -285,7 +285,7 @@ def _scan_offset_laser_Davos(self, val, scan_values, scan_check = False):
         else:
             hlp_wait_time = self.relock_wait_time
 
-        set_single_laser('Davos', frequency, do_switch = True, wait_time = hlp_wait_time)
+        set_single_laser('Davos', frequency, do_switch = False, wait_time = hlp_wait_time)
 
         return 1
 

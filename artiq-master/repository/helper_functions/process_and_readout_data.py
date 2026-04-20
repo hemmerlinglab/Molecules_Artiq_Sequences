@@ -96,7 +96,7 @@ def check_shot(self):
 
     # check if spectroscopy light was there    
     
-    print(np.mean(self.smp_data['int_chamber_pickup']))
+    #print(np.mean(self.smp_data['int_chamber_pickup']))
 
     blue_min = 0.35/ 1200.0 * 600
     if self.blue_check:
