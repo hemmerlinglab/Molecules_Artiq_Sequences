@@ -133,8 +133,15 @@ def run_pid(q_arr, ser, wlm, pid_arr, current_channel, init_setpoints, opts):
                 # switch current_channel to new channel
                 current_channel = chan
                 
+               
+                # set output to zero
+                send_arduino_control(ser[opts['pids'][c]['arduino_no']], 0, opts['pids'][c]['DAC_chan'], max_output = opts['pids'][c]['DAC_max_output'])
+                
                 # activate PID of new channel
-                pid_arr[current_channel].set_auto_mode(True, last_output = last_output[current_channel])
+                #pid_arr[current_channel].set_auto_mode(True, last_output = last_output[current_channel])
+                pid_arr[current_channel].set_auto_mode(True, last_output = 0)
+
+                pid_arr[current_channel].setpoint = float(get_wavemeter_frequency(wlm))
 
             # get specific setpoint of channel                
             if chan in setpoints.keys():
