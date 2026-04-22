@@ -316,7 +316,7 @@ if __name__ == '__main__':
             ],
         'wavemeter_channel_exposures' : {
                 1 : 25,
-                2 : 25,
+                2 : 50,
                 3 : 100, # Daenerys IR
                 4 : 100, # HeNe channel
                 5 : 450,
