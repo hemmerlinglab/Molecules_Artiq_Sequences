@@ -105,10 +105,11 @@ def prepare_datasets(self):
     self.set_dataset('transfer_lock_traces',  ([np.zeros([999, 4])] * self.no_of_averages * self.setpoint_count), broadcast=True)
     self.set_dataset('transfer_lock_times',   ([np.zeros([999, 1])] * self.no_of_averages * self.setpoint_count), broadcast=True)
 
-    # spectrum datasets    
+    # spectrum datasets for display 
     self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
     self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
     self.set_dataset('sat_spectrum',         ([0] * self.setpoint_count),broadcast=True)
+    self.set_dataset('yag_spectrum',         ([0] * self.setpoint_count),broadcast=True)
 
     ## set the slow / no slow configuration starting point
     #self.current_configuration = 0

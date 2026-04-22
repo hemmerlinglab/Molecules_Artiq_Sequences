@@ -58,6 +58,7 @@ def my_run(self):
                     
                     #time.sleep(1)
 
+                    # Dictionary to display averaged data
                     self.smp_data_avg = {}
     
                     repeat_shot = True
