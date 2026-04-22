@@ -98,13 +98,14 @@ def check_shot(self):
     
     #print(np.mean(self.smp_data['int_chamber_pickup']))
 
-    blue_min = 0.35/ 1200.0 * 600
+    blue_min = 0.35/ 1200.0 * 400
     if self.blue_check:
         if np.mean(self.smp_data['int_chamber_pickup']) < blue_min:
            repeat_shot = True
 
         if repeat_shot:
-            print('No spectroscopy')
+            #print('No spectroscopy')
+            print('No spectroscopy val: {0}'.format(np.max(self.smp_data['int_chamber_pickup'])))
             os.system('mpg321 -quiet ~/klaxon.mp3')
 
 
