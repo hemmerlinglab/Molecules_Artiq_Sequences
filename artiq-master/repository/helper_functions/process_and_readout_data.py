@@ -224,24 +224,43 @@ def average_data(self, i_avg):
     # toggle through all channels and average the data
 
 
+    ##########################################
+    # Integrate signals for display purposes
+    ##########################################
+    
     # integrate pmt signal
     # get time slices for each channel
     pmt_ind_1 = int(self.pmt_slice_min * 1e3/self.time_step_size)
     pmt_ind_2 = int(self.pmt_slice_max * 1e3/self.time_step_size)
 
-    channel = 'pmt'
-    self.smp_data_avg[channel] = np.mean(self.ch2_avg[pmt_ind_1:pmt_ind_2])
+    self.smp_data_avg['pmt'] = np.mean(self.ch2_avg[pmt_ind_1:pmt_ind_2])
 
     # integrate in-cell signal
     # get time slices for each channel
     ind_1 = int(self.slice_min * 1e3/self.time_step_size)
     ind_2 = int(self.slice_max * 1e3/self.time_step_size)
 
-    channel = 'absorption'
-    self.smp_data_avg[channel] = np.mean(self.ch0_avg[ind_1:ind_2])
+    self.smp_data_avg['absorption'] = np.mean(self.ch0_avg[ind_1:ind_2])
 
-    channel = 'sat_spec'
-    self.smp_data_avg[channel] = np.mean(self.ch7_avg)
+    # integrate Rb SAS signal
+    self.smp_data_avg['sat_spec'] = np.mean(self.ch7_avg)
+
+    # integrate Yag power
+
+    yag_ind_1 = int(5.0 * 1e3/self.time_step_size)
+    yag_ind_2 = int(7.0 * 1e3/self.time_step_size)
+
+    self.smp_data_avg['fire_check'] = np.mean(self.ch1_avg[yag_ind_1:yag_ind_2])
+
+    #print('debug')
+    #print(pmt_ind_1)
+    #print(self.smp_data[self.smp_data_sets['ch1']][pmt_ind_1])
+    #print(self.ch1_avg[pmt_ind_1])
+
+    #print(self.smp_data[self.smp_data_sets['ch7']][pmt_ind_1])
+    #print(self.ch7_avg[pmt_ind_1])
+
+    #print(self.time_interval[pmt_ind_1])
 
     return
 
@@ -280,6 +299,7 @@ def update_data_sets(self, counter, n):
         self.mutate_dataset('in_cell_spectrum',    n,       self.smp_data_avg['absorption'])
         self.mutate_dataset('pmt_spectrum',        n,       self.smp_data_avg['pmt'])    
         self.mutate_dataset('sat_spectrum',        n,       self.smp_data_avg['sat_spec'])    
+        self.mutate_dataset('yag_spectrum',        n,       self.smp_data_avg['fire_check'])    
   
         self.mutate_dataset('beat_node_fft',       counter, self.beat_node_fft)
         self.mutate_dataset('frequency_comb_frep', counter, self.comb_frep)
