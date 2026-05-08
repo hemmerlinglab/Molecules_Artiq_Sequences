@@ -98,7 +98,7 @@ def check_shot(self):
     
     #print(np.mean(self.smp_data['int_chamber_pickup']))
 
-    blue_min = 0.35/ 1200.0 * 400
+    blue_min = 0.15/ 1200.0 * 400
     if self.blue_check:
         if np.mean(self.smp_data['int_chamber_pickup']) < blue_min:
            repeat_shot = True

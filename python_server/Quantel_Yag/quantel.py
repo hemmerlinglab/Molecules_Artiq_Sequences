@@ -405,8 +405,10 @@ class Quantel_Yag(RS232_Instrument):
 
     def run_laser(self, vmo = 1000):
 
-        self.set_vmo(vmo)
-        
+        self.fast_warm_up()
+
+        self.startup_laser(vmo = vmo)
+
         self.open_shutter()
 
         self.qswitch_on()

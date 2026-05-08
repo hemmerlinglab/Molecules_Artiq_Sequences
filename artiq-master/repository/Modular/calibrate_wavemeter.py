@@ -83,6 +83,7 @@ class Calibrate_Wavemeter(EnvExperiment):
         # Calibrate wavemeter
 
         calibrate_wavemeter(384.228067) 
+        #calibrate_wavemeter(384.228071)
 
         return
 
