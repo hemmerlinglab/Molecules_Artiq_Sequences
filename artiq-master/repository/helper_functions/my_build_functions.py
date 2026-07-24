@@ -162,7 +162,11 @@ def load_parameters(self, raster_scan = False):
     # Microwave
     my_setattr(self, 'dds_frequency',   NumberValue(default = 10.0, unit='MHz', min=0.0, max = 400.0, scale=1,ndecimals=3,step=1))
     my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'dds_amplitude',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
+
+    #my_setattr(self, 'dds_amplitude',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
+    #my_setattr(self, 'dds_amplitude_dBm',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
+
     my_setattr(self, 'dds_on',        BooleanValue(default=False))
     
 

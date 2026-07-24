@@ -33,7 +33,7 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
 
     # DDS
 
-    init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude = self.dds_amplitude)
+    init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
 
     return
 

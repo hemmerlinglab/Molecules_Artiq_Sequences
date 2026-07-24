@@ -42,7 +42,10 @@ def reset_core(self):
 ##########################################################################
 
 @kernel
-def init_dds(self, frequency = 1.0 * MHz, attenuation = 10.0 * dB, amplitude = 1.0):
+def init_dds(self, frequency = 1.0 * MHz, attenuation = 10.0 * dB, amplitude_dBm = 1.0):
+
+    # Convert amplitude in dBm to 0 - 1 scale, see spec sheet of AD9910 with the Urukul giving 11 dBm output power
+    amplitude = 10**( (amplitude_dBm - 11.0)/20.0)
 
     # this function assumes that one DDS exists and is referenced to as self.dds
 
@@ -55,7 +58,7 @@ def init_dds(self, frequency = 1.0 * MHz, attenuation = 10.0 * dB, amplitude = 1
     self.dds.set_att(attenuation) 
    
     # Set amplitude
-    self.dds.set_amplitude(amplitude) 
+    self.dds.set_amplitude(amplitude)
 
     # Set frequency
     self.dds.set(frequency = frequency, phase = 0.0, amplitude = amplitude)

@@ -143,3 +143,7 @@ class DDS_RAM_FREQ(EnvExperiment):
         self.dds.cpld.io_update.pulse_mu(8)
 
         self.dds.cfg_sw(False)
+
+
+
+
