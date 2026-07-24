@@ -9,7 +9,7 @@ from configparser import ConfigParser
 
 from scan_functions          import scan_parameter
 from my_instrument_functions import prepare_initial_instruments
-from base_sequences          import reset_core,  relay
+from base_sequences          import reset_core, relay, init_dds, dds_on, dds_off
 
 
 #######################################################################################################
@@ -23,13 +23,17 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
     if init_instruments:
         prepare_initial_instruments(self)
 
-    #turn relay on
+    # turn relay on
     relay(self, status = True)
-    
+
     # prepare config file
     prepare_saving_configuration(self, data_to_save = data_to_save)
 
     reset_core(self)
+
+    # DDS
+
+    init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude = self.dds_amplitude)
 
     return
 

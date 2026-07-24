@@ -7,7 +7,7 @@ import numpy as np
 
 
 
-class DDS_RAM(EnvExperiment):
+class DDS_RAM_FREQ(EnvExperiment):
    
     @kernel
     def set_osk_step_size(self, step_size):
@@ -38,15 +38,30 @@ class DDS_RAM(EnvExperiment):
         self.cpld = self.get_device("urukul0_cpld")
 
         self.setattr_device('ttl16')
-
-        self.f = np.linspace(0.0, 10.0, 4) * MHz
-        #self.f = np.linspace(10.0, 11.0, 5) * MHz
-        #self.f = np.array([10.0, 10.0, .2, .2, 5.0, 5.0, 10.0, 10.0]) * MHz
-        self.f_ram = [0] * len(self.f)
+       
+        self.get_linear_ramp(
+                start = 10.0, # in MHz
+                stop = 20.0,
+                duration = 10 * ms)
 
         return
 
-    def get_ramp_array(self):
+    def get_linear_ramp(self,
+            start    = 0.0, # in MHz
+            stop     = 1.0,
+            duration = 1.0 * ms,
+            min_no   = 1e3
+            ):
+
+        #number_of_points = int(dt / (4*ns))
+
+        number_of_points = int(min_no) # need some reasonable number here
+
+        self.ramp_step_size = duration / number_of_points
+
+        self.frequency_interval = np.linspace(start, stop, number_of_points) * MHz
+        self.frequency_interval_ram = [0] * len(self.frequency_interval)
+
         return
 
     @kernel
@@ -61,12 +76,12 @@ class DDS_RAM(EnvExperiment):
 
         return
 
-
     @kernel
     def prg_freq_ramp(self, 
             step_size = 1*ns,
             profile = 0,
-            mode = ad9910.RAM_MODE_RAMPUP
+            #mode = ad9910.RAM_MODE_RAMPUP
+            mode = ad9910.RAM_MODE_CONT_RAMPUP
             ):
         
         # RAM programming
@@ -84,7 +99,7 @@ class DDS_RAM(EnvExperiment):
         # 1 step = 4ns
         self.dds.set_profile_ram(
                 start = 0, 
-                end   = len(self.f_ram)-1,
+                end   = len(self.frequency_interval_ram)-1,
                 step  = int(step_size/4e-9), # in units of 4ns # max = 16-bit = 2^16 - 1 
                 profile = profile, 
                 mode = mode
@@ -93,9 +108,9 @@ class DDS_RAM(EnvExperiment):
         self.dds.cpld.io_update.pulse_mu(8)
 
         # Convert ramp to machine units and write to RAM
-        self.dds.frequency_to_ram(self.f, self.f_ram)
+        self.dds.frequency_to_ram(self.frequency_interval, self.frequency_interval_ram)
         self.core.break_realtime()
-        self.dds.write_ram(self.f_ram)
+        self.dds.write_ram(self.frequency_interval_ram)
         self.core.break_realtime()
        
        
@@ -119,13 +134,12 @@ class DDS_RAM(EnvExperiment):
         self.core.reset()
         self.core.break_realtime() 
         
-
         self.init_dds(att = 6.0 * dB)
-        self.prg_freq_ramp(step_size = 15*us)      
+        self.prg_freq_ramp(step_size = self.ramp_step_size) 
 
         # this starts the ramp at the end of the trigger
         self.ttl16.pulse(5*us)
 
         self.dds.cpld.io_update.pulse_mu(8)
-        
 
+        self.dds.cfg_sw(False)

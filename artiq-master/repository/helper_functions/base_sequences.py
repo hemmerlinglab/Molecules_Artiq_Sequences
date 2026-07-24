@@ -1,13 +1,5 @@
 from artiq.experiment import *
 
-### Script to run on Artiq
-    # Basic Schedule:
-    # 1) Trigger YAG Flashlamp
-    # 2) Wait 150 us
-    # 3) Trigger Q Switch
-    # 4) In parallel, read off 2 diodes and PMT
-
-
 #@kernel
 #def set_zotino_voltage(self, channel, voltage):
 #
@@ -35,6 +27,8 @@ from artiq.experiment import *
 
 
 ##########################################################################
+# Core Reset
+##########################################################################
 
 @kernel
 def reset_core(self):
@@ -43,6 +37,57 @@ def reset_core(self):
     return
 
 
+##########################################################################
+# DDS functions
+##########################################################################
+
+@kernel
+def init_dds(self, frequency = 1.0 * MHz, attenuation = 10.0 * dB, amplitude = 1.0):
+
+    # this function assumes that one DDS exists and is referenced to as self.dds
+
+    self.core.break_realtime()
+
+    self.dds.cpld.init()
+    self.dds.init()
+
+    # Set attenuation in dB
+    self.dds.set_att(attenuation) 
+   
+    # Set amplitude
+    self.dds.set_amplitude(amplitude) 
+
+    # Set frequency
+    self.dds.set(frequency = frequency, phase = 0.0, amplitude = amplitude)
+
+    return
+
+#################################
+
+@kernel
+def dds_on(self):
+   
+    self.core.break_realtime()
+    self.dds.cfg_sw(True)
+
+    return
+
+#################################
+
+@kernel
+def dds_off(self):
+       
+    self.core.break_realtime()
+    self.dds.cfg_sw(False)
+
+    return
+
+#################################
+
+
+
+##########################################################################
+# Zotino sampler functions
 ##########################################################################
 
 @kernel
@@ -80,6 +125,7 @@ def fire_and_read(self):
         self.sampler0.init()       # initializes sampler device
         # self.ttl13.on()            # trigger the relay
         
+       
         # Set Channel Gain
         for i in range(8):
             self.sampler0.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
@@ -98,6 +144,8 @@ def fire_and_read(self):
         
         smp   = [0]*8 # individual sample
 
+
+    
         ## fire sequence only at a certain time after the pulsetube cycle
         #if self.pulse_tube_sync_wait>0:
         #    delay(self.pulse_tube_sync_wait*ms)
@@ -130,17 +178,17 @@ def fire_and_read(self):
                 delay(100*us) # wait until some time after green flash
                 self.ttl5.pulse(15*us) # trigger uv ccd
 
-            with sequential:
+            #with sequential:
 
-                # uniblitz shutter
-                
-                if self.uniblitz_on:
-                    # this is the shutter inside the dewar
-                    # shutter needs 13ms to start opening
-                    delay((self.shutter_start_time)*ms)
-                    self.ttl7.on()
-                    delay((self.shutter_open_time)*ms)
-                    self.ttl7.off()
+            #    # uniblitz shutter
+            #    
+            #    if self.uniblitz_on:
+            #        # this is the shutter inside the dewar
+            #        # shutter needs 13ms to start opening
+            #        delay((self.shutter_start_time)*ms)
+            #        self.ttl7.on()
+            #        delay((self.shutter_open_time)*ms)
+            #        self.ttl7.off()
 
             with sequential:
 

@@ -92,13 +92,16 @@ def load_attributes(self):
     
     self.setattr_device('ttl11') # cavity scan
     
-    self.setattr_device('ttl13') #relay test
+    self.setattr_device('ttl13') # relay test
 
     self.setattr_device('sampler0') # adc voltage sampler
     self.setattr_device('sampler1') # adc voltage sampler
     self.setattr_device('scheduler') # scheduler used
     
     self.setattr_device('zotino0') # for analog output voltages
+
+    self.dds = self.get_device("urukul0_ch0") # for DDS ch0
+    self.cpld = self.get_device("urukul0_cpld") # cpld for DDS ch0
 
     return
 
@@ -125,23 +128,19 @@ def load_parameters(self, raster_scan = False):
     # High voltage
     my_setattr(self, 'plate_voltage',       NumberValue(default=0,unit='V',type='int',scale=1,ndecimals=0,step=1,min=0,max=30.0e3))
 
-    #my_setattr(self, 'setpoint_count',NumberValue(default=30,unit='setpoints',scale=1,ndecimals=0,step=1))
-    #my_setattr(self, 'setpoint_min',NumberValue(default=-150,unit='MHz',scale=1,ndecimals=3,step=1))
-    #my_setattr(self, 'setpoint_max',NumberValue(default=150,unit='MHz',scale=1,ndecimals=3,step=1))
-
     my_setattr(self, 'yag_fire_time',     NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
 
-    # dewar shutter
-    my_setattr(self, 'shutter_start_time',NumberValue(default=15,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'shutter_open_time', NumberValue(default=30,unit='ms',scale=1,ndecimals=1,step=0.1))
+    ## dewar shutter
+    #my_setattr(self, 'shutter_start_time',NumberValue(default=15,unit='ms',scale=1,ndecimals=1,step=0.1))
+    #my_setattr(self, 'shutter_open_time', NumberValue(default=30,unit='ms',scale=1,ndecimals=1,step=0.1))
 
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'yag_power',      NumberValue(default=13,unit='',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow',        NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow_wait',   NumberValue(default=2,unit='s',scale=1,ndecimals=1,step=0.1))
     
-    my_setattr(self, 'pulse_tube_sync_wait',NumberValue(default=10,unit='ms',scale=1,ndecimals=1,step=0.1))
+    #my_setattr(self, 'pulse_tube_sync_wait',NumberValue(default=10,unit='ms',scale=1,ndecimals=1,step=0.1))
    
     ####################################################################
     # Booleans
@@ -161,8 +160,10 @@ def load_parameters(self, raster_scan = False):
     ####################################################################
 
     # Microwave
-    my_setattr(self, 'microwave_frequency', NumberValue(default = 12577,unit='MHz', min=15.0, max = 20.0e3, scale=1,ndecimals=3,step=1))
-    my_setattr(self, 'microwave_power',     NumberValue(default =   -50,unit='dB', min=-100.0, max=10.0, scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'dds_frequency',   NumberValue(default = 10.0, unit='MHz', min=0.0, max = 400.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'dds_amplitude',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'dds_on',        BooleanValue(default=False))
     
 
     my_setattr(self, 'offset_laser_Davos',      NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
