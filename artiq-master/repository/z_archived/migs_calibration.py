@@ -6,7 +6,7 @@ import time
 
 
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
-from rigol import Rigo_RSA3030
+
 
 
 # def calibrate(freq):

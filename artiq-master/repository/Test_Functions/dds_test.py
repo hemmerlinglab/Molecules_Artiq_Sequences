@@ -3,6 +3,7 @@ from artiq.experiment import *
 import os
 import sys
 import time
+# from rigol import Rigol_RSA3030
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
 
 

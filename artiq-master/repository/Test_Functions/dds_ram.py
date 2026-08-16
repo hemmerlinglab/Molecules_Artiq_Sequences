@@ -18,7 +18,7 @@ class DDS_RAM(EnvExperiment):
 
         #self.setattr_argument('frequency', NumberValue(default = 10, unit='MHz', min=1.0, max = 800.0, scale=1,ndecimals=1,step=1))
 
-        self.dds = self.get_device("urukul0_ch0") # Set specific channel
+        self.dds = self.get_device("urukul0_ch0")  # Set specific channel
         self.cpld = self.get_device("urukul0_cpld")
 
         self.setattr_device('ttl16')
@@ -41,7 +41,7 @@ class DDS_RAM(EnvExperiment):
         self.dds.cfg_sw(True)
 
         # Set attenuation in dB
-        self.dds.set_att(6.0 * dB) 
+        self.dds.set_att(1.0 * dB) 
         
         self.dds.set_amplitude(1.0) 
 
@@ -57,7 +57,7 @@ class DDS_RAM(EnvExperiment):
         self.dds.set_profile_ram(
                 start = 0, 
                 end   = len(self.asf_ram)-1,
-                step  = 250, 
+                step  = 100, 
                 profile = 0, 
                 #mode=ad9910.RAM_MODE_CONT_RAMPUP
                 mode=ad9910.RAM_MODE_RAMPUP
@@ -73,7 +73,7 @@ class DDS_RAM(EnvExperiment):
        
         # set frequency
         self.dds.set(
-                frequency=1*MHz,
+                frequency=2*MHz,
         #        amplitude=1.0,
                 profile=0
                 )

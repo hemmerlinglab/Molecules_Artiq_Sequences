@@ -34,7 +34,8 @@ class DDS_RAM_FREQ(EnvExperiment):
 
         #self.setattr_argument('frequency', NumberValue(default = 10, unit='MHz', min=1.0, max = 800.0, scale=1,ndecimals=1,step=1))
 
-        self.dds = self.get_device("urukul0_ch0") # Set specific channel
+        # self.dds = self.get_device("urukul0_ch0") # Set specific channel
+        self.dds = self.get_device("urukul0_ch1")
         self.cpld = self.get_device("urukul0_cpld")
 
         self.setattr_device('ttl16')

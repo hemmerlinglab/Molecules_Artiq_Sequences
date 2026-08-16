@@ -92,7 +92,7 @@ def load_attributes(self):
     
     self.setattr_device('ttl11') # cavity scan
     
-    self.setattr_device('ttl13') # relay test
+    self.setattr_device('ttl13') # relay 
 
     self.setattr_device('sampler0') # adc voltage sampler
     self.setattr_device('sampler1') # adc voltage sampler
@@ -101,6 +101,7 @@ def load_attributes(self):
     self.setattr_device('zotino0') # for analog output voltages
 
     self.dds = self.get_device("urukul0_ch0") # for DDS ch0
+    # self.dds = self.get_device("urukul0_ch1")
     self.cpld = self.get_device("urukul0_cpld") # cpld for DDS ch0
 
     return
