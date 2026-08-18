@@ -17,7 +17,8 @@ def get_scannable_parameters():
              'repetition_time',
              'offset_laser_Hodor',
              'offset_laser_Davos',
-             'cavity_ramp'
+             'cavity_ramp',
+             'dds_frequency'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -225,7 +226,7 @@ def _scan_offset_laser_Hodor(self, val, scan_values, scan_check = False):
         
         frequency = self.offset_laser_Hodor + val/1.0e6
 
-        # if jump is more than 100 MHz
+        # if jump is more than 50 MHz
         if abs(self.previous_setpoint - self.current_setpoint) > 50.0:
             hlp_wait_time = 3000.0
             print('Waiting for large jump in laser frequency ...')
@@ -311,6 +312,24 @@ def _scan_cavity_ramp(self, val, scan_values, scan_check = False):
         return 1
 
     return
+
+
+######################################################################################################
+
+def _scan_dds_frequency(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+    
+        return limit_check(self.scanning_parameter, scan_values, [10.0, 500.0]) # should be in MHz
+    
+    else:
+
+        init_dds(self, frequency = val * MHz, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
+
+        return 1
+    
+    return
+
 
 
 

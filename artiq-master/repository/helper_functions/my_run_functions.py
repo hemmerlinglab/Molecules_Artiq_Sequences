@@ -20,10 +20,17 @@ def my_run(self):
         
         counter = 0
     
+        if self.dds_on:
+        
+            dds_on(self)
+
+        else:
+
+            dds_off(self)
+
         ###########################################################
         # Loop over set points
-        ###########################################################
-        
+        ###########################################################    
 
         for my_ind in range(len(self.scan_values)):
     
@@ -68,18 +75,8 @@ def my_run(self):
                        #######################################
                        # Fires yag and reads voltages
                        #######################################
-                        
-                       if self.dds_on:
-        
-                          dds_on(self)
-
-                       else:
-
-                          dds_off(self)
                       
-                       fire_and_read(self)
-
-                       dds_off(self)
+                       fire_and_read(self)                       
     
                        #######################################
                        # Readout data and process it
@@ -100,12 +97,17 @@ def my_run(self):
                            update_data_sets(self, counter, my_ind)
     
                     
+
                 # counter needs to be reset to not count configurations double
                 counter += 1
+
+                
     
             print()
             print()
+    
 
+    return
 
 ###################################################################################
 

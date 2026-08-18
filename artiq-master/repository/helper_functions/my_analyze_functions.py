@@ -38,8 +38,11 @@ def my_analyze(self, do_reset_instruments = True):
     # finish scan
     print('Scan ' + self.basefilename + ' finished.')
     print('Scan finished.')
+
+    # switch relay to scope
     relay(self, status = False)
 
+    # switch off dds for safety
     dds_off(self)
 
     if do_reset_instruments:
@@ -58,8 +61,7 @@ def my_analyze(self, do_reset_instruments = True):
 
     # Play sound that scan is finished
     os.system('mpg321 -quiet ~/boat.mp3')
-    
-    
+        
     return
 
 
