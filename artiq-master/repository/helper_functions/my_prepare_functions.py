@@ -55,14 +55,14 @@ def prepare_datasets(self):
 
     # Prepare some data sets
     self.smp_data_sets = {
-            'ch0' : 'absorption',      # in-cell
-            'ch1' : 'fire_check',      # yag photodiode check
-            'ch2' : 'pmt',             # pmt
-            'ch3' : 'hodor_pickup',    # Hodor blue pickup
-            'ch4' : 'davos_pickup',    # Davos blue pickup
-            'ch5' : 'int_chamber_pickup',        # photodiode of intermittent chamber
-            'ch6' : 'daenerys_pickup', # Daenerys pickup
-            'ch7' : 'sat_spec'         # Saturation spectroscopy
+            'ch0' : 'absorption',           # in-cell
+            'ch1' : 'fire_check',           # yag photodiode check
+            'ch2' : 'pmt',                  # pmt
+            'ch3' : 'hodor_pickup',         # Hodor blue pickup
+            'ch4' : 'davos_pickup',         # Davos blue pickup
+            'ch5' : 'int_chamber_pickup',   # photodiode of intermittent chamber
+            'ch6' : 'int_chamber_pmt',      # pmt of intermittent chamber
+            'ch7' : 'sat_spec'              # Saturation spectroscopy
             }
 
     self.time_interval = np.linspace(0,(self.time_step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
