@@ -105,7 +105,8 @@ def my_run(self):
     
             print()
             print()
-    
+            
+        dds_off(self)
 
     return
 

@@ -1,7 +1,8 @@
 import time
 import numpy as np
-
+from base_sequences import init_dds
 from my_instrument_functions import set_single_laser, set_helium_flow, set_cavity_ramp_sp
+from artiq.experiment import *
 
 ########################################################################
 
