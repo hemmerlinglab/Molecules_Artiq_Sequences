@@ -2,15 +2,12 @@ import socket
 import time
 import numpy as np
 
-#import matplotlib.pyplot as plt
-
-
 
 class BK4053:
     
     def __init__(self):
 
-        TCP_IP = '192.168.42.47'
+        TCP_IP = '192.168.42.82'
         TCP_PORT = 5024
         TCP_PORT = 5025
 
@@ -23,7 +20,15 @@ class BK4053:
         self.socket = s
 
         return
-    
+   
+    def close(self):
+
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
+
+        return
+
+ 
     def send(self, msg):
 
         send_msg = msg + '\n'
@@ -38,70 +43,48 @@ class BK4053:
 
         return self.msg
 
-    def query(self, msg):
+    def query(self, msg, decode = True):
         
         self.send(msg)
 
-        return self.recv()
+        if decode:
+            return self.recv().decode('utf-8').strip()
+        else:
+            return self.recv()
 
-    def on(self):
+    def on(self, ch):
 
-        self.send('OUTP ON')        
+        self.send("C{0}:{1}".format(ch, 'OUTP ON'))
 
-    def off(self):
+    def off(self, ch):
 
-        self.send('OUTP OFF')
-
-    #def set_freq(self, freq):
-
-    #    self.send('FREQ ' + str(freq) + ' Hz')
-
-    #def set_ampl(self, ampl):
-
-    #    self.send(':POW ' + str(ampl))
-
-    #def set_carr_delay(self, channel, delay):
-
-    #    self.send('C' + str(channel) + ':BTWV CARR,DLY,' + str(delay))
-
-    #    return
-
-    #def set_carr_freq(self, channel, frequency):
-
-    #    self.send('C' + str(channel) + ':BTWV CARR,FRQ,' + str(frequency))
-
-    #    return
-    #    
-    #def set_carr_width(self, channel, freq, width):
-    #
-    #    duty = 100 * width / (1/freq)
-    #    
-    #    self.send('C' + str(channel) + ':BTWV CARR,DUTY,' + str(duty))
-    #    
-    #    return
-    #    
-    #def set_carr_ampl(self, channel, amplitude):
-    #
-    #	self.send('C' + str(channel) + ':BTWV CARR,AMP,' + str(amplitude))
-    #	
-    #	return
-    #	
-    #def set_carr_offset(self, channel, offset):
-    #
-    #	self.send('C' + str(channel) + ':BTWV CARR,OFST,' + str(offset))
-    #	
-    #	return
+        self.send("C{0}:{1}".format(ch, 'OUTP OFF'))
 
     def read_status(self, channel):
         
-        return self.query('C' + str(channel) + ':BSWV?')
+        return self.query('C{0}:{1}'.format(channel, 'BSWV?'))
 
-    def close(self):
+    def read_arwv(self, channel):
+        
+        return self.query('C{0}:{1}'.format(channel, 'ARVW?'))
 
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
+    def set_arwv(self, channel, index):
+        
+        self.send('C{0}:{1}{2}'.format(channel, 'ARWV INDEX,', index))
+
+    def set_load(self, channel, load):
+        
+        # load = 50 or HZ
+        self.send('C{0}:{1}{2}'.format(channel, 'OUTP LOAD,', load))
+
+    def set_dc_output(self, channel, voltage, load = 'HZ'):
+        
+        self.set_load(channel, load)
+        
+        self.send('C{0}:BSWV WVTP,DC,OFST,{1}'.format(channel, voltage))
 
         return
+
 
 
 
@@ -110,7 +93,55 @@ if __name__ == '__main__':
 
     bk = BK4053()
 
-    print(bk.read_status())
+    # Mixer test
+    # Output DC voltage in channel 1
+    bk.set_dc_output(1, 0.5)
+    bk.on(1)
+
+    #bk.set_load(1, 'HZ')
+    #bk.send('C1:ARWV INDEX,12')
+    #bk.send('C1:BSWV WVTP,ARB,AMP,0.5')
+    #bk.on(1)
+
+
+    #print(bk.read_status(1))
+    #print(bk.read_status(2))
+    #
+    #print(bk.query('C1:OUTP?'))
+    #print(bk.query('C2:OUTP?'))
+
+    #bk.off(1)
+    #bk.off(2)
+    #bk.on(2)
+
+    #print(bk.query('C1:OUTP?'))
+    #print(bk.query('C2:OUTP?'))
+
+
+    #print(bk.read_status(1))
+    #print(bk.read_status(2))
+    
+    #bk.set_load(1, 'HZ')
+
+    # bk.send('C2:BSWV FRQ,100,AMP,0')
+    #
+    ## bk.send('C2:ARWV INDEX,12')
+    #
+    ## bk.send('C2:BSWV WVTP,ARB')
+
+    # bk.send('C2:BTWV STATE, OFF,PRD,.05,TRSR,INT,TRMD,OFF')
+    # bk.send('C2:BTWV?')
+    #
+    # print(bk.read_status(2)
+    
+    #print(bk.query('Storelist?'))
+    
+    #print(bk.query('WVDT? M50', decode = False))
+
+
+    #bk.set_arwv(2, 2)
+    #print(bk.read_arwv(2))
+
 
     bk.close()
 

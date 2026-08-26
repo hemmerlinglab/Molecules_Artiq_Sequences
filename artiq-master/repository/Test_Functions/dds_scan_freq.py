@@ -6,11 +6,11 @@ import time
 # from rigol import Rigol_RSA3030
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/repository/helper_functions")
 
+import numpy as np
 
 from base_sequences import *
 
-
-class DDSControl(EnvExperiment):
+class DDS_Freq_Scan(EnvExperiment):
     
     def build(self):
         # 1. Initialize core device
@@ -40,6 +40,9 @@ class DDSControl(EnvExperiment):
         
         self.setattr_argument('dds_on', BooleanValue(default=False))
 
+        self.scan_interval = np.linspace(10, 400, 20)
+        print(self.scan_interval)
+        
         return
 
     @kernel
@@ -54,10 +57,14 @@ class DDSControl(EnvExperiment):
             dds_on(self)
         else:
             dds_off(self)
-        
-        #delay(1000.0*ms)
+       
+        for k in self.scan_interval:
 
-        #dds_off(self)
+            self.dds.set(frequency = k * MHz)
+
+            delay(5000.0*ms)
+
+        dds_off(self)
 
 
 

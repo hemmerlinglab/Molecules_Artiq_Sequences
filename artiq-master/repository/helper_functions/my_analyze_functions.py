@@ -103,7 +103,7 @@ def save_all_data(self):
 
             arr = np.array(hlp_arr)
 
-        # Write Data to Files
+        # Write data to files
         f_hlp = open(self.basefilename + '_' + hlp['var'],'w')
         np.savetxt(f_hlp, arr, delimiter=",")
         f_hlp.close()

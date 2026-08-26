@@ -34,16 +34,22 @@ class DDS_RAM_FREQ(EnvExperiment):
 
         #self.setattr_argument('frequency', NumberValue(default = 10, unit='MHz', min=1.0, max = 800.0, scale=1,ndecimals=1,step=1))
 
-        # self.dds = self.get_device("urukul0_ch0") # Set specific channel
-        self.dds = self.get_device("urukul0_ch1")
+        self.dds = self.get_device("urukul0_ch0") # Set specific channel
+        #self.dds = self.get_device("urukul0_ch1")
         self.cpld = self.get_device("urukul0_cpld")
 
         self.setattr_device('ttl16')
        
+        #self.get_linear_ramp(
+        #        start    = 400.0, # in MHz
+        #        stop     = 1.0,
+        #        duration = 10 * ms)
+        
         self.get_linear_ramp(
-                start = 10.0, # in MHz
-                stop = 20.0,
+                start    = 1.0, # in MHz
+                stop     = 400.0,
                 duration = 10 * ms)
+
 
         return
 
@@ -81,8 +87,8 @@ class DDS_RAM_FREQ(EnvExperiment):
     def prg_freq_ramp(self, 
             step_size = 1*ns,
             profile = 0,
-            #mode = ad9910.RAM_MODE_RAMPUP
-            mode = ad9910.RAM_MODE_CONT_RAMPUP
+            mode = ad9910.RAM_MODE_RAMPUP
+            #mode = ad9910.RAM_MODE_CONT_RAMPUP
             ):
         
         # RAM programming
@@ -135,15 +141,20 @@ class DDS_RAM_FREQ(EnvExperiment):
         self.core.reset()
         self.core.break_realtime() 
         
-        self.init_dds(att = 6.0 * dB)
+        self.init_dds(att = 0.0 * dB)
         self.prg_freq_ramp(step_size = self.ramp_step_size) 
 
         # this starts the ramp at the end of the trigger
-        self.ttl16.pulse(5*us)
+        self.ttl16.pulse(5*ms)
 
         self.dds.cpld.io_update.pulse_mu(8)
 
+
+        #self.dds.cfg_sw(True)
+        delay(10*ms)
         self.dds.cfg_sw(False)
+        
+        self.ttl16.pulse(5*ms)
 
 
 
