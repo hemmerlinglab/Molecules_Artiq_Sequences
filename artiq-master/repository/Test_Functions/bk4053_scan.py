@@ -15,7 +15,7 @@ from my_build_functions import my_setattr
 from rigol      import Rigol_RSA3030
 from bk_4053    import BK4053
 
-class DDS_General_Scan(EnvExperiment):
+class BK4053_General_Scan(EnvExperiment):
     
     def build(self):
 
@@ -85,6 +85,7 @@ class DDS_General_Scan(EnvExperiment):
 
         self.bk4053.set_dc_output(1, self.dc_offset)
         self.bk4053.on(1)
+        self.bk4053.on(2)
         
         self.scan_interval = np.linspace(5, 400, 50)
         
@@ -94,10 +95,7 @@ class DDS_General_Scan(EnvExperiment):
        
             print('Scan point {0}'.format(k))
         
-            #k_val = 10**( (k - 11.0)/20.0 )
-            k_val = k
-
-            self.base_run(k_val)
+            self.bk4053.set_sine_output(2, freq = k, amplitude = 100e-3)
 
             time.sleep(2)
 
@@ -105,6 +103,8 @@ class DDS_General_Scan(EnvExperiment):
             
             self.spec_result.append(hlp[:, 0])
             self.spec_result.append(hlp[:, 1])
+
+        self.bk4053.off(2)
 
         self.end_run()
 

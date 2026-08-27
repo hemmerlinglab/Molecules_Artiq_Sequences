@@ -85,6 +85,18 @@ class BK4053:
 
         return
 
+    def set_sine_output(self, channel, freq = 1, amplitude = 10e-3, load = '50'):
+
+        # freq in MHz
+        # amplitude in V
+        
+        self.set_load(channel, load)
+        
+        self.send('C{0}:BSWV WVTP,SINE,FRQ,{1},AMP,{2}'.format(channel, freq*1e6, amplitude))
+
+        return
+
+
 
 
 
