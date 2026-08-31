@@ -54,10 +54,10 @@ class DDS_RAM_FREQ(EnvExperiment):
         return
 
     def get_linear_ramp(self,
-            start    = 0.0, # in MHz
-            stop     = 1.0,
-            duration = 1.0 * ms,
-            min_no   = 1e3
+            start    = 0.0, # start freq in MHz
+            stop     = 1.0, # stop freq in MHz
+            duration = 1.0 * ms, # duration of ramp
+            min_no   = 1e3 # number of points on the ramp
             ):
 
         #number_of_points = int(dt / (4*ns))
@@ -66,7 +66,10 @@ class DDS_RAM_FREQ(EnvExperiment):
 
         self.ramp_step_size = duration / number_of_points
 
+        # the actual physical ramping interval
         self.frequency_interval = np.linspace(start, stop, number_of_points) * MHz
+        
+        # the interval that is programmed into the DDS
         self.frequency_interval_ram = [0] * len(self.frequency_interval)
 
         return
@@ -144,7 +147,7 @@ class DDS_RAM_FREQ(EnvExperiment):
         self.init_dds(att = 0.0 * dB)
         self.prg_freq_ramp(step_size = self.ramp_step_size) 
 
-        # this starts the ramp at the end of the trigger
+        # for debugging: this starts the ramp at the end of the trigger to use the scope to trigger the sequence
         self.ttl16.pulse(5*ms)
 
         self.dds.cpld.io_update.pulse_mu(8)

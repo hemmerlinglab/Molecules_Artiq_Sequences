@@ -6,6 +6,7 @@ import numpy as np
 
 from base_sequences import set_zotino_voltage
 
+from artiq.experiment import *
 
 # Instrument imports
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
@@ -15,6 +16,7 @@ from rigol               import Rigol_RSA3030, Rigol_DSG821
 from rigol_dho924        import Rigol_DHO924                  # scope of transfer cavity
 from frequency_comb      import DFC
 from microwave_windfreak import Microwave
+from bk_4053             import BK4053
 
 #######################################################################################################
 
@@ -44,15 +46,15 @@ def load_instruments(self):
             
             self.scope_transfer_cavity.init_scope_for_exp(channels = [1, 2, 3, 4])
 
+        if instr == 'BK4053':
+            self.bk4053 = BK4053()
+
     return
 
 
 #######################################################################################################
 
 def prepare_initial_instruments(self):
-
-    # #Relay 5V to input
-    # self.ttl13.on()
 
     # set initial helium flow
     set_helium_flow(self.he_flow, wait_time = self.he_flow_wait)
@@ -83,11 +85,66 @@ def prepare_initial_instruments(self):
 
     #set_single_laser(self.scanning_laser, hlp_frequency_offset, do_switch = True, wait_time = self.relock_wait_time)
 
+    #####################################
+    # Prepare BK4053
+    #####################################
+ 
+    if 'BK4053' in self.which_instruments:
+        prepare_bk4053(self)
+
+
     # pause to wait till laser settles
     time.sleep(1)
 
     return
 
+
+#######################################################################################################
+# Prepares BK4053 to burst mode
+#######################################################################################################
+
+def prepare_bk4053(self):
+
+    channel = 1
+
+    self.bk4053.off(channel)
+
+    self.bk4053.set_burst(channel)
+ 
+    self.bk4053.set_burst_output(channel,
+            load        = '50',
+            cycles      = 1,
+            amplitude   = 1.0,
+            pulse_width = self.slowing_laser_duration * us # in s 
+            )
+    
+    return
+
+
+#######################################################################################################
+# Returns ramp interval for DDS
+#######################################################################################################
+
+def prepare_dds_ramp(self,
+        start    = 0.0, # start freq in MHz
+        stop     = 1.0, # stop freq in MHz
+        duration = 1.0 * ms, # duration of ramp
+        min_no   = 1e3 # number of points on the ramp
+        ):
+
+    #number_of_points = int(dt / (4*ns))
+
+    number_of_points = int(min_no) # need some reasonable number here
+
+    ramp_step_size = duration / number_of_points
+
+    # the actual physical ramping interval
+    frequency_interval = np.linspace(start, stop, number_of_points) * MHz
+    
+    # the interval that is programmed into the DDS
+    frequency_interval_ram = [0] * len(self.frequency_interval)
+
+    return (frequency_interval, frequency_interval_ram, ramp_step_size)
 
 #######################################################################################################
 

@@ -17,15 +17,17 @@ class DDS_Freq_Scan(EnvExperiment):
         self.setattr_device("core")
         
         ## 2. Bind the DDS channel (e.g., AD9910 or AD9914)
-        #self.setattr_device("urukul0_ch0")
-        #self.setattr_device("urukul0_ch1")
-        #self.setattr_device("urukul0_ch2")
-        #self.setattr_device("urukul0_ch3")
-        #
-        #self.setattr_device("urukul1_ch0")
-        #self.setattr_device("urukul1_ch1")
-        #self.setattr_device("urukul1_ch2")
-        #self.setattr_device("urukul1_ch3")
+        self.setattr_device("urukul0_ch0")
+        self.setattr_device("urukul0_ch1")
+        self.setattr_device("urukul0_ch2")
+        self.setattr_device("urukul0_ch3")
+        
+        self.setattr_device("urukul1_ch0")
+        self.setattr_device("urukul1_ch1")
+        self.setattr_device("urukul1_ch2")
+        self.setattr_device("urukul1_ch3")
+
+
 
         self.dds  = self.get_device("urukul0_ch0") # Set specific channel
         self.cpld = self.get_device("urukul0_cpld")

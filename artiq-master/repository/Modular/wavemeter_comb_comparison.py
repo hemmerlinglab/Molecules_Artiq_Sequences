@@ -26,7 +26,7 @@ class Wavemeter_Comb_Comparison(EnvExperiment):
 
     def build(self):
 
-        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb', 'scope_transfer_cavity'])
+        my_build(self, which_instruments = ['spectrum_analyzer', 'frequency_comb'])#, 'scope_transfer_cavity'])
         self.sequence_filename = os.path.abspath(__file__)
 
         return

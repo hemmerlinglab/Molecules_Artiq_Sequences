@@ -33,7 +33,8 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
 
     # DDS... want something that checks if DDS will be the scanned parameter...
     #if self._scan_dds_frequency
-    init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
+    if self.dds_on:
+        init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
 
     return
 

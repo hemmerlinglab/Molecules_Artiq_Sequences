@@ -52,6 +52,10 @@ class BK4053:
         else:
             return self.recv()
 
+    def id(self):
+
+        return self.query('*IDN?')
+
     def on(self, ch):
 
         self.send("C{0}:{1}".format(ch, 'OUTP ON'))
@@ -97,9 +101,58 @@ class BK4053:
         return
 
 
+    ###################################################
+    # Sets BK4053 to burst mode
+    # and output to pulses from 0V to <amplitude>V
+    ###################################################
+
+    def set_burst_output(self, 
+            channel, 
+            load        = '50',
+            cycles      = 1,
+            amplitude   = 0.5,
+            pulse_width = 4.0e-6, # s
+            delay       = 1.0e-6,
+            period      = 10e-3, # s
+            trigger     = 'EXT'
+            ):
+
+        freq = 1/(2.0 * pulse_width)
+       
+        # duty cycle / freq = pulse_width
+        # duty cycle = pulse_width * (1/2 pulse_width)
+
+        # max amplitude 1.0V
+
+        amplitude = max(0.0, min(amplitude, 1.0))
+
+        amplitude_half = 0.5 * amplitude
+        offset_corr = 0.5 * amplitude_half
+
+        duty = 50.0
+
+        self.set_load(channel, load)
+              
+        # set burst parameters
+        self.send('C{0}:BTWV TRSR,{8},GATE_NCYC,NCYC,TIME,{3},PRD,{5},CARR,WVTP,PULSE,AMP,{1},OFST,{7},FRQ,{2}Hz,DLY,{4},DUTY,{6}'.format(
+            channel,
+            amplitude_half,
+            freq,
+            cycles,
+            delay,
+            period,
+            duty,
+            offset_corr,
+            trigger))
+        
+        self.send('C{0}:BTWV STATE,ON'.format(channel))
+
+        return
 
 
-
+######################################################################
+# Main
+######################################################################
 
 if __name__ == '__main__':
 
@@ -107,8 +160,23 @@ if __name__ == '__main__':
 
     # Mixer test
     # Output DC voltage in channel 1
-    bk.set_dc_output(1, 0.5)
+    #bk.set_dc_output(1, 0.5)
+    
+    bk.set_burst_output(1,
+            load = '50',
+            cycles = 1,
+            amplitude = 1.0,
+            pulse_width = 7e-6
+            )
+    
     bk.on(1)
+    
+    #bk.off(1)
+
+    print(bk.id())
+        
+    #bk.close()
+
 
     #bk.set_load(1, 'HZ')
     #bk.send('C1:ARWV INDEX,12')

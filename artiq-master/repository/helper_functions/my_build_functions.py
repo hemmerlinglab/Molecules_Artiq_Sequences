@@ -100,9 +100,8 @@ def load_attributes(self):
     
     self.setattr_device('zotino0') # for analog output voltages
 
-    self.dds = self.get_device("urukul0_ch0") # for DDS ch0
-    # self.dds = self.get_device("urukul0_ch1")
-    self.cpld = self.get_device("urukul0_cpld") # cpld for DDS ch0
+    self.dds = self.get_device("urukul0_ch0")   # for DDS ch0
+    #self.cpld = self.get_device("urukul0_cpld") # cpld for DDS ch0
 
     return
 
@@ -152,29 +151,33 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'uniblitz_on',         BooleanValue(default=False))
     my_setattr(self, 'wavemeter_lock_check',BooleanValue(default=False))
     
-    
     my_setattr(self, 'randomize_scan',           BooleanValue(default=False))
     
+    ####################################################################
+    # Slowing laser
+    ####################################################################
+
+    # BK4053 parameters
+    my_setattr(self, 'slowing_laser_on',          BooleanValue(default=False))
+    my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=0.0,unit='us',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slowing_laser_duration',    NumberValue(default=0.0,unit='us',scale=1,ndecimals=1,step=0.1))
+
+    # DDS parameter
+    my_setattr(self, 'dds_slowing_freq_start',  NumberValue(default = 400.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'dds_slowing_freq_stop',   NumberValue(default = 10.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
     
+    my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
+    my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
+
+    my_setattr(self, 'dds_ramp_on',        BooleanValue(default=False))
+ 
     ####################################################################
     # Laser and Microwave Frequencies
     ####################################################################
 
-    # Microwave
-    my_setattr(self, 'dds_frequency',   NumberValue(default = 10.0, unit='MHz', min=0.0, max = 400.0, scale=1,ndecimals=3,step=1))
-    my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
-    my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
-
-    #my_setattr(self, 'dds_amplitude',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
-    #my_setattr(self, 'dds_amplitude_dBm',   NumberValue(default =   1.0,unit='', min=0.0, max=1.0, scale=1,ndecimals=3,step=1))
-
-    my_setattr(self, 'dds_on',        BooleanValue(default=False))
-    
-
     my_setattr(self, 'offset_laser_Davos',      NumberValue(default=375.763150,unit='THz',scale=1,ndecimals=6,step=.000001))
     my_setattr(self, 'offset_laser_Hodor',      NumberValue(default=375.763290,unit='THz',scale=1,ndecimals=6,step=.000001))
     my_setattr(self, 'offset_laser_Daenerys',   NumberValue(default=286.86,unit='THz',scale=1,ndecimals=6,step=.000001))
-
 
     ##############################
     # General Scanning Parameter

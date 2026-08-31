@@ -15,7 +15,7 @@ from my_build_functions import my_setattr
 from rigol      import Rigol_RSA3030
 from bk_4053    import BK4053
 
-class DDS_General_Scan(EnvExperiment):
+class DDS_Double_Scan(EnvExperiment):
     
     def build(self):
 
@@ -27,8 +27,9 @@ class DDS_General_Scan(EnvExperiment):
 
         self.setattr_device("core")
        
-        self.dds  = self.get_device("urukul0_ch0") # Set specific channel
-        self.cpld = self.get_device("urukul0_cpld")
+        self.dds0  = self.get_device("urukul0_ch2") # Set specific channel
+        self.dds1  = self.get_device("urukul0_ch3") # Set specific channel
+        self.dds2  = self.get_device("urukul0_ch1") # Set specific channel
        
         # define attributes
         my_setattr(self,'amplitude_dBm', NumberValue(default = 0.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
@@ -52,16 +53,34 @@ class DDS_General_Scan(EnvExperiment):
         self.core.reset()
         self.core.break_realtime() 
         
-        init_dds(self, frequency = self.frequency * MHz, attenuation = self.attenuation * dB, amplitude_dBm = self.amplitude_dBm)
+        # Convert amplitude in dBm to 0 - 1 scale, see spec sheet of AD9910 with the Urukul giving 11 dBm output power
+        amplitude = 10**( (self.amplitude_dBm - 11.0)/20.0 )
 
-        if self.dds_on:
-            dds_on(self)
-        else:
-            dds_off(self)
+        # this function assumes that one DDS exists and is referenced to as self.dds
 
-        self.dds.set(frequency = new_val * MHz)
-        
-        #self.dds.set(frequency = self.frequency * MHz, amplitude = new_val)
+        self.dds0.cpld.init()
+        self.dds0.init()
+
+        self.dds1.cpld.init()
+        self.dds1.init()
+
+        self.dds2.cpld.init()
+        self.dds2.init()
+
+
+        # Set attenuation in dB
+        self.dds0.set_att(self.attenuation) 
+        self.dds1.set_att(self.attenuation) 
+        self.dds2.set_att(self.attenuation) 
+       
+        # Set frequency
+        self.dds0.set(frequency = new_val * MHz, phase = 0.0, amplitude = amplitude)
+        self.dds1.set(frequency = 400.0 * MHz, phase = 0.0, amplitude = amplitude)
+        self.dds2.set(frequency = 400.0 * MHz, phase = 0.0, amplitude = amplitude)
+
+        self.dds0.cfg_sw(True)
+        self.dds1.cfg_sw(True)
+        self.dds2.cfg_sw(True)
 
         return
 
@@ -70,7 +89,9 @@ class DDS_General_Scan(EnvExperiment):
         
         self.core.break_realtime() 
         
-        dds_off(self)
+        self.dds0.cfg_sw(False)
+        self.dds1.cfg_sw(False)
+        self.dds2.cfg_sw(False)
 
         return
 
@@ -79,12 +100,12 @@ class DDS_General_Scan(EnvExperiment):
 
         print('Scan start ...')
 
-        self.spectrum_analyzer.set_freq([1e6, 405e6])
+        self.spectrum_analyzer.set_freq([1e6, 905e6])
 
         self.bk4053.set_dc_output(1, self.dc_offset)
         self.bk4053.on(1)
         
-        self.scan_interval = np.linspace(5, 400, 50)
+        self.scan_interval = np.linspace(5, 400, 25)
         
         #self.scan_interval = np.linspace(-40, 11, 50)
         

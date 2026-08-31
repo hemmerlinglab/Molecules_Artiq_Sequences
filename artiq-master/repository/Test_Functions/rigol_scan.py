@@ -41,7 +41,7 @@ class Rigol_General_Scan(EnvExperiment):
         self.spectrum_analyzer      = Rigol_RSA3030()
 
         self.bk4053                 = BK4053()
-        self.dsg                    = Rigol_DSG836(IP = '192.168.42.83') 
+        #self.dsg                    = Rigol_DSG836(IP = '192.168.42.83') 
             
         self.spec_result = []
 

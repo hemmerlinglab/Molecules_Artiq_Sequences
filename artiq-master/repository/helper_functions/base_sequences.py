@@ -194,6 +194,14 @@ def fire_and_read(self):
             #        self.ttl7.off()
 
             with sequential:
+                # Slowing laser AOM driver trigger
+                if self.slowing_laser_on:
+                    # send TTL to trigger BK4053 to switch on Brimrose AOM driver
+                    
+                    delay((self.slowing_laser_start_time)*ms)
+                    self.ttl7.pulse(1*ms)
+
+            with sequential:
 
                 # sampler readout sequence
 
