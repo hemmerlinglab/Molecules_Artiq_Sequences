@@ -159,15 +159,17 @@ def load_parameters(self, raster_scan = False):
 
     # BK4053 parameters
     my_setattr(self, 'slowing_laser_on',          BooleanValue(default=False))
-    my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=0.0,unit='ms',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slowing_laser_duration',    NumberValue(default=0.0,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=1.0,unit='ms',min=0.001,scale=1,ndecimals=3,step=0.1))
+    my_setattr(self, 'slowing_laser_duration',    NumberValue(default=1.0,unit='ms',min=0.001,scale=1,ndecimals=3,step=0.1))
 
     # DDS parameter
-    my_setattr(self, 'dds_slowing_freq_start',  NumberValue(default = 400.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
-    my_setattr(self, 'dds_slowing_freq_stop',   NumberValue(default = 10.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
+    #my_setattr(self, 'dds_slowing_freq_start',  NumberValue(default = 400.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
+    #my_setattr(self, 'dds_slowing_freq_stop',   NumberValue(default = 10.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
     
     my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
     my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
+    
+    my_setattr(self, 'velocity_frequency',   NumberValue(default = -10.0, unit='MHz', min=-1e3, max = 0.0, scale=1,ndecimals=3,step=1))
 
     ####################################################################
     # Laser and Microwave Frequencies
@@ -196,7 +198,7 @@ def load_parameters(self, raster_scan = False):
         my_setattr(self, 'scanning_parameter', EnumerationValue(list_of_parameters, default = list_of_parameters[0]))    
 
         # number of scan points
-        my_setattr(self, 'setpoint_count', NumberValue(default=10,unit='steps to scan',scale=1,ndecimals=0,step=1,min=1))
+        my_setattr(self, 'setpoint_count', NumberValue(default=3,unit='steps to scan',scale=1,ndecimals=0,step=1,min=1))
 
     else:        
 
@@ -222,7 +224,7 @@ def load_parameters(self, raster_scan = False):
 
 
     # number of averages
-    my_setattr(self, 'no_of_averages',  NumberValue(default=3,unit='averages',scale=1,ndecimals=0,step=1))
+    my_setattr(self, 'no_of_averages',  NumberValue(default=1,unit='averages',scale=1,ndecimals=0,step=1))
 
     return
 

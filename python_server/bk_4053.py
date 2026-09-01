@@ -58,11 +58,11 @@ class BK4053:
 
     def on(self, channel = 1):
 
-        self.send("C{0}:{1}".format(ch, 'OUTP ON'))
+        self.send("C{0}:{1}".format(channel, 'OUTP ON'))
 
     def off(self, channel = 1):
 
-        self.send("C{0}:{1}".format(ch, 'OUTP OFF'))
+        self.send("C{0}:{1}".format(channel, 'OUTP OFF'))
 
     def read_status(self, channel):
         
@@ -107,7 +107,7 @@ class BK4053:
     ###################################################
 
     def set_burst_output(self, 
-            channel, 
+            channel     = 1, 
             load        = '50',
             cycles      = 1,
             amplitude   = 0.5,

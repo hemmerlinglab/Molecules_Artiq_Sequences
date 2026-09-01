@@ -20,7 +20,6 @@ def fire_and_read(self):
 
         self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
         self.sampler0.init()       # initializes sampler device
-        # self.ttl13.on()            # trigger the relay
         
        
         # Set Channel Gain
@@ -316,15 +315,17 @@ def init_sampler(self):
 
     delay(260*us)
 
-    # Data Variable Initialization
-    data0 = [0]*self.scope_count # signal data
-    data1 = [0]*self.scope_count # fire check data
-    data2 = [0]*self.scope_count # uhv data (pmt)
-    data3 = [0]*self.scope_count # post select, checks spec blue
-    data4 = [0]*self.scope_count # post select, checks slow blue
-    
-    smp   = [0]*8 # individual sample
-   
+    ## Data Variable Initialization
+    #data0 = [0]*self.scope_count # signal data
+    #data1 = [0]*self.scope_count # fire check data
+    #data2 = [0]*self.scope_count # uhv data (pmt)
+    #data3 = [0]*self.scope_count # post select, checks spec blue
+    #data4 = [0]*self.scope_count # post select, checks slow blue
+       
+    #smp   = [0]*8 # individual sample
+
+    #self.data = [[0]*self.scope_count] * 5 
+     
     return
 
 
@@ -353,7 +354,11 @@ def fire_slow_and_read(self):
         
         with sequential:        
 
-            self.ttl9.pulse(10*us)            
+
+            # debug
+            self.ttl8.pulse(10*us)
+
+            self.ttl9.pulse(10*us)
         
         ######################
         # fire yag
@@ -377,14 +382,14 @@ def fire_slow_and_read(self):
 
                 delay(self.slowing_laser_start_time * ms)
 
-                # send trigger to BK4053 to switch on AOM
-                self.ttl7.pulse(1*ms)
-        
                 # activate the DDS ramp
                 self.dds.cpld.io_update.pulse_mu(8)
 
+                # send trigger to BK4053 to switch on AOM
+                self.ttl7.pulse(0.1*ms)
+        
                 # switch off DDS after delay
-                delay(self.slowing_laser_duration * ms)
+                delay( (self.slowing_laser_duration - 0.1) * ms)
 
                 # switch off DDS
                 self.dds.cfg_sw(False)
@@ -398,14 +403,13 @@ def fire_slow_and_read(self):
         
             delay(self.sampler_delay_time*ms)
             
+            smp = [0] * 8 
             for j in range(self.scope_count):
                 self.sampler0.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
-                data0[j] = smp[0]
-                data1[j] = smp[1]
-                data2[j] = smp[2]
-                data3[j] = smp[3]
-                data4[j] = smp[4]
                 
+                for k in range(8):
+                    self.data[k][j] = smp[k]
+
                 delay(self.time_step_size*us) # plus 9us from sample_mu
 
 
@@ -413,11 +417,14 @@ def fire_slow_and_read(self):
     # Allocate and Transmit Data All Channels
     ###############################################
     
-    self.set_dataset('ch0', (data0), broadcast = True)
-    self.set_dataset('ch1', (data1), broadcast = True)
-    self.set_dataset('ch2', (data2), broadcast = True)
-    self.set_dataset('ch3', (data3), broadcast = True)
-    self.set_dataset('ch4', (data4), broadcast = True)
+    self.set_dataset('ch0', (self.data[0]), broadcast = True)
+    self.set_dataset('ch1', (self.data[1]), broadcast = True)
+    self.set_dataset('ch2', (self.data[2]), broadcast = True)
+    self.set_dataset('ch3', (self.data[3]), broadcast = True)
+    self.set_dataset('ch4', (self.data[4]), broadcast = True)
+    self.set_dataset('ch5', (self.data[5]), broadcast = True)
+    self.set_dataset('ch6', (self.data[6]), broadcast = True)
+    self.set_dataset('ch7', (self.data[7]), broadcast = True)
 
     return
 

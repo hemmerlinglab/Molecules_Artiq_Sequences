@@ -449,49 +449,4 @@ if __name__ == '__main__':
 
     instr.close()
 
-    #instr.test_safety_interlocks()
-
-    #instr.flashlamp_autofire()
-
-    ##for k in range(30):
-    ##    instr.open_shutter()
-    ##    time.sleep(1)
-    ##    instr.close_shutter()
-    ##    time.sleep(1)
-
-    #instr.close()
-
-    ##asd
-
-    #instr.diag()
-    #    
-    #instr.fast_warm_up()
-
-    #instr.diag()
-
-    #instr.set(ene = 12.5, f_rep = 30.0, q_delay = 140)
-
-    #instr.set_vmo(1150)
-   
-    ##instr.set(ene = 12.5, f_rep = 1.0, q_delay = 140)
-    #
-    #instr.on()
-
-    #instr.set_vis(0)
-    #instr.set_vis(100)
- 
-    #instr.diag()
-    #
-    #time.sleep(3)
-
-    #instr.off()
-    #
-    #instr.standby()
-    #
-    #instr.diag()
-
-    #instr.close()
-
-
-
 

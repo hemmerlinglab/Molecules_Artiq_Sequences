@@ -38,7 +38,7 @@ class Slowing_Scan(EnvExperiment):
     
     def prepare(self):
 
-        self.configurations = [0, 1]
+        self.configurations = [0]
         
         self.configuration_descriptions = ['Slowing on', 'Slowing off']
 
@@ -66,12 +66,12 @@ class Slowing_Scan(EnvExperiment):
 
         if self.current_configuration == 0:
             # slowing laser on
-            dds_on()
+            dds_on(self)
             self.bk4053.on(channel = 1) # AOM pulsed on
 
         elif self.current_configuration == 1:
             # slowing laser off
-            dds_off()
+            dds_off(self)
             self.bk4053.off(channel = 1) # AOM always off
 
         else:

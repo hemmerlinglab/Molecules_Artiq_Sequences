@@ -20,7 +20,7 @@ def get_scannable_parameters():
              'offset_laser_Davos',
              'cavity_ramp',
              'dds_frequency',
-             'velocity_range'
+             'velocity_frequency'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -97,11 +97,6 @@ def reset_scan_parameter(self):
 def limit_check(par, scan_values, limits):
     
     check = (np.min(scan_values) >= limits[0]) and (np.max(scan_values) <= limits[1])
-
-    if not check:
-        print()
-        print('Scan range out of bounds for parameter {0}.'.format(par))
-        print()
 
     return check
 
@@ -336,13 +331,13 @@ def _scan_dds_frequency(self, val, scan_values, scan_check = False):
 # Velocity scan
 ########################################################################
 
-def _scan_velocity_range(self, val, scan_values, scan_check = False):
+def _scan_velocity_frequency(self, val, scan_values, scan_check = False):
 
     if scan_check:
 
         # check if the scan range is within the limits
 
-        return (max(scan_values) - min(scan_values) <= 150.0) and limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
+        return (scan_values[0] < scan_values[-1]) and (min(scan_values) <= 0.0) and (max(scan_values) <= 0.0) and (max(scan_values) - min(scan_values) <= 150.0) and limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
     
     else:
 

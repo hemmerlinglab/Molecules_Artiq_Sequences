@@ -6,7 +6,7 @@ from artiq.coredevice import ad9910
 ##########################################################################
 
 @kernel
-def init_dds(self, frequency = 1.0 * MHz, attenuation = 10.0 * dB, amplitude_dBm = 1.0):
+def init_dds(self, frequency = 10.0 * MHz, attenuation = 10.0 * dB, amplitude_dBm = 1.0):
 
     # Convert amplitude in dBm to 0 - 1 scale, see spec sheet of AD9910 with the Urukul giving 11 dBm output power
     amplitude = 10**( (amplitude_dBm - 11.0)/20.0 )
@@ -51,14 +51,13 @@ def dds_off(self):
 #################################
 
 @kernel
-def prg_freq_ramp(
-        self, 
+def prg_freq_ramp(self, 
         step_size   = 1*ns,
         profile     = 0,
         mode        = ad9910.RAM_MODE_RAMPUP,
         #mode       = ad9910.RAM_MODE_CONT_RAMPUP
-        frequency_interval      = [0],
-        frequency_interval_ram  = [0]
+        frequency_interval      = [],
+        frequency_interval_ram  = []
         ):
    
     #########################

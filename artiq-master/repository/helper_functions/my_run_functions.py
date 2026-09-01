@@ -7,10 +7,11 @@ import time
 
 # core sequence
 from base_sequences           import * 
+from base_dds_sequences       import prg_freq_ramp
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
 from scan_functions          import scan_parameter
-from my_instrument_functions import move_yag_mirror
+from my_instrument_functions import move_yag_mirror, prepare_dds_ramp
 
 
 ###################################################################################
@@ -37,33 +38,35 @@ def my_run_slowing(self):
   
             # DDS programming of ramp
 
-            Delta = self.scan_values[my_ind] - min(self.scan_values)
-            epsilon = (max(self.scan_values) - min(self.scan_values))/2.0
+            # init DDS amplitude etc ...
+            init_dds(self, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
+
+            Delta   = self.scan_values[my_ind] - self.min_scan_value
+            epsilon = (self.max_scan_value - self.min_scan_value)/2.0
 
             dds_start = DDS_MAX  - 2 * epsilon + Delta
             dds_stop  = FREQ_AOM - 1 * epsilon + Delta
 
-               
-            (frequency_interval, frequency_interval_ram, ramp_step_size) = prepare_dds_ramp(
-                    self,
+            #dds_start = abs(self.min_scan_value) # 150 MHz
+            #dds_stop = abs(self.max_scan_value) # 0.5 MHz
+
+            (frequency_interval, frequency_interval_ram, ramp_step_size) = prepare_dds_ramp(self,
                     start    = dds_start, # start freq in MHz
                     stop     = dds_stop, # stop freq in MHz
                     duration = self.slowing_laser_duration * ms, # duration of ramp
-                    min_no   = 1e3 # number of points on the ramp
+                    #min_no   = 1e3 # number of points on the ramp
+                    min_no   = 3 # number of points on the ramp
             )
-            
+
             # program the RAM of the DDS
-            prg_freq_ramp(
-                    self, 
+            prg_freq_ramp(self, 
                     profile                 = 0,
-                    mode                    = ad9910.RAM_MODE_RAMPDOWN,
+                    mode                    = ad9910.RAM_MODE_RAMPUP,
                     frequency_interval      = frequency_interval,
                     frequency_interval_ram  = frequency_interval_ram,
                     step_size               = ramp_step_size
                     )
  
-
-
             # set the value of the new parameter
             scan_parameter(self, my_ind)
     
@@ -132,8 +135,6 @@ def my_run_slowing(self):
             print()
             print()
             
-        dds_off(self)
-
     return
 
 

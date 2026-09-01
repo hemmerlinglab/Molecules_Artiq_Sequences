@@ -32,11 +32,6 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
 
     reset_core(self)
 
-    # DDS... want something that checks if DDS will be the scanned parameter...
-    #if self._scan_dds_frequency
-    if self.dds_on:
-        init_dds(self, frequency = self.dds_frequency * MHz, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
-
     return
 
 
@@ -44,6 +39,9 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
 
 def prepare_datasets(self):
 
+    # data sets to save artiq sampler data
+    self.data = [[0]*self.scope_count] * 8 
+    
     # Scan interval
     self.scan_values = np.linspace(self.min_scan_value, self.max_scan_value, self.setpoint_count)
     
@@ -51,9 +49,17 @@ def prepare_datasets(self):
     if self.randomize_scan:
         self.scan_values = np.random.permutation(self.scan_values)
 
-
+    ##############################################
     # Check scan range
+    ##############################################
+    
     self.scan_ok = scan_parameter(self, 0, scan_check = True)
+
+    if not self.scan_ok:
+        print()
+        print('Scan range out of bounds for parameter {0}.'.format(self.scanning_parameter))
+        print()
+
 
     # Prepare some data sets
     self.smp_data_sets = {

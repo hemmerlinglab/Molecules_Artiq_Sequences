@@ -132,12 +132,6 @@ def save_yag_status(self):
 
     os.system('python {0} {1}'.format(path, self.basefilename + '_yag_status'))
 
-    #yag = Quantel_Yag()
-
-    #yag.log(self.basefilename + '_yag_status')
-
-    #yag.close()
-
     return
  
 
