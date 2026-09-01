@@ -107,15 +107,14 @@ def prepare_bk4053(self):
 
     channel = 1
 
-    self.bk4053.off(channel)
+    self.bk4053.off(channel = channel)
 
-    self.bk4053.set_burst(channel)
- 
     self.bk4053.set_burst_output(channel,
             load        = '50',
             cycles      = 1,
             amplitude   = 1.0,
-            pulse_width = self.slowing_laser_duration * us # in s 
+            pulse_width = self.slowing_laser_duration * us, # in s
+            delay       = 0.0 # delay is set with self.slowing_laser_start_time instead
             )
     
     return
@@ -145,6 +144,7 @@ def prepare_dds_ramp(self,
     frequency_interval_ram = [0] * len(self.frequency_interval)
 
     return (frequency_interval, frequency_interval_ram, ramp_step_size)
+
 
 #######################################################################################################
 

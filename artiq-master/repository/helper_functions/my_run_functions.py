@@ -1,8 +1,9 @@
 from artiq.experiment import *
+from artiq.coredevice import ad9910
+
 import numpy as np
 import os
 import time
-
 
 # core sequence
 from base_sequences           import * 
@@ -15,6 +16,9 @@ from my_instrument_functions import move_yag_mirror
 ###################################################################################
 
 def my_run_slowing(self):
+
+    DDS_MAX  = 400.0
+    FREQ_AOM = +85.0
 
     # check if scan parameter range and scan function is ok
     if self.scan_ok:
@@ -31,8 +35,34 @@ def my_run_slowing(self):
 
             self.scheduler.pause()
   
+            # DDS programming of ramp
 
-            # add DDS programming of ramp
+            Delta = self.scan_values[my_ind] - min(self.scan_values)
+            epsilon = (max(self.scan_values) - min(self.scan_values))/2.0
+
+            dds_start = DDS_MAX  - 2 * epsilon + Delta
+            dds_stop  = FREQ_AOM - 1 * epsilon + Delta
+
+               
+            (frequency_interval, frequency_interval_ram, ramp_step_size) = prepare_dds_ramp(
+                    self,
+                    start    = dds_start, # start freq in MHz
+                    stop     = dds_stop, # stop freq in MHz
+                    duration = self.slowing_laser_duration * ms, # duration of ramp
+                    min_no   = 1e3 # number of points on the ramp
+            )
+            
+            # program the RAM of the DDS
+            prg_freq_ramp(
+                    self, 
+                    profile                 = 0,
+                    mode                    = ad9910.RAM_MODE_RAMPDOWN,
+                    frequency_interval      = frequency_interval,
+                    frequency_interval_ram  = frequency_interval_ram,
+                    step_size               = ramp_step_size
+                    )
+ 
+
 
             # set the value of the new parameter
             scan_parameter(self, my_ind)
@@ -72,7 +102,7 @@ def my_run_slowing(self):
                        # Fires yag and reads voltages
                        #######################################
                       
-                       fire_and_read(self)                       
+                       fire_slow_and_read(self)                       
     
                        #######################################
                        # Readout data and process it

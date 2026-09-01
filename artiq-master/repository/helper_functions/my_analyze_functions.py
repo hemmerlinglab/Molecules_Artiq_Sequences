@@ -9,7 +9,8 @@ sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_serve
 from scan_functions          import reset_scan_parameter
 from my_instrument_functions import reset_instruments, close_instruments
 from my_prepare_functions    import save_config
-from base_sequences          import relay, dds_off
+from base_sequences          import relay
+from base_dds_sequences      import dds_off
 from quantel                 import Quantel_Yag
 
 #######################################################################################################

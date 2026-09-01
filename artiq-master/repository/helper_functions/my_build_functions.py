@@ -159,8 +159,8 @@ def load_parameters(self, raster_scan = False):
 
     # BK4053 parameters
     my_setattr(self, 'slowing_laser_on',          BooleanValue(default=False))
-    my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=0.0,unit='us',scale=1,ndecimals=1,step=0.1))
-    my_setattr(self, 'slowing_laser_duration',    NumberValue(default=0.0,unit='us',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=0.0,unit='ms',scale=1,ndecimals=1,step=0.1))
+    my_setattr(self, 'slowing_laser_duration',    NumberValue(default=0.0,unit='ms',scale=1,ndecimals=1,step=0.1))
 
     # DDS parameter
     my_setattr(self, 'dds_slowing_freq_start',  NumberValue(default = 400.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
@@ -169,8 +169,6 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
     my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
 
-    my_setattr(self, 'dds_ramp_on',        BooleanValue(default=False))
- 
     ####################################################################
     # Laser and Microwave Frequencies
     ####################################################################
@@ -189,7 +187,7 @@ def load_parameters(self, raster_scan = False):
         list_of_parameters = get_scannable_parameters()
 
         # offset of lasers
-        my_setattr(self, 'scanning_laser',          EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Hodor'))
+        my_setattr(self, 'scanning_laser', EnumerationValue(['Davos', 'Hodor', 'Daenerys'],default='Hodor'))
 
         my_setattr(self, 'min_scan_value', NumberValue(default=100,unit='',scale=1,ndecimals=3,step=.001))
         my_setattr(self, 'max_scan_value', NumberValue(default=200,unit='',scale=1,ndecimals=3,step=.001))

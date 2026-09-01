@@ -43,7 +43,6 @@ class DDS_Freq_Scan(EnvExperiment):
         self.setattr_argument('dds_on', BooleanValue(default=False))
 
         self.scan_interval = np.linspace(10, 400, 20)
-        print(self.scan_interval)
         
         return
 

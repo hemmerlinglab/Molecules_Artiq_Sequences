@@ -56,11 +56,11 @@ class BK4053:
 
         return self.query('*IDN?')
 
-    def on(self, ch):
+    def on(self, channel = 1):
 
         self.send("C{0}:{1}".format(ch, 'OUTP ON'))
 
-    def off(self, ch):
+    def off(self, channel = 1):
 
         self.send("C{0}:{1}".format(ch, 'OUTP OFF'))
 
@@ -112,7 +112,7 @@ class BK4053:
             cycles      = 1,
             amplitude   = 0.5,
             pulse_width = 4.0e-6, # s
-            delay       = 1.0e-6,
+            delay       = 1.0e-6, # s
             period      = 10e-3, # s
             trigger     = 'EXT'
             ):
@@ -133,8 +133,20 @@ class BK4053:
 
         self.set_load(channel, load)
               
+        ## set burst parameters
+        #self.send('C{0}:BTWV TRSR,{8},GATE_NCYC,NCYC,TIME,{3},PRD,{5},CARR,WVTP,PULSE,AMP,{1},OFST,{7},FRQ,{2}Hz,DLY,{4},DUTY,{6}'.format(
+        #    channel,
+        #    amplitude_half,
+        #    freq,
+        #    cycles,
+        #    delay,
+        #    period,
+        #    duty,
+        #    offset_corr,
+        #    trigger))
+        
         # set burst parameters
-        self.send('C{0}:BTWV TRSR,{8},GATE_NCYC,NCYC,TIME,{3},PRD,{5},CARR,WVTP,PULSE,AMP,{1},OFST,{7},FRQ,{2}Hz,DLY,{4},DUTY,{6}'.format(
+        self.send('C{0}:BTWV TRSR,{8},GATE_NCYC,NCYC,TIME,{3},PRD,{5},DLAY,{4},CARR,WVTP,PULSE,AMP,{1},OFST,{7},FRQ,{2}Hz,DUTY,{6}'.format(
             channel,
             amplitude_half,
             freq,
@@ -144,7 +156,7 @@ class BK4053:
             duty,
             offset_corr,
             trigger))
-        
+
         self.send('C{0}:BTWV STATE,ON'.format(channel))
 
         return
@@ -164,12 +176,13 @@ if __name__ == '__main__':
     
     bk.set_burst_output(1,
             load = '50',
-            cycles = 1,
+            cycles = 2,
             amplitude = 1.0,
-            pulse_width = 7e-6
+            pulse_width = 15e-6,
+            delay = 19e-6
             )
     
-    bk.on(1)
+    bk.on(channel = 1)
     
     #bk.off(1)
 

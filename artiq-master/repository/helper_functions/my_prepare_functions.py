@@ -9,7 +9,8 @@ from configparser import ConfigParser
 
 from scan_functions          import scan_parameter
 from my_instrument_functions import prepare_initial_instruments
-from base_sequences          import reset_core, relay, init_dds, dds_on, dds_off
+from base_sequences          import reset_core, relay
+from base_dds_sequences      import init_dds, dds_on, dds_off
 
 
 #######################################################################################################

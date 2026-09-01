@@ -19,7 +19,8 @@ def get_scannable_parameters():
              'offset_laser_Hodor',
              'offset_laser_Davos',
              'cavity_ramp',
-             'dds_frequency'
+             'dds_frequency',
+             'velocity_range'
             ]
 
     return SCANNABLE_PARAMETERS
@@ -330,6 +331,38 @@ def _scan_dds_frequency(self, val, scan_values, scan_check = False):
         return 1
     
     return
+
+########################################################################
+# Velocity scan
+########################################################################
+
+def _scan_velocity_range(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return (max(scan_values) - min(scan_values) <= 150.0) and limit_check(self.scanning_parameter, scan_values, [-10.0e3, 10.0e3]) # in MHz
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        frequency = self.offset_laser_Hodor + val/1.0e6 # in THz
+
+        # if jump is more than 50 MHz
+        if abs(self.previous_setpoint - self.current_setpoint) > 50.0:
+            hlp_wait_time = 3000.0
+            print('Waiting for large jump in laser frequency ...')
+        else:
+            hlp_wait_time = self.relock_wait_time
+
+        set_single_laser('Hodor', frequency, do_switch = False, wait_time = hlp_wait_time)
+
+        return 1
+
+    return
+
 
 
 
