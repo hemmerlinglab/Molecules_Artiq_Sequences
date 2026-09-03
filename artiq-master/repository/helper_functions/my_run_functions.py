@@ -60,16 +60,18 @@ def my_run_slowing(self):
 
             if Omega_b_start > DDS_MAX:
                 print('Error. Omega_b too high. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
+                Omega_b_start = 10.0
             if Omega_a_stop < 10.0:
                 print('Error. Omega_a too low. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
+                Omega_a_stop = 10.0
 
 
             (frequency_interval, frequency_interval_ram, ramp_step_size) = prepare_dds_ramp(self,
                     start    = Omega_b_start, # start freq in MHz
                     stop     = Omega_a_stop, # stop freq in MHz
                     duration = self.slowing_laser_duration * ms, # duration of ramp
-                    #min_no   = 1e3 # number of points on the ramp
-                    min_no   = 3 # number of points on the ramp
+                    min_no   = 1e3 # number of points on the ramp
+                    #min_no   = 3 # number of points on the ramp
             )
 
             # program the RAM of the DDS
