@@ -38,7 +38,7 @@ class Slowing_Scan(EnvExperiment):
     
     def prepare(self):
 
-        self.configurations = [0]
+        self.configurations = [0, 1]
         
         self.configuration_descriptions = ['Slowing on', 'Slowing off']
 

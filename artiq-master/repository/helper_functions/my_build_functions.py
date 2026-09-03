@@ -161,16 +161,15 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'slowing_laser_on',          BooleanValue(default=False))
     my_setattr(self, 'slowing_laser_start_time',  NumberValue(default=1.0,unit='ms',min=0.001,scale=1,ndecimals=3,step=0.1))
     my_setattr(self, 'slowing_laser_duration',    NumberValue(default=1.0,unit='ms',min=0.001,scale=1,ndecimals=3,step=0.1))
-
-    # DDS parameter
-    #my_setattr(self, 'dds_slowing_freq_start',  NumberValue(default = 400.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
-    #my_setattr(self, 'dds_slowing_freq_stop',   NumberValue(default = 10.0, unit='MHz', min=10.0, max = 400.0, scale=1,ndecimals=3,step=1))
-    
+   
     my_setattr(self, 'dds_attenuation', NumberValue(default =   10.0,unit='dB', min=0.0, max=31.5, scale=1,ndecimals=1,step=1))
     my_setattr(self, 'dds_amplitude_dBm', NumberValue(default = -100.0, unit='', min = -100.0, max = 11.0, scale=1,ndecimals=3,step=1))
     
-    my_setattr(self, 'velocity_frequency',   NumberValue(default = -10.0, unit='MHz', min=-1e3, max = 0.0, scale=1,ndecimals=3,step=1))
-
+    my_setattr(self, 'slowing_vel_high', NumberValue(default = 100.0, unit='m/s', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'slowing_vel_low', NumberValue(default =   0.0, unit='m/s', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
+    
+    my_setattr(self, 'velocity', NumberValue(default =   0.0, unit='MHz', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
+ 
     ####################################################################
     # Laser and Microwave Frequencies
     ####################################################################

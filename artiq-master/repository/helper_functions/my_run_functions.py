@@ -19,7 +19,8 @@ from my_instrument_functions import move_yag_mirror, prepare_dds_ramp
 def my_run_slowing(self):
 
     DDS_MAX  = 400.0
-    FREQ_AOM = +85.0
+    DDS_MIN  =  10.0
+    FREQ_AOM =  85.0
 
     # check if scan parameter range and scan function is ok
     if self.scan_ok:
@@ -40,19 +41,32 @@ def my_run_slowing(self):
 
             # init DDS amplitude etc ...
             init_dds(self, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
+            
+            # calculate the frequency Doppler shift in the blue
+            wavelength = 400e-9
+            self.current_velocity_frequency_shift = -1.0/(np.sqrt(2)*wavelength) * self.scan_values[my_ind] # in Hz
+            #self.current_velocity_frequency_shift = -1.0/(wavelength) * self.scan_values[my_ind] # in Hz
 
-            Delta   = self.scan_values[my_ind] - self.min_scan_value
-            epsilon = (self.max_scan_value - self.min_scan_value)/2.0
+            # high frequency
+            Omega_b_start = FREQ_AOM + (1/wavelength * self.slowing_vel_high + self.current_velocity_frequency_shift)/1.0e6
 
-            dds_start = DDS_MAX  - 2 * epsilon + Delta
-            dds_stop  = FREQ_AOM - 1 * epsilon + Delta
+            # low frequency            
+            Omega_a_stop  = FREQ_AOM + (1/wavelength * self.slowing_vel_low + self.current_velocity_frequency_shift)/1.0e6
 
-            #dds_start = abs(self.min_scan_value) # 150 MHz
-            #dds_stop = abs(self.max_scan_value) # 0.5 MHz
+            #print()
+            #print(self.scan_values[my_ind])
+            #print(self.current_velocity_frequency_shift/1e6)
+            #print('Chirp: {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))            
+
+            if Omega_b_start > DDS_MAX:
+                print('Error. Omega_b too high. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
+            if Omega_a_stop < 10.0:
+                print('Error. Omega_a too low. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
+
 
             (frequency_interval, frequency_interval_ram, ramp_step_size) = prepare_dds_ramp(self,
-                    start    = dds_start, # start freq in MHz
-                    stop     = dds_stop, # stop freq in MHz
+                    start    = Omega_b_start, # start freq in MHz
+                    stop     = Omega_a_stop, # stop freq in MHz
                     duration = self.slowing_laser_duration * ms, # duration of ramp
                     #min_no   = 1e3 # number of points on the ramp
                     min_no   = 3 # number of points on the ramp
