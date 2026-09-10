@@ -158,6 +158,18 @@ def check_shot(self):
 
 #######################################################################################################
 
+def integrate_time_trace(self, tag, channel = 0, tstart = 0.0, tstop = 0.0):
+
+    ind_1 = int(tstart * 1e3/self.time_step_size)
+    ind_2 = int(tstop  * 1e3/self.time_step_size)
+
+    self.smp_data_avg[tag] = np.mean(self.channels_avg[self.current_configuration][channel][ind1:ind2])
+
+    return
+
+
+#######################################################################################################
+
 def average_data(self, i_avg):
 
     ###############################################################################
@@ -166,107 +178,31 @@ def average_data(self, i_avg):
     # it does not care about which configuration is set
     ###############################################################################
 
-    #######################################
-    # offset subtraction of time traces
-    #######################################
+    ####################################################
+    # offset subtraction and averaging of time traces
+    ####################################################
 
     offset_points = 20
 
-    #for k in range(8):
-    #    self.smp_data[self.smp_data_sets['ch' + str(k)]]
-
-    hlp_absorption = self.smp_data[self.smp_data_sets['ch0']]
-    hlp_pmt        = self.smp_data[self.smp_data_sets['ch2']]
-
-    # subtract offset from the beginning
-    hlp_absorption = hlp_absorption - np.mean(hlp_absorption[0:offset_points])
-    hlp_pmt        = hlp_pmt        - np.mean(hlp_pmt[0:offset_points])
-
-
-    if i_avg == 0:
+    for k in range(8):
         
-        # calculate the absorption - absorption reference
-        self.ch0_avg = hlp_absorption
-        self.ch2_avg = hlp_pmt
-
-        #self.ch0_avg = self.smp_data[self.smp_data_sets['ch0']]
-        self.ch1_avg = self.smp_data[self.smp_data_sets['ch1']]
-        #self.ch2_avg = self.smp_data[self.smp_data_sets['ch2']]
-        self.ch3_avg = self.smp_data[self.smp_data_sets['ch3']]
-        self.ch4_avg = self.smp_data[self.smp_data_sets['ch4']]
-        self.ch5_avg = self.smp_data[self.smp_data_sets['ch5']]
-        self.ch6_avg = self.smp_data[self.smp_data_sets['ch6']]
-        self.ch7_avg = self.smp_data[self.smp_data_sets['ch7']]
+        hlp_ds = self.smp_data[self.smp_data_sets['ch' + str(k)]]
         
-        #self.ch5_avg = self.ch0_avg
-        
-    else:
-        self.ch0_avg = (self.ch0_avg * (i_avg) + (hlp_absorption) ) / (i_avg+1.0)
-        self.ch2_avg = (self.ch2_avg * (i_avg) + (hlp_pmt) ) / (i_avg+1.0)
-        
-        #self.ch0_avg = (self.ch0_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch0']]) / (i_avg+1.0)
-        self.ch1_avg = (self.ch1_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch1']]) / (i_avg+1.0)
-        #self.ch2_avg = (self.ch2_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch2']]) / (i_avg+1.0)
-        self.ch3_avg = (self.ch3_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch3']]) / (i_avg+1.0)
-        self.ch4_avg = (self.ch4_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch4']]) / (i_avg+1.0)
-        self.ch5_avg = (self.ch5_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch5']]) / (i_avg+1.0)
-        self.ch6_avg = (self.ch6_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch6']]) / (i_avg+1.0)
-        self.ch7_avg = (self.ch7_avg * (i_avg) + self.smp_data[self.smp_data_sets['ch7']]) / (i_avg+1.0)
+        # offset subtract if in-cell or PMTs
+        if k in [0, 2, 6]:
+            hlp_ds = hlp_ds - np.mean(hlp_absorption[0:offset_points])
 
-        #self.ch5_avg = self.ch0_avg
-
-
-   
-    ## toggle through all channels and average the data
-    ## ch0, ch1, ch2, ...
-    #for channel in self.smp_data_sets.keys():
-
-    #    # get each data set
-    #    # self.smp_data['pmt_spectrum'] = ...
-    #    ds = self.smp_data[self.smp_data_sets[channel]]
-
-    #    self.sub_average_data(ds[ind_1:ind_2], channel, i_avg)
-
-    # toggle through all channels and average the data
-
+        # average data sets
+        self.channels_avg[self.current_configuration][k] = ( self.channels_avg[self.current_configuration][k] * i_avg + hlp_ds ) / (i_avg + 1.0)
 
     ##########################################
     # Integrate signals for display purposes
     ##########################################
     
-    # integrate pmt signal
-    # get time slices for each channel
-    pmt_ind_1 = int(self.pmt_slice_min * 1e3/self.time_step_size)
-    pmt_ind_2 = int(self.pmt_slice_max * 1e3/self.time_step_size)
-
-    self.smp_data_avg['pmt'] = np.mean(self.ch2_avg[pmt_ind_1:pmt_ind_2])
-
-    # integrate in-cell signal
-    # get time slices for each channel
-    ind_1 = int(self.slice_min * 1e3/self.time_step_size)
-    ind_2 = int(self.slice_max * 1e3/self.time_step_size)
-
-    self.smp_data_avg['absorption'] = np.mean(self.ch0_avg[ind_1:ind_2])
-
-    # integrate Rb SAS signal
-    self.smp_data_avg['sat_spec'] = np.mean(self.ch7_avg)
-
-    # integrate Yag power
-
-    yag_ind_1 = int(5.0 * 1e3/self.time_step_size)
-    yag_ind_2 = int(7.0 * 1e3/self.time_step_size)
-
-    self.smp_data_avg['fire_check'] = np.mean(self.ch1_avg[yag_ind_1:yag_ind_2])
-
-    #print('debug')
-    #print(pmt_ind_1)
-    #print(self.smp_data[self.smp_data_sets['ch1']][pmt_ind_1])
-    #print(self.ch1_avg[pmt_ind_1])
-
-    #print(self.smp_data[self.smp_data_sets['ch7']][pmt_ind_1])
-    #print(self.ch7_avg[pmt_ind_1])
-
-    #print(self.time_interval[pmt_ind_1])
+    integrate_time_trace(self, 'absorption', channel = 0, tstart = self.slice_min, tstop = self.slice_max)
+    integrate_time_trace(self, 'pmt',        channel = 2, tstart = self.pmt_slice_min, tstop = self.pmt_slice_max)
+    integrate_time_trace(self, 'sat_spec',   channel = 7, tstart = 0.0, tstop = 30.0)
+    integrate_time_trace(self, 'fire_check', channel = 1, tstart = 5.0, tstop = 7.0)
 
     return
 
@@ -283,14 +219,8 @@ def update_data_sets(self, counter, n):
     # For display purposes only
     ###########################################################
     
-    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
-    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
-    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
-    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
-    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
-    self.set_dataset('ch5_avg', self.ch5_avg, broadcast = True)
-    self.set_dataset('ch6_avg', self.ch6_avg, broadcast = True)
-    self.set_dataset('ch7_avg', self.ch7_avg, broadcast = True)
+    for k in range(8):
+        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
 
     ###########################################################
     # Save scan parameters for configuration 0 only
@@ -298,14 +228,11 @@ def update_data_sets(self, counter, n):
     ###########################################################
     
     if (self.current_configuration == 0) or (len(self.configurations) == 1):
+        
         # this updates the gui for every shot
+
         self.mutate_dataset('set_points',          counter, self.current_setpoint)
         self.mutate_dataset('act_freqs',           counter, self.wavemeter_frequencies)
-
-        self.mutate_dataset('in_cell_spectrum',    n,       self.smp_data_avg['absorption'])
-        self.mutate_dataset('pmt_spectrum',        n,       self.smp_data_avg['pmt'])    
-        self.mutate_dataset('sat_spectrum',        n,       self.smp_data_avg['sat_spec'])    
-        self.mutate_dataset('yag_spectrum',        n,       self.smp_data_avg['fire_check'])    
   
         self.mutate_dataset('beat_node_fft',       counter, self.beat_node_fft)
         self.mutate_dataset('frequency_comb_frep', counter, self.comb_frep)
@@ -314,12 +241,18 @@ def update_data_sets(self, counter, n):
         self.mutate_dataset('transfer_lock_traces', counter, self.transfer_lock_traces)
         self.mutate_dataset('transfer_lock_times',  counter, self.transfer_lock_times)
 
+        # spectra = sums over time traces
+
+        self.mutate_dataset('in_cell_spectrum',    n,       self.smp_data_avg['absorption'])
+        self.mutate_dataset('pmt_spectrum',        n,       self.smp_data_avg['pmt'])    
+        self.mutate_dataset('sat_spectrum',        n,       self.smp_data_avg['sat_spec'])    
+        self.mutate_dataset('yag_spectrum',        n,       self.smp_data_avg['fire_check'])    
+
     ###########################################################
-    # Save time traces in correct configuration data array
+    # Save raw time traces in correct configuration data array
     ###########################################################
     
     # save each successful shot in ch<number>_cfg{1}_arr datasets
-
     # toggle through channels
     for k in range(8):
 
@@ -327,19 +260,6 @@ def update_data_sets(self, counter, n):
         hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
 
         self.mutate_dataset('ch{0}_cfg{1}_arr'.format(k, self.current_configuration), slice_ind, hlp_data)
-
-
-    ## save data after some averaged shots to avoid data loss
-    #if (counter % (3*self.no_of_averages) == 0): 
-    #    # and (counter % self.no_of_averages == 0)
-    #    print(self.no_of_averages) 
-    #    print('Temp saving data ... counter = {0}'.format(counter))
-
-    #    # save data
-    #    save_all_data(self)
-
-    #    # save config
-    #    save_config(self.basefilename, self.config_dict)
 
     return
 
@@ -356,14 +276,8 @@ def update_data_sets_raster(self, counter, nx, ny):
     # For display purposes only
     ###########################################################
     
-    self.set_dataset('ch0_avg', self.ch0_avg, broadcast = True)
-    self.set_dataset('ch1_avg', self.ch1_avg, broadcast = True)
-    self.set_dataset('ch2_avg', self.ch2_avg, broadcast = True)
-    self.set_dataset('ch3_avg', self.ch3_avg, broadcast = True)
-    self.set_dataset('ch4_avg', self.ch4_avg, broadcast = True)
-    self.set_dataset('ch5_avg', self.ch5_avg, broadcast = True)
-    self.set_dataset('ch6_avg', self.ch6_avg, broadcast = True)
-    self.set_dataset('ch7_avg', self.ch7_avg, broadcast = True)
+    for k in range(8):
+        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
 
     ###########################################################
     # Save scan parameters for configuration 0 only

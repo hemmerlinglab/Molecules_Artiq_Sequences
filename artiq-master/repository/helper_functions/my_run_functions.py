@@ -108,8 +108,6 @@ def my_run_slowing(self):
                     
                     print('          Configuration: {0}'.format(self.configuration_descriptions[self.current_configuration]))
                     
-                    #time.sleep(1)
-
                     # Dictionary to display averaged data
                     self.smp_data_avg = {}
     

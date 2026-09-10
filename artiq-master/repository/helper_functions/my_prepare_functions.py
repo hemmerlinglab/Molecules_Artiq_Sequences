@@ -84,23 +84,28 @@ def prepare_datasets(self):
     # Data sets for saving data
     #############################################
 
+    # for display purposes
+    self.channels_avg = {}
+    
     for c in self.configurations:
+        
+        self.channels_avg[c] = {}
+        
         for i in range(8):
+
+            #############################################
+            # Data sets for raw data
+            #############################################
+ 
             self.set_dataset('ch{0}_cfg{1}_arr'.format(i, c),       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
 
-    #############################################
-    # Avg data sets for display purposes only
-    #############################################
+            #############################################
+            # Avg data sets for display purposes only
+            #############################################
     
-    self.set_dataset('ch0_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch1_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch2_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch3_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch4_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch5_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch6_avg',  ([0] * len(self.time_interval)),broadcast=True)
-    self.set_dataset('ch7_avg',  ([0] * len(self.time_interval)),broadcast=True)
+            self.set_dataset('ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)),broadcast=True)
 
+    # scanning laser
     if self.scanning_laser == 'Hodor':
         self.which_scanning_laser = 2
     elif self.scanning_laser == 'Davos':
