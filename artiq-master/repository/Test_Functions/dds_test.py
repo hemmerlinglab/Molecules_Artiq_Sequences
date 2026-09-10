@@ -8,6 +8,7 @@ sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master
 
 
 from base_sequences import *
+from base_dds_sequences import *
 
 
 class DDSControl(EnvExperiment):

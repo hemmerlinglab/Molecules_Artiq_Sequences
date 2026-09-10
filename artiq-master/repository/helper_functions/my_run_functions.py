@@ -53,10 +53,10 @@ def my_run_slowing(self):
             # low frequency            
             Omega_a_stop  = FREQ_AOM + (1/wavelength * self.slowing_vel_low + self.current_velocity_frequency_shift)/1.0e6
 
-            #print()
-            #print(self.scan_values[my_ind])
-            #print(self.current_velocity_frequency_shift/1e6)
-            #print('Chirp: {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))            
+            print()
+            print(self.scan_values[my_ind])
+            print(self.current_velocity_frequency_shift/1e6)
+            print('Chirp: {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))            
 
             if Omega_b_start > DDS_MAX:
                 print('Error. Omega_b too high. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))

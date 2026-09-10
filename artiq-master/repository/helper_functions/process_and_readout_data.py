@@ -166,8 +166,14 @@ def average_data(self, i_avg):
     # it does not care about which configuration is set
     ###############################################################################
 
-    # offset subtraction for absorption
+    #######################################
+    # offset subtraction of time traces
+    #######################################
+
     offset_points = 20
+
+    #for k in range(8):
+    #    self.smp_data[self.smp_data_sets['ch' + str(k)]]
 
     hlp_absorption = self.smp_data[self.smp_data_sets['ch0']]
     hlp_pmt        = self.smp_data[self.smp_data_sets['ch2']]
