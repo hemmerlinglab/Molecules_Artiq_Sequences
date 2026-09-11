@@ -10,13 +10,23 @@ from my_instrument_functions import get_wavemeter_readings
 #######################################################################################################
 
 def readout_data(self):
+ 
+    ################################################
+    # Save sampler data in dataset
+    ################################################
     
-    ############################################################################################
-    # readout ADC data from Artiq by toggling through all channels and saving the data in a list
-    ############################################################################################
-    
+    for k in range(8):
+        self.set_dataset('ch{0}'.format(k), (self.data[k]), broadcast = True)
+
+
+    ##############################################################################################
+    # Readout ADC data from Artiq by toggling through all channels and saving the data in a list
+    ##############################################################################################
+
     self.smp_data = {}
     for channel in self.smp_data_sets.keys():
+    
+       
         # self.smp_data['absorption'] = ...
         self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
 

@@ -184,73 +184,46 @@ def fire_and_read(self):
     return
 
 
-
-
 ##########################################################################
 
 @kernel
 def read_rubidium(self):
 
-        self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
-        self.sampler1.init() # initializes sampler device
-        # print('made it here')
-        ### Set Channel Gain
-        for i in range(8):
-            self.sampler1.set_gain_mu(i,0) # (channel,setting) gain is 10^setting
+    self.core.break_realtime() # sets "now" to be in the near future (see Artiq manual)
+    
+    ###############################
+    # Initialization
+    ###############################
+    
+    init_sampler(self)
 
-        delay(500*us)
+    ###############################
+    # Sequence
+    ###############################
 
-        ### Data Variable Initialization
-        data0 = [0]*self.scope_count # signal data
-        data1 = [0]*self.scope_count # fire check data (Rb absorption data)
-        data2 = [0]*self.scope_count # uhv data (pmt)
-        data3 = [0]*self.scope_count # post select, checks spec blue
-        data4 = [0]*self.scope_count # post select, checks slow blue
-        data5 = [0]*self.scope_count # post select, checks slow blue
-        data6 = [0]*self.scope_count # post select, checks slow blue
-        data7 = [0]*self.scope_count # post select, checks slow blue
+    with parallel:
 
-        smp = [0]*8 # individual sample
+        with sequential:        
+            # experiment start 
+            base_experiment_start(self)
 
-        ### Fire and sample
-        with parallel:
+        with sequential:
+            # read out sampler
+            base_readout_sampler(self)
 
-            with sequential:
-                self.ttl9.pulse(10*us) # experimental start
+    ###############################################
+    # Allocate and Transmit Data All Channels
+    ###############################################
+    
+    self.set_dataset('ch0', (self.data[0]), broadcast = True)
+    self.set_dataset('ch1', (self.data[1]), broadcast = True)
+    self.set_dataset('ch2', (self.data[2]), broadcast = True)
+    self.set_dataset('ch3', (self.data[3]), broadcast = True)
+    self.set_dataset('ch4', (self.data[4]), broadcast = True)
+    self.set_dataset('ch5', (self.data[5]), broadcast = True)
+    self.set_dataset('ch6', (self.data[6]), broadcast = True)
+    self.set_dataset('ch7', (self.data[7]), broadcast = True)
 
-            with sequential:
-                for j in range(self.scope_count):
-                    self.sampler1.sample_mu(smp) # (machine units) reads 8 channel voltages into smp
-                    data0[j] = smp[0]
-                    data1[j] = smp[1]
-                    data2[j] = smp[2]
-                    data3[j] = smp[3]
-                    data4[j] = smp[4]
-                    data5[j] = smp[5]
-                    data6[j] = smp[6]
-                    data7[j] = smp[7]
-
-                    #delay(5*us)
-                    delay(self.time_step_size*us) # plus 9us from sample_mu
-
-        # release shutter of slowing laser
-        self.ttl8.off()
-
-        ### Allocate and Transmit Data All Channels
-        self.set_dataset('ch0', (data0), broadcast = True)
-        self.set_dataset('ch1', (data1), broadcast = True)
-        self.set_dataset('ch2', (data2), broadcast = True)
-        self.set_dataset('ch3', (data3), broadcast = True)
-        self.set_dataset('ch4', (data4), broadcast = True)
-        self.set_dataset('ch5', (data5), broadcast = True)
-        self.set_dataset('ch6', (data6), broadcast = True)
-        self.set_dataset('ch7', (data7), broadcast = True)
-
-        return
-
-
-
-
-
+    return
 
 
