@@ -33,7 +33,7 @@ def my_analyze(self, do_reset_instruments = True):
     add_scan_to_list(self)
 
     # save Yag status
-    if self.use_yag:
+    if self.yag_on:
         save_yag_status(self)
 
     # finish scan

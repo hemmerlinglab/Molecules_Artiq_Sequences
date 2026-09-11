@@ -110,8 +110,6 @@ def load_attributes(self):
 
 def load_parameters(self, raster_scan = False):
 
-    self.use_yag = True # standard is true
-
     # number of time steps
     my_setattr(self, 'scope_count',     NumberValue(default=400,unit='reads per shot',scale=1,ndecimals=0,step=1))
 
@@ -131,21 +129,16 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'yag_fire_time',     NumberValue(default=30,unit='ms',scale=1,ndecimals=0,step=1))
     my_setattr(self, 'sampler_delay_time',NumberValue(default=25,unit='ms',scale=1,ndecimals=0,step=1))
 
-    ## dewar shutter
-    #my_setattr(self, 'shutter_start_time',NumberValue(default=15,unit='ms',scale=1,ndecimals=1,step=0.1))
-    #my_setattr(self, 'shutter_open_time', NumberValue(default=30,unit='ms',scale=1,ndecimals=1,step=0.1))
-
     my_setattr(self, 'repetition_time',NumberValue(default=0.5,unit='s',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'yag_power',      NumberValue(default=13,unit='',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow',        NumberValue(default=0,unit='sccm',scale=1,ndecimals=1,step=0.1))
     my_setattr(self, 'he_flow_wait',   NumberValue(default=2,unit='s',scale=1,ndecimals=1,step=0.1))
     
-    #my_setattr(self, 'pulse_tube_sync_wait',NumberValue(default=10,unit='ms',scale=1,ndecimals=1,step=0.1))
-   
     ####################################################################
     # Booleans
     ####################################################################
     
+    my_setattr(self, 'yag_on',              BooleanValue(default=True))
     my_setattr(self, 'yag_check',           BooleanValue(default=True))
     my_setattr(self, 'blue_check',          BooleanValue(default=True))
     my_setattr(self, 'uniblitz_on',         BooleanValue(default=False))

@@ -38,6 +38,7 @@ def readout_data(self):
         #self.wavemeter_moglabs_frequency = self.wavemeter_frequencies[1]
         #print(self.wavemeter_frequencies)
 
+
     ###############################
     # Read repetition rate of comb
     ###############################
@@ -89,6 +90,7 @@ def check_shot(self):
     repeat_shot = False
 
     # check if Yag has fired
+    
     if self.yag_check and np.max(self.smp_data['fire_check']) < 0.1:
         repeat_shot = True
         print('No Yag val: {0}'.format(np.max(self.smp_data['fire_check'])))
@@ -191,7 +193,7 @@ def update_data_sets(self, counter, n):
 
         hlp_data = self.channels_avg[self.current_configuration][k]
 
-        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), (0), hlp_data)
+        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), 0, hlp_data)
 
 
         # save each successful shot in ch<number>_cfg{1}_arr datasets

@@ -10,7 +10,7 @@ import numpy as np
 from my_build_functions   import my_build
 from my_prepare_functions import my_prepare
 from my_analyze_functions import my_analyze
-from my_run_functions     import my_run_no_yag
+from my_run_functions     import my_run
 
 
 
@@ -77,7 +77,7 @@ class SAS_General_Spectroscopy(EnvExperiment):
 
     def run(self):
 
-        my_run_no_yag(self)
+        my_run(self)
 
         return
 
