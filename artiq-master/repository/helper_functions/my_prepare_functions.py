@@ -105,6 +105,8 @@ def prepare_datasets(self):
     
             self.set_dataset('ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)),broadcast=True)
 
+            self.channels_avg[c][i] = np.array([0] * len(self.time_interval))
+
     # scanning laser
     if self.scanning_laser == 'Hodor':
         self.which_scanning_laser = 2

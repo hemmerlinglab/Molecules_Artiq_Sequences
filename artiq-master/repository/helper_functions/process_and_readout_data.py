@@ -160,8 +160,8 @@ def check_shot(self):
 
 def integrate_time_trace(self, tag, channel = 0, tstart = 0.0, tstop = 0.0):
 
-    ind_1 = int(tstart * 1e3/self.time_step_size)
-    ind_2 = int(tstop  * 1e3/self.time_step_size)
+    ind1 = int(tstart * 1e3/self.time_step_size)
+    ind2 = int(tstop  * 1e3/self.time_step_size)
 
     self.smp_data_avg[tag] = np.mean(self.channels_avg[self.current_configuration][channel][ind1:ind2])
 
@@ -190,7 +190,7 @@ def average_data(self, i_avg):
         
         # offset subtract if in-cell or PMTs
         if k in [0, 2, 6]:
-            hlp_ds = hlp_ds - np.mean(hlp_absorption[0:offset_points])
+            hlp_ds = hlp_ds - np.mean(hlp_ds[0:offset_points])
 
         # average data sets
         self.channels_avg[self.current_configuration][k] = ( self.channels_avg[self.current_configuration][k] * i_avg + hlp_ds ) / (i_avg + 1.0)
