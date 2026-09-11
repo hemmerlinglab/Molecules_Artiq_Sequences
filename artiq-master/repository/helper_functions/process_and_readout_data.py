@@ -96,8 +96,6 @@ def check_shot(self):
 
     # check if spectroscopy light was there    
     
-    #print(np.mean(self.smp_data['int_chamber_pickup']))
-
     blue_min = 0.15/ 1200.0 * 400
     if self.blue_check:
         if np.mean(self.smp_data['int_chamber_pickup']) < blue_min:
@@ -107,27 +105,6 @@ def check_shot(self):
             #print('No spectroscopy')
             print('No spectroscopy val: {0}'.format(np.max(self.smp_data['int_chamber_pickup'])))
             os.system('mpg321 -quiet ~/klaxon.mp3')
-
-
-    #blue_min = splr.adc_mu_to_volt(15)
-    #if self.blue_check:
-    #    if self.which_scanning_laser == 1:
-    #      if np.min(self.smp_data['davos_pickup']) < blue_min:
-    #            repeat_shot = True
-
-    #    elif self.which_scanning_laser == 2:
-    #      if np.min(self.smp_data['hodor_pickup']) < blue_min:
-    #            repeat_shot = True
-
-    #    elif self.which_scanning_laser == 3:
-    #      if np.min(self.smp_data['daenerys_pickup']) < blue_min:
-    #            repeat_shot = True
-    #    else:
-    #        print('Not checking spectroscopy laser')
-
-    #    if repeat_shot:
-    #        print('No spectroscopy')
-    #        os.system('mpg321 -quiet ~/klaxon.mp3')
 
     # check if laser is locked by comparing wavemeter frequency with setpoint
 
@@ -141,17 +118,6 @@ def check_shot(self):
 
             print('Moglabs laser offlock')
             os.system('mpg321 -quiet ~/klaxon.mp3')
-
-        ## Hodor
-        #if self.which_scanning_laser == 2:
-        #    
-        #    # 375.02 THz + (275.3 MHz)/1e6 THz
-        #    hlp_frequency = self.offset_laser_Hodor + self.current_setpoint/1.0e6
-        #
-        #    # Transform to MHz, difference should not be larger than 20 MHz
-        #    if (self.wavemeter_frequencies - hlp_frequency)*1e12/1e6 > 20.0:            
-        #        repeat_shot = True
-
 
     return repeat_shot
 
@@ -174,8 +140,6 @@ def average_data(self, i_avg):
 
     ###############################################################################
     # the average_data function is for display purposes only
-    # it continuously updates the averaged data
-    # it does not care about which configuration is set
     ###############################################################################
 
     ####################################################
@@ -200,9 +164,9 @@ def average_data(self, i_avg):
     ##########################################
     
     integrate_time_trace(self, 'absorption', channel = 0, tstart = self.slice_min, tstop = self.slice_max)
+    integrate_time_trace(self, 'fire_check', channel = 1, tstart = 5.0, tstop = 7.0)
     integrate_time_trace(self, 'pmt',        channel = 2, tstart = self.pmt_slice_min, tstop = self.pmt_slice_max)
     integrate_time_trace(self, 'sat_spec',   channel = 7, tstart = 0.0, tstop = 30.0)
-    integrate_time_trace(self, 'fire_check', channel = 1, tstart = 5.0, tstop = 7.0)
 
     return
 
@@ -211,16 +175,31 @@ def average_data(self, i_avg):
 
 def update_data_sets(self, counter, n):
    
-    # Counter toggles through each shot including averages
-    # n toggles through the set points
+    # <Counter> toggles through each shot, including averages
+    # <n> toggles through the number of set points
 
     ###########################################################
-    # Display average signals
-    # For display purposes only
+    # Update sampler data
     ###########################################################
     
+    # toggle through channels
     for k in range(8):
-        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
+        
+        # For display purposes only
+        
+        #self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
+
+        hlp_data = self.channels_avg[self.current_configuration][k]
+
+        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), n, hlp_data)
+
+
+        # save each successful shot in ch<number>_cfg{1}_arr datasets
+        
+        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
+
+        self.mutate_dataset('ch{0}_cfg{1}_arr'.format(k, self.current_configuration), (counter), hlp_data)
+
 
     ###########################################################
     # Save scan parameters for configuration 0 only
@@ -229,7 +208,7 @@ def update_data_sets(self, counter, n):
     
     if (self.current_configuration == 0) or (len(self.configurations) == 1):
         
-        # this updates the gui for every shot
+        # update remaining datasets
 
         self.mutate_dataset('set_points',          counter, self.current_setpoint)
         self.mutate_dataset('act_freqs',           counter, self.wavemeter_frequencies)
@@ -248,18 +227,6 @@ def update_data_sets(self, counter, n):
         self.mutate_dataset('sat_spectrum',        n,       self.smp_data_avg['sat_spec'])    
         self.mutate_dataset('yag_spectrum',        n,       self.smp_data_avg['fire_check'])    
 
-    ###########################################################
-    # Save raw time traces in correct configuration data array
-    ###########################################################
-    
-    # save each successful shot in ch<number>_cfg{1}_arr datasets
-    # toggle through channels
-    for k in range(8):
-
-        slice_ind = (counter)
-        hlp_data = self.smp_data[self.smp_data_sets['ch' + str(k)]]
-
-        self.mutate_dataset('ch{0}_cfg{1}_arr'.format(k, self.current_configuration), slice_ind, hlp_data)
 
     return
 

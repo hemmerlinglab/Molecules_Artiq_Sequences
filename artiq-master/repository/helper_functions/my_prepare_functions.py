@@ -97,13 +97,13 @@ def prepare_datasets(self):
             # Data sets for raw data
             #############################################
  
-            self.set_dataset('ch{0}_cfg{1}_arr'.format(i, c),       ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count),broadcast=True)
+            self.set_dataset('ch{0}_cfg{1}_arr'.format(i, c),  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count), broadcast=True)
 
             #############################################
             # Avg data sets for display purposes only
             #############################################
     
-            self.set_dataset('ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)),broadcast=True)
+            self.set_dataset('ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)), broadcast=True)
 
             self.channels_avg[c][i] = np.array([0] * len(self.time_interval))
 
