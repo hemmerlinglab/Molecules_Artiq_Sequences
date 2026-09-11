@@ -191,7 +191,7 @@ def update_data_sets(self, counter, n):
 
         hlp_data = self.channels_avg[self.current_configuration][k]
 
-        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), n, hlp_data)
+        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), (0), hlp_data)
 
 
         # save each successful shot in ch<number>_cfg{1}_arr datasets
