@@ -10,8 +10,8 @@ from base_sequences           import *
 from base_dds_sequences       import prg_freq_ramp
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
-from scan_functions          import scan_parameter
-from my_instrument_functions import move_yag_mirror, prepare_dds_ramp
+from scan_functions           import scan_parameter
+from my_instrument_functions  import move_yag_mirror, prepare_dds_ramp
 
 
 ###################################################################################
@@ -307,8 +307,6 @@ def my_run_raster(self):
                     
                     print('          Configuration: {0}'.format(self.configuration_descriptions[self.current_configuration]))
                     
-                    #time.sleep(1)
-
                     self.smp_data_avg = {}
     
                     repeat_shot = True
