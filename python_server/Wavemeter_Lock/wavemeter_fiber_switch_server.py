@@ -114,6 +114,36 @@ def run_dist_server(opts, wlm, q, sock):
                 # back to channel 2
                 switch_fiber_channel(opts, 2, wait_time = 0.1)
 
+            ###############################################################
+            # Reads out frequency of two channels (1, 8)
+            ###############################################################
+
+            elif request == 'reqch18':
+                
+                # receive tisa freq    
+                wlm.SetExposure(50)
+                switch_fiber_channel(opts, 1, wait_time = 0.25)
+
+                freq_1 = wlm.frequency 
+                freq_1 = "{0:10.6f}".format(freq_2)
+
+                # receive comb freq   
+                wlm.SetExposure(25)              
+                switch_fiber_channel(opts, 8, wait_time = 0.25)
+
+                freq_8 = wlm.frequency 
+                freq_8 = "{0:10.6f}".format(freq_8)
+
+                # send data back to Artiq
+                freq_msg = "{0},{1}".format(freq_1, freq_8)
+
+                msg = str(freq_msg).encode()
+
+                send_msg(connection, msg)
+
+                # back to channel 2
+                switch_fiber_channel(opts, 1, wait_time = 0.1)
+
 
             ###############################################################
             # Calibration Davos
