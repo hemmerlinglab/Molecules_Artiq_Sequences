@@ -168,19 +168,6 @@ def fire_and_read(self):
             # read out sampler
             base_readout_sampler(self)
 
-    ################################################
-    ## Allocate and Transmit Data All Channels
-    ################################################
-    #
-    #self.set_dataset('ch0', (self.data[0]), broadcast = True)
-    #self.set_dataset('ch1', (self.data[1]), broadcast = True)
-    #self.set_dataset('ch2', (self.data[2]), broadcast = True)
-    #self.set_dataset('ch3', (self.data[3]), broadcast = True)
-    #self.set_dataset('ch4', (self.data[4]), broadcast = True)
-    #self.set_dataset('ch5', (self.data[5]), broadcast = True)
-    #self.set_dataset('ch6', (self.data[6]), broadcast = True)
-    #self.set_dataset('ch7', (self.data[7]), broadcast = True)
-
     return
 
 
@@ -210,19 +197,6 @@ def read_rubidium(self):
         with sequential:
             # read out sampler
             base_readout_sampler(self)
-
-    ################################################
-    ## Allocate and Transmit Data All Channels
-    ################################################
-    #
-    #self.set_dataset('ch0', (self.data[0]), broadcast = True)
-    #self.set_dataset('ch1', (self.data[1]), broadcast = True)
-    #self.set_dataset('ch2', (self.data[2]), broadcast = True)
-    #self.set_dataset('ch3', (self.data[3]), broadcast = True)
-    #self.set_dataset('ch4', (self.data[4]), broadcast = True)
-    #self.set_dataset('ch5', (self.data[5]), broadcast = True)
-    #self.set_dataset('ch6', (self.data[6]), broadcast = True)
-    #self.set_dataset('ch7', (self.data[7]), broadcast = True)
 
     return
 

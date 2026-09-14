@@ -10,7 +10,7 @@ import numpy as np
 from my_build_functions   import my_build
 from my_prepare_functions import my_prepare
 from my_analyze_functions import my_analyze
-from my_run_functions     import my_run_no_yag
+from my_run_functions     import my_run
 
 
 ###################################################################################
@@ -78,7 +78,7 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
         self.scan_values = np.append(self.scan_values, np.linspace(1260, 1430, 40))
 
-        self.set_dataset('freqs',      (self.scan_values),broadcast=True)        
+        self.set_dataset('freqs',      (self.scan_values), broadcast=True, archive = False) 
 
         return
 
@@ -115,7 +115,7 @@ class Rubidium_SAS_Spectroscopy(EnvExperiment):
 
     def run(self):
 
-        my_run_no_yag(self)
+        my_run(self)
 
         return
 

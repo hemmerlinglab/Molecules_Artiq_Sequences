@@ -16,7 +16,7 @@ def readout_data(self):
     ################################################
     
     for k in range(8):
-        self.set_dataset('ch{0}'.format(k), (self.data[k]), broadcast = True)
+        self.set_dataset('ch{0}'.format(k), (self.data[k]), broadcast = True) #, archive = False)
 
 
     ##############################################################################################
@@ -26,7 +26,6 @@ def readout_data(self):
     self.smp_data = {}
     for channel in self.smp_data_sets.keys():
     
-       
         # self.smp_data['absorption'] = ...
         self.smp_data[self.smp_data_sets[channel]] = np.array(list(map(lambda v : splr.adc_mu_to_volt(v), self.get_dataset(channel))))
 
@@ -99,15 +98,19 @@ def check_shot(self):
 
     repeat_shot = False
 
+    ############################################
     # check if Yag has fired
+    ############################################
     
-    if self.yag_check and np.max(self.smp_data['fire_check']) < 0.1:
+    if self.yag_on and self.yag_check and np.max(self.smp_data['fire_check']) < 0.1:
         repeat_shot = True
         print('No Yag val: {0}'.format(np.max(self.smp_data['fire_check'])))
         os.system('mpg321 -quiet ~/klaxon.mp3')
 
-    # check if spectroscopy light was there    
-    
+    ############################################
+    # check if spectroscopy light was there       
+    ############################################
+
     blue_min = 0.15/ 1200.0 * 400
     if self.blue_check:
         if np.mean(self.smp_data['int_chamber_pickup']) < blue_min:
@@ -118,7 +121,10 @@ def check_shot(self):
             print('No spectroscopy val: {0}'.format(np.max(self.smp_data['int_chamber_pickup'])))
             os.system('mpg321 -quiet ~/klaxon.mp3')
 
+    
+    #################################################################################
     # check if laser is locked by comparing wavemeter frequency with setpoint
+    #################################################################################
 
     if self.wavemeter_lock_check:
 
@@ -130,6 +136,7 @@ def check_shot(self):
 
             print('Moglabs laser offlock')
             os.system('mpg321 -quiet ~/klaxon.mp3')
+
 
     return repeat_shot
 
@@ -197,13 +204,12 @@ def update_data_sets(self, counter, n):
     # toggle through channels
     for k in range(8):
         
-        # For display purposes only
-        
-        #self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
+        # for display purposes only
 
         hlp_data = self.channels_avg[self.current_configuration][k]
 
-        self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), 0, hlp_data)
+        #self.mutate_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), (0), hlp_data)
+        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), hlp_data, broadcast = True)
 
 
         # save each successful shot in ch<number>_cfg{1}_arr datasets
@@ -256,7 +262,7 @@ def update_data_sets_raster(self, counter, nx, ny):
     ###########################################################
     
     for k in range(8):
-        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True)
+        self.set_dataset('ch{0}_cfg{1}_avg'.format(k, self.current_configuration), self.channels_avg[self.current_configuration][k], broadcast = True, archive = False)
 
     ###########################################################
     # Save scan parameters for configuration 0 only

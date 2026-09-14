@@ -47,14 +47,14 @@ class Raster_Scan(EnvExperiment):
         self.setpoint_count = len(self.scan_x_interval) * len(self.scan_y_interval)
 
         target_img_incell = [[0.0] * len(self.scan_y_interval)] * len(self.scan_x_interval) 
-        self.set_dataset('target_img_incell', (np.array(target_img_incell)), broadcast=True)
+        self.set_dataset('target_img_incell', (np.array(target_img_incell)), broadcast=True, archive = False)
 
         (mesh_X, mesh_Y) = np.meshgrid(self.scan_x_interval, self.scan_y_interval)
         mesh_X = mesh_X.flatten()
         mesh_Y = mesh_Y.flatten()
 
-        self.set_dataset('posx',      (mesh_X),broadcast=True)
-        self.set_dataset('posy',      (mesh_Y),broadcast=True)
+        self.set_dataset('posx',      (mesh_X),broadcast=True, archive = False)
+        self.set_dataset('posy',      (mesh_Y),broadcast=True, archive = False)
 
         my_prepare(self, data_to_save = 
                          [

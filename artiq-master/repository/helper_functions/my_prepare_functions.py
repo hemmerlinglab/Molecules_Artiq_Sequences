@@ -37,6 +37,20 @@ def my_prepare(self, data_to_save = None, init_instruments = True):
 
 #######################################################################################################
 
+def my_set_dataset(self, arg, val):
+
+
+    self.set_dataset(
+            arg, 
+            val, 
+            broadcast   = True, # for update display
+            archive     = False # remove saving to HDF5
+            )
+    
+    return
+
+#######################################################################################################
+
 def prepare_datasets(self):
 
     # data sets to save artiq sampler data
@@ -60,7 +74,6 @@ def prepare_datasets(self):
         print('Scan range out of bounds for parameter {0}.'.format(self.scanning_parameter))
         print()
 
-
     # Prepare some data sets
     self.smp_data_sets = {
             'ch0' : 'absorption',           # in-cell
@@ -75,10 +88,10 @@ def prepare_datasets(self):
 
     self.time_interval = np.linspace(0,(self.time_step_size+9)*(self.scope_count-1)/1.0e3,self.scope_count)
 
-    self.set_dataset('set_points', ([0] * (self.no_of_averages * self.setpoint_count)),broadcast=True)
-    self.set_dataset('act_freqs',  ([[0, 0]] * (self.no_of_averages * self.setpoint_count)),broadcast=True)
-    self.set_dataset('freqs',      (self.scan_values),broadcast=True)
-    self.set_dataset('times',      (self.time_interval),broadcast=True)
+    my_set_dataset(self, 'set_points', ([0] * (self.no_of_averages * self.setpoint_count)))
+    my_set_dataset(self, 'act_freqs',  ([[0, 0]] * (self.no_of_averages * self.setpoint_count)))
+    my_set_dataset(self, 'freqs',      (self.scan_values))
+    my_set_dataset(self, 'times',      (self.time_interval))
 
     #############################################
     # Data sets for saving data
@@ -97,13 +110,13 @@ def prepare_datasets(self):
             # Data sets for raw data
             #############################################
  
-            self.set_dataset('ch{0}_cfg{1}_arr'.format(i, c),  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count), broadcast=True)
+            my_set_dataset(self, 'ch{0}_cfg{1}_arr'.format(i, c),  ([[0] * len(self.time_interval)] * self.no_of_averages * self.setpoint_count))
 
             #############################################
             # Avg data sets for display purposes only
             #############################################
     
-            self.set_dataset('ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)), broadcast=True)
+            my_set_dataset(self, 'ch{0}_cfg{1}_avg'.format(i, c),  ([0] * len(self.time_interval)))
 
             self.channels_avg[c][i] = np.array([0] * len(self.time_interval))
 
@@ -116,23 +129,20 @@ def prepare_datasets(self):
         self.which_scanning_laser = 3
 
     # parameters for comb
-    self.set_dataset('frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
-    self.set_dataset('EOM_frequency',        ([0] * self.no_of_averages * self.setpoint_count), broadcast=True)
-    self.set_dataset('beat_node_fft',        ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count), broadcast=True)
+    my_set_dataset(self, 'frequency_comb_frep',  ([0] * self.no_of_averages * self.setpoint_count))
+    my_set_dataset(self, 'EOM_frequency',        ([0] * self.no_of_averages * self.setpoint_count))
+    my_set_dataset(self, 'beat_node_fft',        ([np.zeros([801, 2])] * self.no_of_averages * self.setpoint_count))
     
     # datasets for transfer cavity scope
-    self.set_dataset('transfer_lock_traces',  ([np.zeros([999, 4])] * self.no_of_averages * self.setpoint_count), broadcast=True)
-    self.set_dataset('transfer_lock_times',   ([np.zeros([999, 1])] * self.no_of_averages * self.setpoint_count), broadcast=True)
+    my_set_dataset(self, 'transfer_lock_traces',  ([np.zeros([999, 4])] * self.no_of_averages * self.setpoint_count))
+    my_set_dataset(self, 'transfer_lock_times',   ([np.zeros([999, 1])] * self.no_of_averages * self.setpoint_count))
 
     # spectrum datasets for display 
-    self.set_dataset('in_cell_spectrum',     ([0] * self.setpoint_count),broadcast=True)
-    self.set_dataset('pmt_spectrum',         ([0] * self.setpoint_count),broadcast=True)
-    self.set_dataset('sat_spectrum',         ([0] * self.setpoint_count),broadcast=True)
-    self.set_dataset('yag_spectrum',         ([0] * self.setpoint_count),broadcast=True)
+    my_set_dataset(self, 'in_cell_spectrum',     ([0] * self.setpoint_count))
+    my_set_dataset(self, 'pmt_spectrum',         ([0] * self.setpoint_count))
+    my_set_dataset(self, 'sat_spectrum',         ([0] * self.setpoint_count))
+    my_set_dataset(self, 'yag_spectrum',         ([0] * self.setpoint_count))
 
-    ## set the slow / no slow configuration starting point
-    #self.current_configuration = 0
-   
     if self.scanning_parameter == 'cavity_ramp':
         self.wavemeter_mode = 'cavity_lock'
     else:

@@ -138,7 +138,7 @@ def load_parameters(self, raster_scan = False):
     # Booleans
     ####################################################################
     
-    my_setattr(self, 'yag_on',              BooleanValue(default=True))
+    my_setattr(self, 'yag_on',              BooleanValue(default=False))
     my_setattr(self, 'yag_check',           BooleanValue(default=True))
     my_setattr(self, 'blue_check',          BooleanValue(default=True))
     my_setattr(self, 'uniblitz_on',         BooleanValue(default=False))
