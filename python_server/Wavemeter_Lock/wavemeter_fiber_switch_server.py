@@ -125,7 +125,7 @@ def run_dist_server(opts, wlm, q, sock):
                 switch_fiber_channel(opts, 1, wait_time = 0.25)
 
                 freq_1 = wlm.frequency 
-                freq_1 = "{0:10.6f}".format(freq_2)
+                freq_1 = "{0:10.6f}".format(freq_1)
 
                 # receive comb freq   
                 wlm.SetExposure(25)              
