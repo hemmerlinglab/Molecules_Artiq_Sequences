@@ -7,7 +7,7 @@ import time
 
 # core sequence
 from base_sequences           import * 
-from base_dds_sequences       import prg_freq_ramp
+from base_dds_sequences       import prg_freq_ramp, dds_off
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
 from scan_functions           import scan_parameter
@@ -161,14 +161,6 @@ def my_run(self):
         
         counter = 0
     
-        #if self.dds_on:
-        #
-        #    dds_on(self)
-
-        #else:
-
-        #    dds_off(self)
-
         ###########################################################
         # Loop over set points
         ###########################################################    
