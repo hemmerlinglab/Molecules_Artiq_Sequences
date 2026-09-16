@@ -1,17 +1,19 @@
 #!/usr/bin/python3
 
-import argparse
 import asyncio
 import collections
 import ipaddress
 import keyword
-import os
 import socket
 import sys
 import urllib.error
 import urllib.request
 
+from argparse import ArgumentParser
+from argparse import Namespace
+
 from datetime import datetime
+from pathlib import Path
 from textwrap import dedent
 
 from typing import List
@@ -148,7 +150,7 @@ def make_stream_type(stream_type: Optional[StreamType]) -> str:
 
 def make_type(name: str, is_readable: bool = True, is_writeable: bool = True, is_readset: bool = False) -> str:
     """Converts a DeCoP type name to a Python type name. This can either be a scalar type like 'REAL' or
-       'INTEGER', or a typedef name like 'mc-board' or 'laser.
+       'INTEGER', or a typedef name like 'mc-board' or 'laser'.
 
     Args:
         name (str): The name of the type.
@@ -644,7 +646,7 @@ def generate_atomic_typedef(typedef: Typedef, typenames: TypeNameMap, readlevel:
     source += f"        return {_await}self.__client.get(self.__name)\n\n"
 
     # Setter
-    param_list = [f'{make_param_name(x.name)}:{make_cmd_type(x.paramtype)}' for x in typedef.params.values()]
+    param_list = [f'{make_param_name(x.name)}: {make_cmd_type(x.paramtype)}' for x in typedef.params.values()]
     source += f"    {_async}def set(self, {', '.join(param_list)}) -> None:\n"
 
     for param in typedef.params.values():
@@ -796,22 +798,28 @@ def generate_device_class_methods(use_async: bool) -> str:
 """
 
 
-def generate_header(model_name: str, use_async: bool, default_cmd_port: Optional[int],
-                    default_mon_port: Optional[int]) -> str:
+def generate_header(model_name: str, use_async: bool, default_cmd_port: int, default_mon_port: int) -> str:
     """Generates the header for a Python module.
 
     Args:
-        model_name (str): The name of the system model the header is generated for.
-        use_async (bool): True if asynchronous code should be generated, false otherwise.
-        default_cmd_port (Optional[int]): An optional override for the command line port.
-        default_mon_port (Optional[int]): An optional override for the monitoring line port.
+        model_name (str):
+            The name of the system model the header is generated for.
+
+        use_async (bool):
+            True if asynchronous code should be generated, false otherwise.
+
+        default_cmd_port (int):
+            An optional override for the command line port.
+
+        default_mon_port (int):
+            An optional override for the monitoring line port.
 
     Returns:
         str: The Python code for the header.
 
 
     """
-    has_default_ports = default_cmd_port is not None or default_mon_port is not None
+    has_default_ports = default_cmd_port != 1998 or default_mon_port != 1999
     _asyncio = 'asyncio.' if use_async else ''
 
     header = dedent(f"""\
@@ -875,17 +883,30 @@ def generate_header(model_name: str, use_async: bool, default_cmd_port: Optional
 
 
 def generate_python_module(model_name: str, model_data: str, ul: UserLevel, use_async: bool, class_name: str,
-                           default_cmd_port: Optional[int], default_mon_port: Optional[int]) -> str:
+                           default_cmd_port: int, default_mon_port: int) -> str:
     """Generates a Python module from a DeCoP system model.
 
     Args:
-        model_name (str): The name of the system model.
-        model_data (str): The XML data defining the system model.
-        ul (UserLevel): The highest user level for which code will be generated.
-        use_async (bool): True if asynchronous code should be generated, false otherwise.
-        class_name (str): An optional name for the device class.
-        default_cmd_port (Optional[int]): An optional override for the command line port.
-        default_mon_port (Optional[int]): An optional override for the monitoring line port.
+        model_name (str):
+            The name of the system model.
+
+        model_data (str):
+            The XML data defining the system model.
+
+        ul (UserLevel):
+            The highest user level for which code will be generated.
+
+        use_async (bool):
+            True if asynchronous code should be generated, false otherwise.
+
+        class_name (str):
+            An optional name for the device class.
+
+        default_cmd_port (int):
+            An optional override for the command line port.
+
+        default_mon_port (int):
+            An optional override for the monitoring line port.
 
     Returns:
         str: The Python code for the module.
@@ -909,107 +930,145 @@ def generate_python_module(model_name: str, model_data: str, ul: UserLevel, use_
     return result
 
 
-def process_command_line(commandline: List[str]):
-    """Parse the command line and return a DeCoP model description.
+def process_command_line(commandline: List[str]) -> Namespace:
+    """Parses and verifies a list of command-line parameters.
 
     Args:
-        commandline (List[str]): A list of commandline parameters.
+        commandline (List[str]):
+            A list of command-line parameters.
 
     Returns:
-        An object containing the parsed command line parameters.
+        Namespace: An object containing the parsed command-line parameters.
 
     """
-    parser = argparse.ArgumentParser(description='Generate Python code from a DeCoP system description.')
+    parser = ArgumentParser(description='Generate a Python module from a DeCoP system description.')
 
     # Allow naming the generated python module
     description = 'set the name of the generated Python module'
-    parser.add_argument('-m', '--module', metavar='name', dest='module_name', nargs=1, help=description)
+    parser.add_argument(
+        '-m', '--module',
+        type=str, default='', dest='module_name', metavar='name', help=description
+    )
 
     # Allow selecting the included elements based on a user level
-    description = 'include properties up to this user level'
-    parser.add_argument('-ul', '--userlevel', metavar='level', type=int, choices=range(0, 5), dest='ul', nargs=1, help=description)
+    description = 'include elements up to this user level'
+    parser.add_argument(
+        '-ul', '--userlevel',
+        type=int, default=3, dest='ul', metavar='level', choices=range(0, 5), help=description
+    )
 
     # Allow selecting between generating synchronous and asynchronous code
     description = 'generate asynchronous Python code'
-    parser.add_argument('-a', '--async', dest='use_async', action='store_true', help=description)
+    parser.add_argument(
+        '-a', '--async',
+        dest='use_async', action='store_true', help=description
+    )
 
-    # Allow selecting between generating synchronous and asynchronous code
+    # Allow downloading the system model from the device
     description = 'download system model from a device'
-    parser.add_argument('-d', '--download', dest='download', action='store_true', help=description)
+    parser.add_argument(
+        '-d', '--download',
+        dest='download', action='store_true', help=description
+    )
 
     # Allow selecting different (from 1998 and 1999) default ports for network connections
     description = 'set default ports for network connections'
-    parser.add_argument('-p', '--ports', metavar=('cmd', 'mon'), type=int, dest='ports', nargs=2, help=description)
+    parser.add_argument(
+        '-p', '--ports',
+        type=int, default=[1998, 1999], dest='ports', metavar=('cmd', 'mon'), nargs=2, help=description
+    )
 
-    # Allow providing a name for the root class. Otherwise the root name of the system model is used.
+    # Allow providing a name for the root class. Otherwise, the root name of the system model is used.
     description = 'set the name of the device class'
-    parser.add_argument('-c', '--class', metavar='name', dest='class_name', nargs=1, help=description)
+    parser.add_argument(
+        '-c', '--class',
+        type=str, default='', dest='class_name', metavar='name', help=description
+    )
 
     # At least one XML file is required
-    parser.add_argument('model_xml', metavar='model_xml', nargs=1, help='DeCoP system description file or device IP address')
+    description = 'DeCoP system description file or device IP address'
+    parser.add_argument(
+        'model_xml', type=str, help=description
+    )
 
     if not commandline:
         # Show the command line help if there weren't any parameters provided
         parser.print_help()
         parser.exit()
 
+    #
     args = parser.parse_args(commandline)
-
-    if args.model_xml:
-        # ['model.xml'] -> 'model.xml'
-        args.model_xml = args.model_xml[0]
-
-    if args.module_name:
-        # ['decop.py'] -> 'decop.py'
-        args.module_name = args.module_name[0]
-
-    if args.ul:
-        # 3 -> UserLevel.NORMAL
-        args.ul = UserLevel(args.ul[0])
-    else:
-        args.ul = UserLevel.NORMAL
-
-    if args.ports is None:
-        args.ports = [None, None]
+    args.ul = UserLevel(args.ul)
 
     return args
+
+
+def make_module_name(args: Namespace) -> str:
+    """Creates a module name from the command-line parameters.
+
+    Args:
+        args (Namespace):
+            The command-line parameters.
+
+    Returns:
+        str: The name of the module.
+
+    """
+    if args.module_name:
+        # Use the provided module name
+        module_name: str = args.module_name
+
+    elif args.download:
+        # The model name is an IP address or hostname
+        module_name: str = args.model_xml
+
+    else:
+        # The model name is an XML file
+        module_name = Path(args.model_xml).stem
+
+    # Append '.py' if necessary
+    if not module_name.endswith('.py'):
+        module_name = f'{module_name}.py'
+
+    # Split into path and module name (so only the module name will be changed)
+    module_path = Path(module_name).parent
+    module_name = Path(module_name).stem
+
+    # Replace reserved characters in the module name
+    module_name = ''.join('_' if char in '.-<>:"|?*' else char for char in module_name)
+
+    # Module names cannot start with a digit
+    if module_name[0].isdigit():
+        module_name = f'mod_{module_name}'
+
+    return (module_path / f'{module_name}.py').as_posix()
 
 
 def main() -> None:
     """Parses the command line and imports a system model if necessary."""
 
-    # Get a list of files to convert or show the command line help
+    # Get a list of files to convert or show the command-line help
     args = process_command_line(sys.argv[1:])
 
-    if args.module_name:
-        # Use the provided module name
-        module_name = args.module_name
-    else:
-        # Replace the model file extension with '.py'
-        module_name = os.path.splitext(args.model_xml)[0] + '.py'
-
-        # Replace reserved characters in the filename
-        for c in '-<>:"/\\|?*':
-            module_name = module_name.replace(c, '_')
+    # Create a module name from the command line parameters
+    module_name = make_module_name(args)
 
     if args.download:
         # Try to download a system model from a device
         model_name, model_data = download_system_xml(args.model_xml)
     else:
         # Try to read a system model from a file
-        with open(args.model_xml, 'r', encoding='utf-8') as xml_file:
-            model_name = os.path.basename(args.model_xml)
+        with open(args.model_xml, encoding='utf-8') as xml_file:
+            model_name = Path(args.model_xml).name
             model_data = xml_file.read()
-
-    if args.class_name:
-        # ['class_name'] -> 'class_name'
-        class_name = args.class_name[0]
-    else:
-        class_name = ''
 
     if model_name:
         with open(module_name, 'w+') as file:
-            file.write(generate_python_module(model_name, model_data, args.ul, args.use_async, class_name, args.ports[0], args.ports[1]))
+            file.write(
+                generate_python_module(
+                    model_name, model_data, args.ul, args.use_async, args.class_name, args.ports[0], args.ports[1]
+                )
+            )
 
 
 if __name__ == "__main__":

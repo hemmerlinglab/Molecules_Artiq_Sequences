@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import re
 import socket
-import sys
 
 from asyncio import StreamReader
 from asyncio import StreamWriter
@@ -15,8 +16,11 @@ from ipaddress import ip_address
 from abc import ABC
 from abc import abstractmethod
 
+from types import TracebackType
+
 from typing import Optional
 from typing import Tuple
+from typing import Type
 from typing import Union
 from typing import cast
 
@@ -147,11 +151,11 @@ class DiscoveryProtocol(asyncio.DatagramProtocol):
             if len(ls) == 10 and self._device_name in {ls[0], ls[5]}:
                 self._result.set_result((ip_address(ls[7]), int(ls[8]), int(ls[9])))
 
-    def error_received(self, exc: Exception):
+    def error_received(self, exc: Exception) -> None:
         self._logger.error('DiscoveryProtocol: error_received: %s', str(exc))
 
     @property
-    def result(self) -> 'asyncio.Future[DeviceNetworkAddress]':
+    def result(self) -> asyncio.Future[DeviceNetworkAddress]:
         """asyncio.Future[DeviceNetworkAddress]: The result of the discovery process."""
         return self._result
 
@@ -192,11 +196,12 @@ class NetworkConnection(Connection):
     def __repr__(self) -> str:
         return f"<NetworkConnection host={self._host}:{self._command_port},{self._monitoring_port}>"
 
-    async def __aenter__(self) -> 'NetworkConnection':
+    async def __aenter__(self) -> NetworkConnection:
         await self.open()
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException],
+                        traceback: Optional[TracebackType]) -> None:
         await self.close()
 
     async def open(self) -> None:
@@ -279,17 +284,17 @@ class NetworkConnection(Connection):
         # Close the command line
         if self._command_line_writer is not None:
             self._command_line_writer.close()
-            if sys.version_info >= (3, 7):
-                await self._command_line_writer.wait_closed()
+            await self._command_line_writer.wait_closed()
             self._command_line_writer = None
+
         self._command_line_reader = None
 
         # Close the monitoring line
         if self._monitoring_line_writer is not None:
             self._monitoring_line_writer.close()
-            if sys.version_info >= (3, 7):
-                await self._monitoring_line_writer.wait_closed()
+            await self._monitoring_line_writer.wait_closed()
             self._monitoring_line_writer = None
+
         self._monitoring_line_reader = None
 
     async def read_command_line(self) -> str:
@@ -485,11 +490,12 @@ class SerialConnection(Connection):
     def __repr__(self) -> str:
         return f"<SerialConnection port={self._port} baudrate={self._baudrate}>"
 
-    async def __aenter__(self) -> 'SerialConnection':
+    async def __aenter__(self) -> SerialConnection:
         await self.open()
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException],
+                        traceback: Optional[TracebackType]) -> None:
         await self.close()
 
     async def open(self) -> None:

@@ -7,7 +7,7 @@ from toptica.lasersdk.client import Client, NetworkConnection
 
 class DFC():
     
-    def __init__(self, IP = '192.168.42.42'):
+    def __init__(self, IP = '192.168.42.44'):
     
         try:
             self.dev = Client(NetworkConnection(IP))
@@ -46,14 +46,14 @@ class DFC():
         if self.dev == None:
             return 0.0
         else:
-            return self.dev.get('sys_def:RepRateLock:frequency_difference', float)
+            return self.dev.get('dfc-core:DFC:sys_def:RepRateLock:frequency_difference', float)
 
     def get_frep(self):
         
         if self.dev == None:
             return 0.0
         else:
-            return self.dev.get('sys_def:RepRateLock:internal_frep_counter', float)
+            return self.dev.get('dfc-core:DFC:sys_def:RepRateLock:internal_frep_counter', float)
 
 
 ##################################################################################################

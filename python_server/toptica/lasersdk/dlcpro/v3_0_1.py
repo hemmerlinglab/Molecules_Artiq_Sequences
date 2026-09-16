@@ -1,4 +1,4 @@
-# Generated from 'v3_0_1.xml' on 2023-09-12 09:32:26.932533
+# Generated from 'v3_0_1.xml' on 2025-07-21 10:00:14.812134
 
 from typing import Tuple
 from typing import Optional
@@ -1211,7 +1211,7 @@ class Coordinate:
     def get(self) -> Tuple[float, float]:
         return self.__client.get(self.__name)
 
-    def set(self, x:float, y:float) -> None:
+    def set(self, x: float, y: float) -> None:
         assert isinstance(x, float), f"expected type 'float' for 'x', got '{type(x)}'"
         assert isinstance(y, float), f"expected type 'float' for 'y', got '{type(y)}'"
         self.__client.set(self.__name, x, y)

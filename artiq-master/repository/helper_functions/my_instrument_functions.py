@@ -117,7 +117,17 @@ def prepare_bk4053(self):
             pulse_width = self.slowing_laser_duration * ms, # in s
             delay       = 0.0 # delay is set with self.slowing_laser_start_time instead
             )
+
+    # for safety
+    channel = 2
+
+    self.bk4053.off(channel = channel)
     
+    self.bk4053.set_dc_output(channel = channel, voltage = 1.0, load = '50')
+
+
+
+   
     return
 
 

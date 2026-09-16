@@ -1,4 +1,4 @@
-# Generated from 'v2_2_5.xml' on 2023-09-12 09:32:36.345228
+# Generated from 'v2_2_5.xml' on 2025-07-21 10:00:25.470236
 
 from typing import Tuple
 from typing import Optional
@@ -708,7 +708,7 @@ class Thermistor:
     async def get(self) -> Tuple[bool, float, float, float, float, float, float]:
         return await self.__client.get(self.__name)
 
-    async def set(self, polynomial:bool, a0:float, a1:float, a2:float, a3:float, a4:float, a5:float) -> None:
+    async def set(self, polynomial: bool, a0: float, a1: float, a2: float, a3: float, a4: float, a5: float) -> None:
         assert isinstance(polynomial, bool), f"expected type 'bool' for 'polynomial', got '{type(polynomial)}'"
         assert isinstance(a0, float), f"expected type 'float' for 'a0', got '{type(a0)}'"
         assert isinstance(a1, float), f"expected type 'float' for 'a1', got '{type(a1)}'"

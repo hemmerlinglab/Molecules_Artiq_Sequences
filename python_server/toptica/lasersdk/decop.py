@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import re
 
@@ -25,7 +27,7 @@ class DecopError(Exception):
 
 class DecopValueError(DecopError):
     """A DeCoP value conversion error."""
-    def __init__(self, value: str, expected_type: Optional[type] = None):
+    def __init__(self, value: str, expected_type: Optional[type] = None) -> None:
         if expected_type:
             super().__init__(f"Failed to convert {value!r} to type '{expected_type}'")
         else:
@@ -75,7 +77,7 @@ class SubscriptionValue:
 
     """
 
-    def __init__(self, value: Union[DecopType, DecopError]):
+    def __init__(self, value: Union[DecopType, DecopError]) -> None:
         self._value = value
 
     def get(self) -> DecopType:

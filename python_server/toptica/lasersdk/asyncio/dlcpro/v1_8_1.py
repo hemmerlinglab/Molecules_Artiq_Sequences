@@ -1,4 +1,4 @@
-# Generated from 'v1_8_1.xml' on 2023-09-12 09:32:30.332421
+# Generated from 'v1_8_1.xml' on 2025-07-21 10:00:19.035000
 
 from typing import Tuple
 from typing import Optional
@@ -1118,7 +1118,7 @@ class Coordinate:
     async def get(self) -> Tuple[float, float]:
         return await self.__client.get(self.__name)
 
-    async def set(self, x:float, y:float) -> None:
+    async def set(self, x: float, y: float) -> None:
         assert isinstance(x, float), f"expected type 'float' for 'x', got '{type(x)}'"
         assert isinstance(y, float), f"expected type 'float' for 'y', got '{type(y)}'"
         await self.__client.set(self.__name, x, y)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import time
 import threading
@@ -9,16 +11,27 @@ from datetime import datetime
 from queue import Queue
 from queue import Empty
 
-from typing import cast, Coroutine, Any
-from typing import Dict
+from types import TracebackType
 
+from typing import Any
 from typing import Callable
+from typing import Coroutine
+from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Type
 from typing import Union
+from typing import cast
 
 import toptica.lasersdk.asyncio.client as async_client
+
+from .asyncio.connection import Connection
+from .asyncio.connection import NetworkConnection
+from .asyncio.connection import SerialConnection
+
+from .asyncio.connection import DeviceNotFoundError
+from .asyncio.connection import UnavailableError
 
 from .decop import UserLevel
 
@@ -31,12 +44,23 @@ from .decop import DecopValueError
 from .decop import SubscriptionValue
 from .decop import Timestamp
 
-from .asyncio.connection import Connection
-from .asyncio.connection import NetworkConnection
-from .asyncio.connection import SerialConnection
+from .parameter import DecopBinary
+from .parameter import DecopBoolean
+from .parameter import DecopInteger
+from .parameter import DecopReal
+from .parameter import DecopString
 
-from .asyncio.connection import DeviceNotFoundError
-from .asyncio.connection import UnavailableError
+from .parameter import MutableDecopBinary
+from .parameter import MutableDecopBoolean
+from .parameter import MutableDecopInteger
+from .parameter import MutableDecopReal
+from .parameter import MutableDecopString
+
+from .parameter import SettableDecopBinary
+from .parameter import SettableDecopBoolean
+from .parameter import SettableDecopInteger
+from .parameter import SettableDecopReal
+from .parameter import SettableDecopString
 
 __all__ = ['Client', 'Connection', 'UserLevel', 'DecopType',
            'NetworkConnection', 'SerialConnection',
@@ -79,7 +103,8 @@ class Client:
         self.open()
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException],
+                 traceback: Optional[TracebackType]) -> None:
         self.close()
 
     def open(self) -> None:
@@ -133,11 +158,13 @@ class Client:
             self._async_run(self._async_client.close())
         finally:
             # Wrap the stop() in a coroutine
-            async def _async_stop():
-                self._loop.stop()
+            async def _async_stop() -> None:
+                if self._loop is not None:
+                    self._loop.stop()
 
             # Post a coroutine that will stop the event loop
-            asyncio.run_coroutine_threadsafe(_async_stop(), self._loop)
+            if self._loop is not None:
+                asyncio.run_coroutine_threadsafe(_async_stop(), self._loop)
 
             # Wait for the event loop thread to exit
             self._thread.join()
@@ -299,7 +326,7 @@ class Client:
 
         return cast(int, self._async_run(self._async_client.set(param_name, *param_values)))
 
-    def exec(self, name: str, *args, input_stream: Optional[DecopStreamType] = None,
+    def exec(self, name: str, *args: DecopType, input_stream: Optional[DecopStreamType] = None,
              output_type: Optional[DecopStreamMetaType] = None,
              return_type: Optional[DecopMetaType] = None) -> Optional[DecopType]:
         """Execute a DeCoP command.
@@ -330,14 +357,16 @@ class Client:
             self._async_client.exec(name, *args, input_stream=input_stream, output_type=output_type,
                                     return_type=return_type)))
 
-    def subscribe(self, param_name: str, callback: DecopCallback,
-                  param_type: Optional[DecopMetaType] = None) -> 'Subscription':
+    def subscribe(self, param_name: str, callback: DecopCallback, param_type: Optional[DecopMetaType] = None,
+                  interval: Optional[int] = None, threshold: Optional[DecopType] = None) -> Subscription:
         """Creates a subscription to the value changes of a parameter.
 
         Args:
             param_name (str): The name of the parameter.
             callback (DecopCallback): The callback that will be invoked on parameter updates.
             param_type (Optional[DecopMetaType]): The expected type of the parameter.
+            interval (Optional[int]): The minimum update interval (in milliseconds).
+            threshold (Optional[DecopType]): The minimum change of the value for an update.
 
         Returns:
             Subscription: A subscription to the value changes of the parameter.
@@ -348,7 +377,7 @@ class Client:
 
         """
 
-        async def _await_next_value(sub: async_client.Subscription):
+        async def _await_next_value(sub: async_client.Subscription) -> None:
             while True:
                 value: Union[DecopType, DecopError]
                 try:
@@ -368,7 +397,9 @@ class Client:
 
         if param_name not in self._async_subscriptions:
             # Subscribe the parameter in the async client if this is the first subscription
-            async_subscription = self._async_run(self._async_client.subscribe(param_name, param_type))
+            async_subscription = self._async_run(
+                self._async_client.subscribe(param_name, param_type, interval, threshold)
+            )
 
             # Create a task that will await the async subscription updates
             future = asyncio.run_coroutine_threadsafe(_await_next_value(async_subscription), self._loop)
@@ -466,7 +497,7 @@ class Client:
 
         """
 
-        async def _run_with_timeout(_coro: Coroutine):
+        async def _run_with_timeout(_coro: Coroutine) -> Any:
             try:
                 return await asyncio.wait_for(_coro, self._connection.timeout)
             except asyncio.TimeoutError:
@@ -516,10 +547,11 @@ class Subscription:
         callback_name = self._callback.__name__ if self._callback is not None else 'None'
         return f"<Subscription name='{self._name}' callback={callback_name}>"
 
-    def __enter__(self):
+    def __enter__(self) -> 'Subscription':
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException],
+                 traceback: Optional[TracebackType]) -> None:
         if self._client is not None:
             self.cancel()
 
@@ -549,884 +581,3 @@ class Subscription:
     def client(self) -> Optional[Client]:
         """Optional[Client]: The Client of this subscription (maybe None when it was canceled)."""
         return self._client
-
-
-class DecopBoolean:
-    """A read-only DeCoP boolean parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bool:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bool: The current value of the parameter.
-
-        """
-        result = cast(bool, self._client.get(self._name, bool))
-        return result
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bool)
-
-
-class MutableDecopBoolean:
-    """A read/write DeCoP boolean parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bool:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bool: The current value of the parameter.
-
-        """
-        result = cast(bool, self._client.get(self._name, bool))
-        return result
-
-    def set(self, value: bool) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (bool): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, bool), f"expected type 'bool' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bool)
-
-
-class SettableDecopBoolean:
-    """A settable DeCoP boolean parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bool:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bool: The current value of the parameter.
-
-        """
-        result = cast(bool, self._client.get(self._name, bool))
-        return result
-
-    def get_set_value(self) -> bool:
-        """Returns the current set-value of the parameter.
-
-        Returns:
-            bool: The current set-value of the parameter.
-
-        """
-        result = cast(bool, self._client.get_set_value(self._name, bool))
-        return result
-
-    def set(self, value: bool) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (bool): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, bool), f"expected type 'bool' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bool)
-
-
-class DecopInteger:
-    """A read-only DeCoP integer parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> int:
-        """Returns the current value of the parameter.
-
-        Returns:
-            int: The current value of the parameter.
-
-        """
-        result = cast(int, self._client.get(self._name, int))
-        return result
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, int)
-
-
-class MutableDecopInteger:
-    """A read/write DeCoP integer parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> int:
-        """Returns the current value of the parameter.
-
-        Returns:
-            int: The current value of the parameter.
-
-        """
-        result = cast(int, self._client.get(self._name, int))
-        return result
-
-    def set(self, value: int) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (int): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, int), f"expected type 'int' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, int)
-
-
-class SettableDecopInteger:
-    """A settable DeCoP integer parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> int:
-        """Returns the current value of the parameter.
-
-        Returns:
-            int: The current value of the parameter.
-
-        """
-        result = cast(int, self._client.get(self._name, int))
-        return result
-
-    def get_set_value(self) -> int:
-        """Returns the current set-value of the parameter.
-
-        Returns:
-            int: The current set-value of the parameter.
-
-        """
-        result = cast(int, self._client.get_set_value(self._name, int))
-        return result
-
-    def set(self, value: int) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (int): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, int), f"expected type 'int' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, int)
-
-
-class DecopReal:
-    """A read-only DeCoP floating point parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> float:
-        """Returns the current value of the parameter.
-
-        Returns:
-            float: The current value of the parameter.
-
-        """
-        result = cast(float, self._client.get(self._name, float))
-        return result
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, float)
-
-
-class MutableDecopReal:
-    """A read/write DeCoP floating point parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str): The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> float:
-        """Returns the current value of the parameter.
-
-        Returns:
-            float: The current value of the parameter.
-
-        """
-        result = cast(float, self._client.get(self._name, float))
-        return result
-
-    def set(self, value: Union[int, float]) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value Union[int, float]: The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, (int, float)), f"expected type 'int' or 'float' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, float(value))
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, float)
-
-
-class SettableDecopReal:
-    """A settable DeCoP floating point parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> float:
-        """Returns the current value of the parameter.
-
-        Returns:
-            float: The current value of the parameter.
-
-        """
-        result = cast(float, self._client.get(self._name, float))
-        return result
-
-    def get_set_value(self) -> float:
-        """Returns the current set-value of the parameter.
-
-        Returns:
-            float: The current set-value of the parameter.
-
-        """
-        result = cast(float, self._client.get_set_value(self._name, float))
-        return result
-
-    def set(self, value: Union[int, float]) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value Union[int, float]: The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, (int, float)), f"expected type 'int' or 'float' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, float(value))
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, float)
-
-
-class DecopString:
-    """A read-only DeCoP string parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> str:
-        """Returns the current value of the parameter.
-
-        Returns:
-            str: The current value of the parameter.
-
-        """
-        result = cast(str, self._client.get(self._name, str))
-        return result
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, str)
-
-
-class MutableDecopString:
-    """A read/write DeCoP string parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> str:
-        """Returns the current value of the parameter.
-
-        Returns:
-            str: The current value of the parameter.
-
-        """
-        result = cast(str, self._client.get(self._name, str))
-        return result
-
-    def set(self, value: str) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (str): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, str), f"expected type 'str' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, str)
-
-
-class SettableDecopString:
-    """A settable DeCoP string parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> str:
-        """Returns the current value of the parameter.
-
-        Returns:
-            str: The current value of the parameter.
-
-        """
-        result = cast(str, self._client.get(self._name, str))
-        return result
-
-    def get_set_value(self) -> str:
-        """Returns the current set-value of the parameter.
-
-        Returns:
-            str: The current set-value of the parameter.
-
-        """
-        result = cast(str, self._client.get_set_value(self._name, str))
-        return result
-
-    def set(self, value: str) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (str): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, str), f"expected type 'str' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, str)
-
-
-class DecopBinary:
-    """A read-only DeCoP binary parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bytes:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bytes: The current value of the parameter.
-
-        """
-        result = cast(bytes, self._client.get(self._name, bytes))
-        return result
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bytes)
-
-
-class MutableDecopBinary:
-    """A read/write DeCoP binary parameter.
-
-    Args:
-        client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-        name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-    """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bytes:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bytes: The current value of the parameter.
-
-        """
-        result = cast(bytes, self._client.get(self._name, bytes))
-        return result
-
-    def set(self, value: Union[bytes, bytearray]) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (Union[bytes, bytearray]): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, (bytes, bytearray)), \
-            f"expected type 'bytes' or 'bytearray' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bytes)
-
-
-class SettableDecopBinary:
-    """A settable DeCoP binary parameter.
-
-     Args:
-         client (Client):
-            A DeCoP client that is used to access the parameter on a device.
-
-         name (str):
-            The fully qualified name of the parameter (e.g. 'laser1:amp:ontime').
-
-     """
-
-    def __init__(self, client: Client, name: str) -> None:
-        self._client = client
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """str: The fully qualified name of the parameter."""
-        return self._name
-
-    def get(self) -> bytes:
-        """Returns the current value of the parameter.
-
-        Returns:
-            bytes: The current value of the parameter.
-
-        """
-        result = cast(bytes, self._client.get(self._name, bytes))
-        return result
-
-    def get_set_value(self) -> bytes:
-        """Returns the current set-value of the parameter.
-
-        Returns:
-            bytes: The current set-value of the parameter.
-
-        """
-        result = cast(bytes, self._client.get_set_value(self._name, bytes))
-        return result
-
-    def set(self, value: Union[bytes, bytearray]) -> int:
-        """Updates the value of the parameter.
-
-        Args:
-            value (Union[bytes, bytearray]): The new value of the parameter.
-
-        Returns:
-            int: Zero if successful or a positive integer indicating a warning.
-
-        Raises:
-            UnavailableError: If the connection is closed or the command line is not available.
-            DecopError: If the device returned an error when setting the new value.
-
-        """
-        assert isinstance(value, (bytes, bytearray)), \
-            f"expected type 'bytes' or 'bytearray' for 'value', got '{type(value)}'"
-        return self._client.set(self._name, value)
-
-    def subscribe(self, callback: DecopCallback) -> 'Subscription':
-        """Creates a subscription to the value changes of the parameter.
-
-        Args:
-            callback (DecopCallback): A callback that will be invoked when the value of the parameter has changed.
-
-        Returns:
-            Subscription: A subscription to the value changes of the parameter.
-
-        """
-        return self._client.subscribe(self._name, callback, bytes)

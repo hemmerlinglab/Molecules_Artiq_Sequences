@@ -1,4 +1,4 @@
-# Generated from 'v2_3_1.xml' on 2023-09-12 09:32:37.103419
+# Generated from 'v2_3_1.xml' on 2025-07-21 10:00:26.368935
 
 from typing import Tuple
 from typing import Optional
@@ -440,7 +440,7 @@ class Position:
     async def get(self) -> Tuple[float, float]:
         return await self.__client.get(self.__name)
 
-    async def set(self, x:float, y:float) -> None:
+    async def set(self, x: float, y: float) -> None:
         assert isinstance(x, float), f"expected type 'float' for 'x', got '{type(x)}'"
         assert isinstance(y, float), f"expected type 'float' for 'y', got '{type(y)}'"
         await self.__client.set(self.__name, x, y)
@@ -753,7 +753,7 @@ class Rect:
     async def get(self) -> Tuple[int, int, int, int]:
         return await self.__client.get(self.__name)
 
-    async def set(self, left:int, top:int, width:int, height:int) -> None:
+    async def set(self, left: int, top: int, width: int, height: int) -> None:
         assert isinstance(left, int), f"expected type 'int' for 'left', got '{type(left)}'"
         assert isinstance(top, int), f"expected type 'int' for 'top', got '{type(top)}'"
         assert isinstance(width, int), f"expected type 'int' for 'width', got '{type(width)}'"
