@@ -78,7 +78,10 @@ class General_Scan(EnvExperiment):
 
     def run(self):
 
+        channel = 2
+        self.bk4053.on(channel = channel)
         my_run(self)
+        self.bk4053.off(channel = channel)
 
         return
 
