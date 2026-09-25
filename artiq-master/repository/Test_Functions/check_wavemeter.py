@@ -108,32 +108,33 @@ def get_wavemeter_readings(mode = 'wavemeter_lock'):
 # Experiment
 ###################################################################################
 
+if __name__=='__main__':
 
-delta = np.linspace(-200, 200, 10)
-
-base_freq = 384.228067e12
-
-results = []
-
-for d in delta:
-
-    new_v = (base_freq + d * 1e6) / 1e12
-
-    print('Calibrating to {0} THz'.format(new_v))
-
-    calibrate_wavemeter(new_v)
-
-    time.sleep(3)
-
-    freqs = get_wavemeter_readings(mode = 'comb_lock')
-
-    hlp = [new_v, freqs[0], freqs[1]]
-
-    results.append(hlp)
-
-
-np.savetxt('wavemeter_check.csv', results, delimiter = ',')
-
-calibrate_wavemeter(base_freq/1e12)
+    delta = np.linspace(-200, 200, 10)
+    
+    base_freq = 384.228067e12
+    
+    results = []
+    
+    for d in delta:
+    
+        new_v = (base_freq + d * 1e6) / 1e12
+    
+        print('Calibrating to {0} THz'.format(new_v))
+    
+        calibrate_wavemeter(new_v)
+    
+        time.sleep(3)
+    
+        freqs = get_wavemeter_readings(mode = 'comb_lock')
+    
+        hlp = [new_v, freqs[0], freqs[1]]
+    
+        results.append(hlp)
+    
+    
+    np.savetxt('wavemeter_check.csv', results, delimiter = ',')
+    
+    calibrate_wavemeter(base_freq/1e12)
 
 
