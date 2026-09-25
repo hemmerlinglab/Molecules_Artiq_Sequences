@@ -161,7 +161,7 @@ def load_parameters(self, raster_scan = False):
     my_setattr(self, 'slowing_vel_high', NumberValue(default = 100.0, unit='m/s', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
     my_setattr(self, 'slowing_vel_low', NumberValue(default =   0.0, unit='m/s', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
     
-    my_setattr(self, 'velocity', NumberValue(default =   0.0, unit='MHz', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
+    my_setattr(self, 'velocity', NumberValue(default =   0.0, unit='m/s', min = 0.0, max = 1000.0, scale=1,ndecimals=3,step=1))
  
     ####################################################################
     # Laser and Microwave Frequencies

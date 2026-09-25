@@ -124,9 +124,6 @@ def prepare_bk4053(self):
     self.bk4053.off(channel = channel)
     
     self.bk4053.set_dc_output(channel = channel, voltage = 1.0, load = '50')
-
-
-
    
     return
 

@@ -114,7 +114,7 @@ def base_slowing_pulse(self):
 
     if self.slowing_laser_on:
 
-        delay(self.slowing_laser_start_time * ms)
+        delay((self.yag_fire_time + self.slowing_laser_start_time) * ms)
 
         # activate the DDS ramp
         self.dds.cpld.io_update.pulse_mu(8)

@@ -11,7 +11,7 @@ from base_dds_sequences       import prg_freq_ramp, dds_off
 from process_and_readout_data import readout_data, check_shot, average_data, update_data_sets, update_data_sets_raster
 
 from scan_functions           import scan_parameter
-from my_instrument_functions  import move_yag_mirror, prepare_dds_ramp
+from my_instrument_functions  import move_yag_mirror, prepare_dds_ramp, set_single_laser, prepare_bk4053
 
 
 ###################################################################################
@@ -37,26 +37,47 @@ def my_run_slowing(self):
 
             self.scheduler.pause()
   
+            # set the value of the new parameter
+            scan_parameter(self, my_ind)
+ 
+            #########################################
             # DDS programming of ramp
+            #########################################
 
             # init DDS amplitude etc ...
             init_dds(self, attenuation = self.dds_attenuation * dB, amplitude_dBm = self.dds_amplitude_dBm)
-            
+
+
             # calculate the frequency Doppler shift in the blue
             wavelength = 400e-9
-            self.current_velocity_frequency_shift = -1.0/(np.sqrt(2)*wavelength) * self.scan_values[my_ind] # in Hz
+            
+            if self.scanning_parameter == 'velocity':
+                self.velocity = self.scan_values[my_ind] # in m/s
+           
+            # velocity shift in the blue
+            # 135 deg beam
+            self.current_velocity_frequency_shift = -1.0/(np.sqrt(2)*wavelength) * self.velocity # in Hz
+
+            # head on beam
             #self.current_velocity_frequency_shift = -1.0/(wavelength) * self.scan_values[my_ind] # in Hz
 
+
+            if not self.scanning_parameter == 'velocity':
+                
+                freq_val = 0.5 * (self.current_velocity_frequency_shift)/1e6 # in MHz
+
+                frequency = self.offset_laser_Hodor + freq_val/1.0e6 # in THz
+
+                set_single_laser('Hodor', frequency, do_switch = False, wait_time = self.relock_wait_time)
+
+                # update the pulse of the BK 4053
+                prepare_bk4053(self)
+            
             # high frequency
             Omega_b_start = FREQ_AOM + (1/wavelength * self.slowing_vel_high + self.current_velocity_frequency_shift)/1.0e6
 
             # low frequency            
             Omega_a_stop  = FREQ_AOM + (1/wavelength * self.slowing_vel_low + self.current_velocity_frequency_shift)/1.0e6
-
-            #print()
-            #print(self.scan_values[my_ind])
-            #print(self.current_velocity_frequency_shift/1e6)
-            #print('Chirp: {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))            
 
             if Omega_b_start > DDS_MAX:
                 print('Error. Omega_b too high. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
@@ -71,7 +92,7 @@ def my_run_slowing(self):
                     stop     = Omega_a_stop, # stop freq in MHz
                     duration = self.slowing_laser_duration * ms, # duration of ramp
                     min_no   = 1e3 # number of points on the ramp
-                    #min_no   = 3 # number of points on the ramp
+                    #min_no   = 5 # number of points on the ramp
             )
 
             # program the RAM of the DDS
@@ -83,9 +104,6 @@ def my_run_slowing(self):
                     step_size               = ramp_step_size
                     )
  
-            # set the value of the new parameter
-            scan_parameter(self, my_ind)
-    
             ###########################################################
             # Loop over averages for each set point
             ###########################################################
@@ -118,7 +136,7 @@ def my_run_slowing(self):
                        #######################################
                        # Fires yag and reads voltages
                        #######################################
-                      
+                       
                        fire_and_read(self)                       
     
                        #######################################

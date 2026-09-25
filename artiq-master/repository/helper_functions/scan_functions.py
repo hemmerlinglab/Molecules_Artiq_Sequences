@@ -20,7 +20,9 @@ def get_scannable_parameters():
              'offset_laser_Davos',
              'cavity_ramp',
              'dds_frequency',
-             'velocity'
+             'velocity',
+             'slowing_laser_duration',
+             'slowing_laser_start_time',
             ]
 
     return SCANNABLE_PARAMETERS
@@ -360,6 +362,51 @@ def _scan_velocity(self, val, scan_values, scan_check = False):
         hlp_wait_time = self.relock_wait_time
 
         set_single_laser('Hodor', frequency, do_switch = False, wait_time = hlp_wait_time)
+
+        return 1
+
+
+
+########################################################################
+# Scan slowing duration
+########################################################################
+
+def _scan_slowing_laser_duration(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return (limit_check(self.scanning_parameter, scan_values, [0, 40])) # in ms
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        self.slowing_laser_duration = val        
+
+        return 1
+
+    return
+
+
+#######################################################################
+# Scan slowing start time
+########################################################################
+
+def _scan_slowing_laser_start_time(self, val, scan_values, scan_check = False):
+
+    if scan_check:
+
+        # check if the scan range is within the limits
+
+        return (limit_check(self.scanning_parameter, scan_values, [0, 60])) # in ms
+    
+    else:
+
+        # add specific code for parameter change here, including any necessary wait times
+        
+        self.slowing_laser_start_time = val        
 
         return 1
 
