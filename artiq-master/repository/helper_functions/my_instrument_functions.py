@@ -17,6 +17,7 @@ from rigol_dho924        import Rigol_DHO924                  # scope of transfe
 from frequency_comb      import DFC
 from microwave_windfreak import Microwave
 from bk_4053             import BK4053
+from SDG_6052X           import SDG_6052X
 
 #######################################################################################################
 
@@ -48,6 +49,10 @@ def load_instruments(self):
 
         if instr == 'BK4053':
             self.bk4053 = BK4053()
+
+        if instr == 'siglent_awg':
+            self.awg = SDG_6052X()
+
 
     return
 
@@ -92,6 +97,8 @@ def prepare_initial_instruments(self):
     if 'BK4053' in self.which_instruments:
         prepare_bk4053(self)
 
+    if 'siglent_awg' in self.which_instruments:
+        prepare_awg(self)
 
     # pause to wait till laser settles
     time.sleep(1)
@@ -123,8 +130,48 @@ def prepare_bk4053(self):
 
     self.bk4053.off(channel = channel)
     
-    self.bk4053.set_dc_output(channel = channel, voltage = 1.0, load = '50')
+    self.bk4053.set_dc_output(channel = channel, voltage = .500, load = '50')
    
+    return
+
+
+#######################################################################################################
+# Prpare Siglent AWG
+#######################################################################################################
+
+def prepare_awg(self):
+
+    channel = 1
+
+    self.awg.off(channel = channel)
+
+    self.awg.set_load(channel = channel, load = '50')
+
+    program_siglent_ramp(
+            self,
+            start = 10.0,
+            stop = 11.0,
+            duration = 1.0 * ms
+            )
+
+    return
+
+
+#######################################################################################################
+# Program Siglent Awg Ramp
+#######################################################################################################
+
+def program_siglent_ramp(self,
+        start    = 0.0, # start freq in MHz
+        stop     = 1.0, # stop freq in MHz
+        duration = 1.0 * ms # duration of ramp
+        ):
+
+    if start < stop:
+        self.awg.set_sweep(channel = 1, start = start * 1e6, stop = stop * 1e6, duration = duration, direction = 'DOWN', trigger = 'EXT')
+    else:
+        self.awg.set_sweep(channel = 1, start = stop * 1e6, stop = start * 1e6, duration = duration, direction = 'DOWN', trigger = 'EXT')
+
     return
 
 

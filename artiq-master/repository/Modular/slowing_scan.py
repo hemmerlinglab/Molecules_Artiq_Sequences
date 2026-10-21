@@ -10,7 +10,7 @@ import numpy as np
 from my_build_functions   import my_build
 from my_prepare_functions import my_prepare
 from my_analyze_functions import my_analyze
-from my_run_functions     import my_run_slowing
+from my_run_functions     import my_run_slowing_Siglent
 
 from base_dds_sequences   import dds_on, dds_off
 
@@ -27,7 +27,7 @@ class Slowing_Scan(EnvExperiment):
 
     def build(self):
 
-        my_build(self, which_instruments = ['BK4053'])#, 'frequency_comb']) #, 'scope_transfer_cavity'])
+        my_build(self, which_instruments = ['BK4053', 'siglent_awg'])#, 'frequency_comb']) #, 'scope_transfer_cavity'])
         #my_build(self, which_instruments = ['frequency_comb'])
         self.sequence_filename = os.path.abspath(__file__)
 
@@ -66,13 +66,15 @@ class Slowing_Scan(EnvExperiment):
 
         if self.current_configuration == 0:
             # slowing laser on
-            dds_on(self)
+            #dds_on(self)
             self.bk4053.on(channel = 1) # AOM pulsed on
+            self.awg.on(channel = 1) # AOM always off
 
         elif self.current_configuration == 1:
             # slowing laser off
-            dds_off(self)
+            #dds_off(self)
             self.bk4053.off(channel = 1) # AOM always off
+            self.awg.off(channel = 1) # AOM always off
 
         else:
             print('Configuration not defined.')
@@ -85,7 +87,8 @@ class Slowing_Scan(EnvExperiment):
 
     def run(self):
 
-        my_run_slowing(self)
+        #my_run_slowing_DDS(self)
+        my_run_slowing_Siglent(self)
 
         return
 

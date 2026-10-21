@@ -22,8 +22,6 @@ def reset_core(self):
 def base_experiment_start(self):
 
     # debug pulse
-    self.ttl8.pulse(10*us)
-
     self.ttl9.pulse(10*us)
 
     return
@@ -106,11 +104,11 @@ def base_fire_yag(self):
 
 
 ##########################################################################
-# Slowing Pulse
+# Slowing Pulse using DDS
 ##########################################################################
 
 @kernel
-def base_slowing_pulse(self):
+def base_slowing_pulse_DDS(self):
 
     if self.slowing_laser_on:
 
@@ -127,6 +125,32 @@ def base_slowing_pulse(self):
 
         # switch off DDS
         self.dds.cfg_sw(False)
+
+    return
+
+
+##########################################################################
+# Slowing Pulse using Siglent
+##########################################################################
+
+@kernel
+def base_slowing_pulse_Siglent(self):
+
+    if self.slowing_laser_on:
+
+        # delay until slowing laser start
+        delay((self.yag_fire_time + self.slowing_laser_start_time) * ms)
+
+        # send triggers to pulse AOM and EOM
+        with parallel:
+    
+            with sequential:
+                # send trigger to BK4053 to switch on AOM
+                self.ttl7.pulse(0.1*ms)
+
+            with sequential:
+                # send trigger to Siglent to switch on EOM ramp
+                self.ttl8.pulse(0.1*ms)
 
     return
 
@@ -162,7 +186,8 @@ def fire_and_read(self):
 
         with sequential:
             # slowing pulse
-            base_slowing_pulse(self)
+            #base_slowing_pulse_DDS(self)
+            base_slowing_pulse_Siglent(self)
 
         with sequential:
             # read out sampler
