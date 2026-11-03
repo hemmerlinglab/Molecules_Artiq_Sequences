@@ -1,0 +1,33 @@
+amp: ZHL-10M2G0005+
+
+tag
+
+#######################
+# awg
+#######################
+
+0: AWG + attenuators 8dB + DC block output -> spectrum analyzer
+
+flat: AWG with correction factor applied + att 8 dB + DC block output -> spectrum analyzer
+
+
+#######################
+# with amp
+#######################
+
+amp: AWG + attenuators 8dB + DC block output + amp + 50 dB att -> spectrum analyzer
+
+amp_flat: AWG with correction factor applied + attenuators 8dB + DC block output + amp + 50 dB att -> spectrum analyzer
+ 
+
+#######################
+# components
+#######################
+
+components: AWG + attenuators 8dB + DC block output + 50 dB att -> spectrum analyzer
+
+components_flat: AWG with correction factor applied + attenuators 8dB + DC block output + 50 dB att -> spectrum analyzer
+
+
+
+
