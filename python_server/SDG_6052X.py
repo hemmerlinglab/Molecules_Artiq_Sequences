@@ -10,17 +10,20 @@ import matplotlib.pyplot as plt
 class SDG_6052X:
     
     def __init__(self):
-    	IP = '192.168.42.87'
-    	PORT = 5025
-    
-    	s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    	s.connect((IP, PORT))
-    
-    	self.command_delay = 0.1
-    
-    	self.socket = s
-    
-    	return
+        IP = '192.168.42.87'
+        PORT = 5025
+        
+        s  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((IP, PORT))
+        
+        self.command_delay = 0.1
+        
+        self.socket = s
+        
+        # set max amplitude of both channels
+        self.set_max_amplitude(amplitude = 2*640e-3) # note that there is a bug in the machine: it actually stores Vpp not Vp
+        
+        return
     
     def close(Self):
     	Self.socket.close()
@@ -41,7 +44,10 @@ class SDG_6052X:
     		return self.recv().decode('utf-8').strip()
     	else:
     		return self.recv()
-    
+
+    ###########################################################
+    # Device functions
+    ###########################################################
     
     def on(self, channel = 1):
         self.send("C{0}:{1}".format(channel, "OUTP ON")) 
@@ -55,10 +61,10 @@ class SDG_6052X:
     def set_BSWV(self, channel = 1, wavetype = "SINE",frequency = 200000, period = "PERI", amplitude = 500e-3):
         self.send('C{0}:BSWV WVTP,{1},FRQ,{2},AMP,{4}'.format(channel,wavetype, frequency, period, amplitude))
 
-    def set_sine_wave(self, channel = 1, frequency = 200e3, amplitude  = 500e-3):
+    def set_sine_wave(self, channel = 1, frequency = 200e3, amplitude = 500e-3):
         self.send("C{0}:BSWV WVTP,SINE,FRQ,{1},AMP,{2}".format(channel, frequency, amplitude))
 
-    def set_Burst(self, channel = 1, period = 1e-3):
+    def set_burst(self, channel = 1, period = 1e-3):
 	    self.send("C{0}:BTWV STATE,ON,PERI,{1}".format(channel,period))
 
     def set_sweep(self, channel = 1, start = 250e3, duration = 1000e-3, stop = 0, sweepmode = 'LINE',trigger = 'INT', direction = 'DOWN'):
@@ -160,13 +166,13 @@ class SDG_6052X:
         return
 
     def start_awg(
-            self, 
-            channel, 
-            wave_name = 'custom1'
-            ):
-
+        self, 
+        channel, 
+        wave_name = 'custom1'
+        ):
+    
         #wave_name = 'Sine'
-
+        
         cmd = 'C{0}:ARWV NAME,{1}'.format(
             channel, 
             wave_name)
@@ -178,14 +184,22 @@ class SDG_6052X:
         self.send(f'C{channel}:BTWV TIME,1')  # Number of cycles = 1
         self.send(f'C{channel}:BTWV TRSR,MAN')  # Set trigger source to Manual/Software
         # self.send(f'C{channel}:BTWV STATE,ON')  # Turn burst mode ON
-
+        
         # self.send(f'C{channel}:SWWV STATE,ON')  # Turn burst mode ON
         # # self.send(f'C{channel}:SWWV GATE_NCYC,NCYC')  # N-Cycle mode (not Gated)
         # self.send(f'C{channel}:SWWV TIME,1')  # Number of cycles = 1
         # self.send(f'C{channel}:SWWV TRSR,MAN')  # Set trigger source to Manual/Software
         # self.send(f'C{channel}:SWWV STATE,ON')  # Turn burst mode ON
+        
+        return
 
-
+    def set_max_amplitude(self, amplitude = 1e-3):
+        
+        channel = 1
+        self.send("C{0}:BSWV MAX_OUTPUT_AMP,{1}".format(channel, amplitude))
+        channel = 2
+        self.send("C{0}:BSWV MAX_OUTPUT_AMP,{1}".format(channel, amplitude))
+        
         return
 
 
