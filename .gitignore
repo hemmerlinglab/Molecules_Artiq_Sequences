@@ -5,6 +5,8 @@ artiq-master/results
 artiq-master/last_rid.pyon
 *.h5
 *.pickle
+*.pkl
+*.pckl
 *.py~
 *.py.un~
 
