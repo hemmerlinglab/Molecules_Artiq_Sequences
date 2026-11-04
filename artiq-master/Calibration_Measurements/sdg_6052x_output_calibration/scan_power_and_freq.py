@@ -41,7 +41,7 @@ scan_arr = np.linspace(0, 640e-3, 5)
 
 scan_arr = np.insert(scan_arr, 1, 0.023)
 
-freq_scan_arr = np.linspace(10.0, 500.0, 200)
+freq_scan_arr = np.linspace(10.0, 500.0, 10)
 
 
 

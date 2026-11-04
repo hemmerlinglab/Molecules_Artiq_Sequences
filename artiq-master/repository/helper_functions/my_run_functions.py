@@ -105,10 +105,16 @@ def my_run_slowing_Siglent(self):
                 print('Error. Omega_a too low. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
                 Omega_a_stop = 10.0
 
+            #Need to add the correction factor here but not too sure how...
+
+            final_amplitude = max_amplitude * amp_spline(freq)
             
             program_siglent_ramp(self,
-                    start = Omega_b_start, 
-                    stop = Omega_a_stop, 
+                    channel = 1,
+                    start_freq = Omega_b_start, 
+                    stop_freq = Omega_a_stop, 
+                    start_amp = 640e-3,
+                    stop_amp = final_amplitude,
                     duration = self.slowing_laser_duration * ms
                     )
           

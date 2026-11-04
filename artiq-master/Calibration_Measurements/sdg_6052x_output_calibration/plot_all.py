@@ -7,9 +7,11 @@ from fit_functions import fit_exp
 from scipy.interpolate import CubicSpline
 
 
-tag = 'amp_power_freq'
+#tag = 'amp_power_freq'
 
-tag = 'ampl_minus2dB_power_freq'
+#tag = 'ampl_minus2dB_power_freq'
+
+tag = 'ampl_minus3dB_power_freq'
 
 freq_scan_arr = np.genfromtxt('out_scan_freq_{0}.csv'.format(tag), delimiter = ',')
 ampl_scan_arr = np.genfromtxt('out_scan_ampl_{0}.csv'.format(tag), delimiter = ',')
@@ -99,18 +101,25 @@ plt.figure()
 for k in [0, f_xf.shape[0]-1]:
 
     y = results[:, k]
-    plt.plot(ampl_scan_arr, y, 'o', label = freq_scan_arr[k])
+    plt.plot(ampl_scan_arr, y, 'o', label = "{0:.1f} MHz".format(freq_scan_arr[k]))
     
     plt.plot(f_xf[k, :], f_yf[k, :], '--')
 
 plt.legend()
 
+plt.xlabel('Amplitude in (V)')
+plt.ylabel('Amplitude out (V)')
 
 
-const_ampl = 0.2383 #results[-1, -1]
+
+
+#const_ampl = 0.2383 #results[-1, -1]
 # const_ampl = 0.266 #results[-1, -1]
 
-print(const_ampl)
+# get the minimum of the frequency scan of the last amplitude
+const_ampl = np.min(results[-1, :])
+
+
 
 corr_ampl = []
 
@@ -136,6 +145,8 @@ for k in range(len(ampl_scan_arr)):
 
     plt.plot(freq_scan_arr, y, '-')
             
+plt.xlabel('Frequency (MHz)')
+plt.ylabel('Value')
 
 corr_ampl = np.array(corr_ampl)
 
@@ -145,7 +156,11 @@ max_amplitude = 640e-3
 #figure 5
 plt.figure()
 plt.plot(freq_scan_arr, corr_ampl[:, 1]/max_amplitude, 'o-')
-    
+
+plt.xlabel('Frequency (MHz)')
+plt.ylabel('Value')
+
+
 #################################
 # interpolate with a spline
 #################################
@@ -178,6 +193,9 @@ plt.figure()
 plt.plot(freq_scan_arr, Gs, label = 'G')
 plt.plot(freq_scan_arr, ps, label = 'p')
 plt.plot(freq_scan_arr, Vsats, label = 'Vsat')
+
+plt.xlabel('Frequency (MHz)')
+plt.ylabel('Value')
 
 plt.legend()
 

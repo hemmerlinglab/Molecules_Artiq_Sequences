@@ -12,7 +12,7 @@ from rigol import Rigol_RSA3030
 from SDG_6052X import SDG_6052X
 
 
-tag = 'amp_new'
+tag = 'amp_new_2'
 
 
 # load cali
