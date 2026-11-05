@@ -15,7 +15,9 @@ from SDG_6052X import SDG_6052X
 #tag = 'only_awg_att_power_freq'
 
 # tag = 'ampl_minus2dB_power_freq'
-tag = 'ampl_minus3dB_power_freq'
+#tag = 'ampl_minus3dB_power_freq'
+
+tag = 'amp_switch_4dB_power_freq'
 
 
 # Init instruments
@@ -41,7 +43,7 @@ scan_arr = np.linspace(0, 640e-3, 5)
 
 scan_arr = np.insert(scan_arr, 1, 0.023)
 
-freq_scan_arr = np.linspace(10.0, 500.0, 10)
+freq_scan_arr = np.linspace(10.0, 500.0, 200)
 
 
 

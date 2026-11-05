@@ -11,11 +11,8 @@ from artiq.experiment import *
 # Instrument imports
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server")
 sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/python_server/Windfreak")
-sys.path.append("/home/molecules/software/Molecules_Artiq_Sequences/artiq-master/Calibration_Measurements")
 
-#probably need to make scan_freq_flat and scan_power_and_freq some functions that take in frequency and can output the 
-#corrected amplitude but will ask Dr.Hemmerling
-# from sdg_6052x_output_calibration import scan_freq_flat, scan_power_and_freq 
+
 from rigol               import Rigol_RSA3030, Rigol_DSG821
 from rigol_dho924        import Rigol_DHO924                  # scope of transfer cavity
 from frequency_comb      import DFC
@@ -145,13 +142,15 @@ def prepare_bk4053(self):
 
 def prepare_awg(self):
 
-    channel = 1
+    for channel in [1, 2]:
 
-    self.awg.off(channel = channel)
+        self.awg.off(channel = channel)
 
-    self.awg.set_load(channel = channel, load = '50')
+        self.awg.set_load(channel = channel, load = '50')
 
-    self.awg.set_max_amplitude(amplitude = 640e-3)
+        self.awg.set_max_amplitude(amplitude = 640e-3)
+
+
 
     # program_siglent_ramp(
     #         self,
@@ -168,27 +167,25 @@ def prepare_awg(self):
 #######################################################################################################
 
 def program_siglent_ramp(self,
-        channel = channel,
-        start_freq    = freq_i, # start freq in MHz
-        stop_freq     = freq_f, # stop freq in MHz
-        start_amp = amp_i, #start amp in mV
-        stop_amp = amp_f, #stop amp in mV
+        channel,
+        start_freq, # start freq in MHz
+        stop_freq, # stop freq in MHz
         duration = 1.0 * ms # duration of ramp
         ):
+    
+    max_amp = 640e-3
 
-    self.awg.upload_arb_wave(
+    self.awg.set_arb(channel = channel)
+
+    self.awg.upload_comp_arb_wave(
             channel,
-            start_freq, 
-            stop_freq, 
-            start_amp,
-            stop_amp,
+            start_freq * 1e6, 
+            stop_freq * 1e6, 
+            max_amp,
             duration
             )
 
-    self.awg.start_awg(channel)
-
-    self.awg.send('C1:BTWV MTRIG')
-
+    self.awg.start_awg(channel, trigger = 'EXT')
 
     # if start < stop:
     #     self.awg.set_sweep(channel = 1, start = start * 1e6, stop = stop * 1e6, duration = duration, direction = 'DOWN', trigger = 'EXT')

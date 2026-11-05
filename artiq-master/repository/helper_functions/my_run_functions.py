@@ -25,6 +25,8 @@ def my_run_slowing_Siglent(self):
 
     BEAM_ANGLE = 135.0 * np.pi/180.0
 
+    ms = 1e-3
+
     # check if scan parameter range and scan function is ok
     if self.scan_ok:
         
@@ -105,18 +107,15 @@ def my_run_slowing_Siglent(self):
                 print('Error. Omega_a too low. {0:.1f}/{1:.1f}'.format(Omega_b_start, Omega_a_stop))
                 Omega_a_stop = 10.0
 
-            #Need to add the correction factor here but not too sure how...
-
-            final_amplitude = max_amplitude * amp_spline(freq)
-            
             program_siglent_ramp(self,
                     channel = 1,
                     start_freq = Omega_b_start, 
                     stop_freq = Omega_a_stop, 
-                    start_amp = 640e-3,
-                    stop_amp = final_amplitude,
                     duration = self.slowing_laser_duration * ms
                     )
+            self.awg.on(channel = 1)
+
+            self.awg.send(f'C{1}:BTWV STATE,ON')  # Turn burst mode ON
           
             ###########################################################
             # Loop over averages for each set point
@@ -177,7 +176,7 @@ def my_run_slowing_Siglent(self):
                 counter += 1
 
                 
-    
+
             print()
             print()
             
