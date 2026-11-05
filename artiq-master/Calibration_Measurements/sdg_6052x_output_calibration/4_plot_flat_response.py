@@ -68,7 +68,7 @@ ax[1].plot(scan_arr_amp_flat_6dB, max_val_amp_flat_6dB + spec_att, label = 'awg 
 
 ax[1].plot(scan_arr_amp_flat_5dB, max_val_amp_flat_5dB + spec_att, label = 'awg -> 5dB -> amp (flattened)')
 
-ax[1].plot(scan_arr_amp_sw_flat_5dB, max_val_amp_sw_flat_5dB + spec_att, label = 'awg -> rf switch -> 5dB -> amp (flattened)')
+ax[1].plot(scan_arr_amp_sw_flat_5dB, max_val_amp_sw_flat_5dB + spec_att, label = 'awg -> rf switch -> 4dB -> amp (flattened)')
 
 ax[1].axhline(39, ls = '--', color = 'k')
 

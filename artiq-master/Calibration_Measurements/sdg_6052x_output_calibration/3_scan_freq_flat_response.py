@@ -75,7 +75,7 @@ results = []
 
 for n in range(len(scan_arr)):
 
-    print('Scan point {0}'.format(scan_arr[n]))
+    print('Scan point {0:.1f} MHz'.format(scan_arr[n]))
 
     freq = scan_arr[n]
 
